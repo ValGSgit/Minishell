@@ -41,17 +41,13 @@ void	handle_redirections(t_cmd *cmd, char **tokens, int *i)
 		return ;
 	}
 	if (ft_strcmp(tokens[*i], "<") == 0)
-		add_redir_node(&cmd->redirs, create_redir_node(REDIR_IN,
-				tokens[++(*i)]));
+		create_redir_node(cmd, REDIR_IN, tokens[++(*i)]);
 	else if (ft_strcmp(tokens[*i], ">") == 0)
-		add_redir_node(&cmd->redirs, create_redir_node(REDIR_OUT,
-				tokens[++(*i)]));
+		create_redir_node(cmd, REDIR_OUT, tokens[++(*i)]);
 	else if (ft_strcmp(tokens[*i], ">>") == 0)
-		add_redir_node(&cmd->redirs, create_redir_node(REDIR_APPEND,
-				tokens[++(*i)]));
+		create_redir_node(cmd, REDIR_APPEND, tokens[++(*i)]);
 	else if (ft_strcmp(tokens[*i], "<<") == 0)
-		add_redir_node(&cmd->redirs, create_redir_node(REDIR_HEREDOC,
-				tokens[++(*i)]));
+		create_redir_node(cmd, REDIR_HEREDOC,	tokens[++(*i)]);
 }
 
 /* Handles pipelines and links commands together */

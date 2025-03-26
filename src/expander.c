@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/26 11:41:21 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/24 12:52:51 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,6 @@ char	*resolve_path(char *cmd, char **env)
 	char	**paths;
 
 	i = 0;
-	if (ft_strchr(cmd, '/'))
-		return (cmd);
 	paths = ft_split(get_env_value("PATH", env), ':');
 	if (!paths)
 		return (cmd);
@@ -67,26 +65,53 @@ char	*resolve_path(char *cmd, char **env)
 static char	*expand_variable(char *arg, t_shell *shell)
 {
     char	*value;
+    char	*result;
 
-	if (ft_strcmp(arg, "PWD") == 0)
-		return (getcwd(value, sizeof(value)));
     if (ft_strcmp(arg, "$?") == 0) // Handle exit status
         return (ft_itoa(shell->exit_status));
     if (ft_strcmp(arg, "$-") == 0) // Handle shell flags
         return (ft_strdup("himBHs"));
     if (arg[1] == '\0') // Handle single '$'
-       return (ft_strdup(" $ "));
-    if (ft_isdigit(arg[1])) // Handle $ followed by digits
+        return (ft_strdup("$"));
+    if (arg[0] == '$' && ft_isdigit(arg[1])) // Handle $ followed by digits
         return (ft_strdup("")); // Positional parameters not supported
-    if (!ft_isspace(arg[1]))
+    if (arg[0] == '$' && !ft_isspace(arg[1]))
     {
         value = get_env_value(arg + 1, shell->env); // Get value from environment
         if (value)
-            return (ft_strdup(value)); // Return the value
-        return (ft_strdup("")); // Return an empty string if no match
+        {
+            result = ft_strjoin(value, arg); // Append remaining string
+            return (result);
+        }
+        return (ft_strdup(arg + 1)); // Return remaining string if no match
     }
     return (ft_strdup(arg)); // Default case
 }
+
+// void	expander(t_cmd *cmd, t_shell *shell)
+// {
+// 	int		i;
+// 	char	*value;
+
+// 	i = 0;
+// 	if (!cmd->args)
+// 		return ;
+// 	if (ft_strncmp(cmd->args[0], "./", 2) != 0 && ft_strncmp(cmd->args[0],
+// 			"../", 3) != 0)
+// 		cmd->args[0] = resolve_path(cmd->args[0], shell->env);
+// 	while (cmd->args[++i])
+// 	{
+// 		if (ft_strchr(cmd->args[i], '$'))
+// 		{
+// 			value = expand_variable(cmd->args[i], shell);
+// 			if (value)
+// 			{
+// 				free(cmd->args[i]);
+// 				cmd->args[i] = value;
+// 			}
+// 		}
+// 	}
+// }
 
 void	expander(t_cmd *cmd, t_shell *shell)
 {
@@ -96,14 +121,11 @@ void	expander(t_cmd *cmd, t_shell *shell)
     i = 0;
     if (!cmd->args)
         return ;
-    cmd->env = shell->env;
     if (ft_strncmp(cmd->args[0], "./", 2) != 0 && ft_strncmp(cmd->args[0],
             "../", 3) != 0)
         cmd->args[0] = resolve_path(cmd->args[0], shell->env);
     while (cmd->args[++i])
     {
-        if (cmd->args[i][0] == '\'' && cmd->args[i][ft_strlen(cmd->args[i]) - 1] == '\'')
-            continue;
         if (ft_strchr(cmd->args[i], '$'))
         {
             value = expand_variable(cmd->args[i], shell);

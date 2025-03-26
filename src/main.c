@@ -77,7 +77,7 @@ void	minishell_loop(t_shell *shell)
 		}
 		//print_parsed_command(cmd);
 		expander(cmd, shell);
-		print_parsed_command(cmd);
+	//	print_parsed_command(cmd);
 		executor(cmd, shell);
 		free_cmd(cmd);
 		free_tokens(tokens);

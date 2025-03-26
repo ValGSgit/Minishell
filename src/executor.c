@@ -42,7 +42,7 @@ static int check_file_permissions(const char *filename)
 }
 
 /* Handles redirections for a command with permission checks */
-void handle_dup(t_cmd *cmd)
+/*void handle_dup(t_cmd *cmd)
 {
     if (cmd->in_fd != STDIN_FILENO)
     {
@@ -67,6 +67,53 @@ void handle_dup(t_cmd *cmd)
         dup2(cmd->out_fd, STDOUT_FILENO);
         close(cmd->out_fd);
     }
+}*/
+void apply_redirection(t_cmd *cmd) //handle dup and permissions // lacks HEREDOCS RN
+{
+    t_redir *redir;
+    int     fd;
+
+    redir = cmd->redirs;
+    if (!redir)
+        return ;
+    while (redir)
+    {
+        if (redir->type == REDIR_IN)
+        {
+            fd = open(redir->file, O_RDWR | O_CREAT, 0644);
+            if (check_file_permissions(redir->file) < 0)
+               exit(1); // Exit if permissions are invalid
+            dup2(fd, STDIN_FILENO);
+            close(fd);
+        }
+        if (redir->type == REDIR_OUT)
+        {
+            fd = open(redir->file, O_RDWR | O_CREAT, 0644);
+            if (access(redir->file, W_OK) != 0)
+             {
+                write(2, "minishell: ", 11);
+                write(2, redir->file, ft_strlen(redir->file));
+                write(2, ": Permission denied (write)\n", 29);
+                exit(1); // Exit if permissions are invalid
+            }
+            dup2(fd, STDOUT_FILENO);
+            close(fd);
+        }
+        if (redir->type == REDIR_APPEND)
+        {
+            fd = open(redir->file, O_RDWR | O_CREAT | O_APPEND, 0644);
+            if (access(redir->file, W_OK) != 0)
+            {
+                write(2, "minishell: ", 11);
+                write(2, redir->file, ft_strlen(redir->file));
+                write(2, ": Permission denied (write)\n", 29);
+                exit(1); // Exit if permissions are invalid
+            }
+            dup2(fd, STDOUT_FILENO);
+            close(fd);
+        }
+        redir = redir->next;
+    }    
 }
 
 /* Executes a single command (builtin or external) */
@@ -101,7 +148,7 @@ static void execute_single_command(t_cmd *cmd, t_shell *shell)
     pid = fork();
     if (pid == 0)
     {
-        handle_dup(cmd); // Set up redirections with permission checks
+        apply_redirection(cmd); // Set up redirections with permission checks
         execve(cmd->args[0], cmd->args, shell->env);
         perror(cmd->args[0]); // Print error if execve fails
         exit(127); // Exit with 127 if command not found
@@ -163,7 +210,7 @@ static void execute_pipeline(t_cmd *cmd, t_shell *shell)
                 exit(126); // Exit with 126 for permission error
             }
             
-            handle_dup(cmd); // Set up redirections with permission checks
+            apply_redirection(cmd); // Set up redirections with permission checks
             execve(cmd->args[0], cmd->args, shell->env);
             perror(cmd->args[0]); // Print error if execve fails
             exit(127);

@@ -12,20 +12,30 @@
 
 #include "../includes/planer.h"
 
-t_redir	*create_redir_node(t_redir_type type, char *file)
+void	create_redir_node(t_cmd *cmd, int type, char *file)
 {
 	t_redir	*node;
+	t_redir	*tmp;
 
 	node = malloc(sizeof(t_redir));
 	if (!node)
-		return (NULL);
+		return ;
 	node->type = type;
 	node->file = ft_strdup(file);
 	node->next = NULL;
-	return (node);
+	if (!cmd->redirs)
+		cmd->redirs = node;
+	else
+	{
+		tmp = cmd->redirs;
+		while (tmp->next)
+			tmp = tmp->next;
+		tmp->next = node;
+	}
+	return ;
 }
 
-void	add_redir_node(t_redir **head, t_redir *new_node)
+/*void	add_redir_node(t_redir **head, t_redir *new_node)
 {
 	t_redir	*current;
 
@@ -42,7 +52,7 @@ void	add_redir_node(t_redir **head, t_redir *new_node)
 		}
 		current->next = new_node;
 	}
-}
+}*/
 
 t_cmd	*create_cmd_node(void)
 {

@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 12:01:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/26 10:06:59 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/24 12:43:56 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,8 +73,6 @@ typedef struct s_lexer
 typedef struct s_redir
 {
 	t_redir_type type;    // Type of redirection
-	int in_fd;       // Input file descriptor if cmd is 0 then in_fd is input
-	int out_fd;      // Output file descriptor cmd1 out_fd = cmd2 in_fd
 	char *file;           // File or delimiter for heredoc
 	struct s_redir *next; // Next redirection in the list
 }			t_redir;
@@ -82,12 +80,14 @@ typedef struct s_redir
 /* Command Node */
 typedef struct s_cmd
 {
-	int in_fd;       // Input file descriptor if cmd is 0 then in_fd is input
-	int out_fd;      // Output file descriptor cmd1 out_fd = cmd2 in_fd
+	int in_fd;       // Input file descriptor
 	char *in_file;   // Input file name
+	int out_fd;      // Output file descriptor
 	char *out_file;  // Output file name
 	char **args;     // Command arguments (e.g., ["ls", "-l"])
-	t_redir *redirs;  // Input redirections (e.g., < file.txt)
+	t_redir	*redirs;
+	//t_redir *input;  // Input redirections (e.g., < file.txt)
+	//t_redir *output; // Output redirections (e.g., > out.txt)
 	char	**env;
 	int		exit_status;
 	bool	syntax_error;
@@ -136,12 +136,12 @@ void		ft_exit(t_cmd *cmd);
 
 /* Redirections */
 t_cmd		*create_cmd_node(void);
-void		add_redir_node(t_redir **head, t_redir *new_node);
-t_redir		*create_redir_node(t_redir_type type, char *file);
+//void		add_redir_node(t_redir **head, t_redir *new_node);
+void		create_redir_node(t_cmd *cmd, int type, char *file);
 void		handle_pipeline(t_cmd **cmd);
 void		handle_redirections(t_cmd *cmd, char **tokens, int *i);
 void		restore_redirections(t_cmd *cmd);
-void		handle_dup(t_cmd *cmd);
+void		apply_redirection(t_cmd *cmd);
 
 /* Pipes */
 void		execute_command(t_cmd *cmd, t_shell *shell);
@@ -163,8 +163,6 @@ void		ft_sort_strings(char **arr, int count);
 int			add_new_env_var(char *arg, char **env);
 
 /* Utils */
-int			find_first_of(const char *str, const char *set);
-char		*ft_strjoin_free(char *s1, char *s2, int free_flag);
 char		*update_prompt(void);
 bool		is_special_char(char c);
 int			ft_isspace(char c);
