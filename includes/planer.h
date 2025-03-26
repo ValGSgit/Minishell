@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 12:01:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/24 16:36:39 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/26 10:06:59 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,8 +87,7 @@ typedef struct s_cmd
 	char *in_file;   // Input file name
 	char *out_file;  // Output file name
 	char **args;     // Command arguments (e.g., ["ls", "-l"])
-	t_redir *input;  // Input redirections (e.g., < file.txt)
-	t_redir *output; // Output redirections (e.g., > out.txt)
+	t_redir *redirs;  // Input redirections (e.g., < file.txt)
 	char	**env;
 	int		exit_status;
 	bool	syntax_error;
