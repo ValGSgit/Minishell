@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:43:36 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/26 11:15:43 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/26 15:05:21 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,26 +32,67 @@ int	count_args(char **tokens)
 }
 
 /* Handles redirections and adds them to the command structure */
+// void	handle_redirections(t_cmd *cmd, char **tokens, int *i)
+// {
+// 	if (!tokens[*i + 1]) // Check for missing redirection target
+// 	{
+// 		write(2, "Syntax error: missing redirection target\n", 41);
+// 		cmd->syntax_error = true;
+// 		return ;
+// 	}
+// 	if (ft_strcmp(tokens[*i], "<") == 0)
+// 		add_redir_node(&cmd->redirs, create_redir_node(REDIR_IN,
+// 				tokens[++(*i)]));
+// 	else if (ft_strcmp(tokens[*i], ">") == 0)
+// 		add_redir_node(&cmd->redirs, create_redir_node(REDIR_OUT,
+// 				tokens[++(*i)]));
+// 	else if (ft_strcmp(tokens[*i], ">>") == 0)
+// 		add_redir_node(&cmd->redirs, create_redir_node(REDIR_APPEND,
+// 				tokens[++(*i)]));
+// 	else if (ft_strcmp(tokens[*i], "<<") == 0)
+// 		add_redir_node(&cmd->redirs, create_redir_node(REDIR_HEREDOC,
+// 				tokens[++(*i)]));
+// }
 void	handle_redirections(t_cmd *cmd, char **tokens, int *i)
 {
-	if (!tokens[*i + 1]) // Check for missing redirection target
-	{
-		write(2, "Syntax error: missing redirection target\n", 41);
-		cmd->syntax_error = true;
-		return ;
-	}
-	if (ft_strcmp(tokens[*i], "<") == 0)
-		add_redir_node(&cmd->redirs, create_redir_node(REDIR_IN,
-				tokens[++(*i)]));
-	else if (ft_strcmp(tokens[*i], ">") == 0)
-		add_redir_node(&cmd->redirs, create_redir_node(REDIR_OUT,
-				tokens[++(*i)]));
-	else if (ft_strcmp(tokens[*i], ">>") == 0)
-		add_redir_node(&cmd->redirs, create_redir_node(REDIR_APPEND,
-				tokens[++(*i)]));
-	else if (ft_strcmp(tokens[*i], "<<") == 0)
-		add_redir_node(&cmd->redirs, create_redir_node(REDIR_HEREDOC,
-				tokens[++(*i)]));
+    //char	*redir = tokens[*i];
+    //char	*target;
+
+    // Check if the token contains a redirection operator without a space
+    // if (ft_strncmp(redir, "<", 1) == 0 || ft_strncmp(redir, ">", 1) == 0)
+    // {
+    //     if (ft_strlen(redir) > 1 && (redir[1] == '<' || redir[1] == '>'))
+    //         target = &redir[2]; // Handle "<<" or ">>"
+    //     else
+    //         target = &redir[1]; // Handle "<" or ">"
+    //     if (*target) // If there's a target directly after the operator
+    //     {
+    //         if (ft_strncmp(redir, "<<", 2) == 0)
+    //             add_redir_node(&cmd->redirs, create_redir_node(REDIR_HEREDOC, target));
+    //         else if (ft_strncmp(redir, ">>", 2) == 0)
+    //             add_redir_node(&cmd->redirs, create_redir_node(REDIR_APPEND, target));
+    //         else if (redir[0] == '<')
+    //             add_redir_node(&cmd->redirs, create_redir_node(REDIR_IN, target));
+    //         else if (redir[0] == '>')
+    //             add_redir_node(&cmd->redirs, create_redir_node(REDIR_OUT, target));
+    //         return;
+    //     }
+	// }
+    // Handle cases where the redirection target is in the next token
+    if (!tokens[*i + 1]) // Check for missing redirection target
+    {
+        write(2, "Syntax error: missing redirection target\n", 41);
+        cmd->syntax_error = true;
+        return;
+    }
+    if (ft_strcmp(tokens[*i], "<") == 0)
+        add_redir_node(&cmd->redirs, create_redir_node(REDIR_IN, tokens[++(*i)]));
+    else if (ft_strcmp(tokens[*i], ">") == 0)
+        add_redir_node(&cmd->redirs, create_redir_node(REDIR_OUT, tokens[++(*i)]));
+    else if (ft_strcmp(tokens[*i], ">>") == 0)
+        add_redir_node(&cmd->redirs, create_redir_node(REDIR_APPEND, tokens[++(*i)]));
+    else if (ft_strcmp(tokens[*i], "<<") == 0)
+        add_redir_node(&cmd->redirs, create_redir_node(REDIR_HEREDOC, tokens[++(*i)]));
 }
 
 /* Handles pipelines and links commands together */
@@ -107,45 +148,45 @@ char	**build_args_array(char **tokens, int argc)
 /* Main parser function */
 t_cmd	*parser(char **tokens)
 {
-	t_cmd	*head;
-	t_cmd	*current;
+	t_cmd	*start_cmd;
+	t_cmd	*cmd_to_pass;
 	int		i;
 	int		argc;
 
-	head = NULL;
-	current = NULL;
+	start_cmd = NULL;
+	cmd_to_pass = NULL;
 	if (!tokens)
 		return (NULL);
 	i = -1;
 	while (tokens[++i])
 	{
-		if (!head && (head = create_cmd_node()))
-			current = head;
-		else if (!current)
+		if (!start_cmd && (start_cmd = create_cmd_node()))
+			cmd_to_pass = start_cmd;
+		else if (!cmd_to_pass)
 			break ;
 		if (is_metacharacter(tokens[i]))
 		{
 			if (ft_strcmp(tokens[i], "|") == 0)
-				handle_pipeline(&current);
+				handle_pipeline(&cmd_to_pass);
 			else
-				handle_redirections(current, tokens, &i);
+				handle_redirections(cmd_to_pass, tokens, &i);
 		}
 		else
 		{
 			argc = count_args(&tokens[i]);
-			current->args = build_args_array(&tokens[i], argc);
-			if (!current->args)
-				return (free_cmd(head), NULL);
+			cmd_to_pass->args = build_args_array(&tokens[i], argc);
+			if (!cmd_to_pass->args)
+				return (free_cmd(start_cmd), NULL);
 			i += argc - 1;
 		}
-		if (current->syntax_error) // Stop parsing on syntax error
-			return (free_cmd(head), NULL);
+		if (cmd_to_pass->syntax_error) // Stop parsing on syntax error
+			return (free_cmd(start_cmd), NULL);
 	}
-	if (current && !current->args)
+	if (cmd_to_pass && !cmd_to_pass->args)
 		// Check for empty command after the last pipe
 	{
 		write(2, "Syntax error: empty command after pipe\n", 39);
-		return (free_cmd(head), NULL);
+		return (free_cmd(start_cmd), NULL);
 	}
-	return (head);
+	return (start_cmd);
 }

@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/26 11:41:21 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/26 14:42:30 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,9 +67,10 @@ char	*resolve_path(char *cmd, char **env)
 static char	*expand_variable(char *arg, t_shell *shell)
 {
     char	*value;
+	char	tmp[1024];
 
 	if (ft_strcmp(arg, "PWD") == 0)
-		return (getcwd(value, sizeof(value)));
+		return (getcwd(tmp, sizeof(tmp)));
     if (ft_strcmp(arg, "$?") == 0) // Handle exit status
         return (ft_itoa(shell->exit_status));
     if (ft_strcmp(arg, "$-") == 0) // Handle shell flags
@@ -95,7 +96,9 @@ void	expander(t_cmd *cmd, t_shell *shell)
 
     i = 0;
     if (!cmd->args)
+	{
         return ;
+	}
     cmd->env = shell->env;
     if (ft_strncmp(cmd->args[0], "./", 2) != 0 && ft_strncmp(cmd->args[0],
             "../", 3) != 0)

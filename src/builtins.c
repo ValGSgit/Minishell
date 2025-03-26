@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:33:20 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/26 11:31:49 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/26 14:38:17 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,8 @@ void	ft_cd(t_cmd *cmd)
 	else if (cmd->args[2])
 	{
 		write(2, "cd: too many arguments\n", 23);
-		exit(1);
+		cmd->exit_status = 1;
+		//exit(1);
 		// shell->exit_status = 1; // Set exit code to 1
 	}
 	else
@@ -65,7 +66,8 @@ void	ft_cd(t_cmd *cmd)
 		if (chdir(cmd->args[1]) != 0)
 		{
 			perror("cd");
-			exit(1);
+			cmd->exit_status = 1;
+			//exit(1);
 			// shell->exit_status = 1; // Set exit code to 1
 		}
 	}
