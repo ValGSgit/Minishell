@@ -1,0 +1,271 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   executor.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/31 13:34:42 by vagarcia          #+#    #+#             */
+/*   Updated: 2025/03/25 16:25:56 by vagarcia         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "../includes/planer.h"
+
+// /* Executes a single command (builtin or external) */
+// static void	execute_single_command(t_cmd *cmd, t_shell *shell)
+// {
+//     pid_t	pid;
+
+//     if (is_builtin(cmd->args[0]))
+//     {
+//         execute_builtin(cmd);
+//         return;
+//     }
+//     pid = fork();
+//     if (pid == 0)
+//     {
+//         handle_dup(cmd); // Set up redirections
+//         execve(cmd->args[0], cmd->args, shell->env);
+//         perror(cmd->args[0]); // Print error if execve fails
+//         exit(127); // Exit with 127 if command not found
+//     }
+//     else
+//     {
+//         waitpid(pid, &shell->exit_status, 0);
+//         if (WIFEXITED(shell->exit_status))
+//             shell->exit_status = WEXITSTATUS(shell->exit_status);
+//         else
+//             shell->exit_status = 1; // Handle signals
+//         restore_redirections(cmd); // Restore redirections
+//     }
+// }
+
+// /* Executes a pipeline of commands */
+// static void	execute_pipeline(t_cmd *cmd, t_shell *shell)
+// {
+//     int		pipe_fd[2];
+//     int		prev_pipe_in = 0;
+//     pid_t	pid;
+
+//     while (cmd)
+//     {
+//         if (cmd->next)
+//         {
+//             if (pipe(pipe_fd) == -1) // Create a pipe for the next command
+//             {
+//                 perror("pipe");
+//                 return;
+//             }
+//         }
+//         pid = fork();
+//         if (pid == -1)
+//         {
+//             perror("fork");
+//             return;
+//         }
+//         if (pid == 0) // Child process
+//         {
+//             if (prev_pipe_in != 0) // Redirect input from the previous pipe
+//             {
+//                 dup2(prev_pipe_in, STDIN_FILENO);
+//                 close(prev_pipe_in);
+//             }
+//             if (cmd->next) // Redirect output to the current pipe
+//             {
+//                 dup2(pipe_fd[WRITE_END], STDOUT_FILENO);
+//                 close(pipe_fd[WRITE_END]);
+//                 close(pipe_fd[READ_END]);
+//             }
+//             handle_dup(cmd); // Set up redirections
+//             execve(cmd->args[0], cmd->args, shell->env);
+//             perror(cmd->args[0]); // Print error if execve fails
+//             exit(127);
+//         }
+//         else // Parent process
+//         {
+//             if (prev_pipe_in != 0) // Close the previous pipe's read end
+//                 close(prev_pipe_in);
+//             if (cmd->next) // Close the current pipe's write end
+//                 close(pipe_fd[WRITE_END]);
+//             prev_pipe_in = cmd->next ? pipe_fd[READ_END] : 0; // Update for the next iteration
+//             cmd = cmd->next;
+//         }
+//     }
+//     while (wait(NULL) > 0);
+// }
+
+// /* Handles redirections for a command */
+// void	handle_dup(t_cmd *cmd)
+// {
+//     if (cmd->in_fd != STDIN_FILENO)
+//     {
+//         dup2(cmd->in_fd, STDIN_FILENO);
+//         close(cmd->in_fd);
+//     }
+//     if (cmd->out_fd != STDOUT_FILENO)
+//     {
+//         dup2(cmd->out_fd, STDOUT_FILENO);
+//         close(cmd->out_fd);
+//     }
+// }
+
+/* Restores redirections after command execution */
+void	restore_redirections(t_cmd *cmd)
+{
+    if (cmd->in_fd != STDIN_FILENO)
+        close(cmd->in_fd);
+    if (cmd->out_fd != STDOUT_FILENO)
+        close(cmd->out_fd);
+}
+
+
+static int check_file_permissions(const char *filename)
+{
+    if (access(filename, F_OK) != 0) // Check if the file exists
+    {
+        fprintf(stderr, "minishell: %s: No such file or directory\n", filename);
+        return (-1);
+    }
+    if (access(filename, R_OK) != 0) // Check read permission
+    {
+        fprintf(stderr, "minishell: %s: Permission denied (read)\n", filename);
+        return (-1);
+    }
+    return (0); // Permissions are valid
+}
+
+/* Handles redirections for a command with permission checks */
+void handle_dup(t_cmd *cmd)
+{
+    if (cmd->in_fd != STDIN_FILENO)
+    {
+        // Check read permissions for input redirection
+        if (check_file_permissions(cmd->in_file) < 0)
+        {
+            exit(1); // Exit if permissions are invalid
+        }
+        dup2(cmd->in_fd, STDIN_FILENO);
+        close(cmd->in_fd);
+    }
+    if (cmd->out_fd != STDOUT_FILENO)
+    {
+        // Check write permissions for output redirection
+        if (access(cmd->out_file, W_OK) != 0)
+        {
+            fprintf(stderr, "minishell: %s: Permission denied (write)\n", cmd->out_file);
+            exit(1); // Exit if permissions are invalid
+        }
+        dup2(cmd->out_fd, STDOUT_FILENO);
+        close(cmd->out_fd);
+    }
+}
+
+/* Executes a single command (builtin or external) */
+static void execute_single_command(t_cmd *cmd, t_shell *shell)
+{
+    pid_t pid;
+    
+    if (is_builtin(cmd->args[0]))
+    {
+        execute_builtin(cmd);
+        return;
+    }
+    // Check execute permissions for the command
+    else if (access(cmd->args[0], X_OK) != 0)
+    {
+        fprintf(stderr, "minishell: %s: Permission denied (execute)\n", cmd->args[0]);
+        shell->exit_status = 127; // Set exit status for permission error
+        return;
+    }
+    pid = fork();
+    if (pid == 0)
+    {
+        handle_dup(cmd); // Set up redirections with permission checks
+        execve(cmd->args[0], cmd->args, shell->env);
+        perror(cmd->args[0]); // Print error if execve fails
+        exit(127); // Exit with 127 if command not found
+    }
+    else
+    {
+        waitpid(pid, &shell->exit_status, 0);
+        if (WIFEXITED(shell->exit_status))
+        shell->exit_status = WEXITSTATUS(shell->exit_status);
+        else
+        shell->exit_status = 1; // Handle signals
+        restore_redirections(cmd); // Restore redirections
+    }
+}
+
+/* Executes a pipeline of commands */
+static void execute_pipeline(t_cmd *cmd, t_shell *shell)
+{
+    int pipe_fd[2];
+    int prev_pipe_in = 0;
+    pid_t pid;
+    
+    while (cmd)
+    {
+        if (cmd->next)
+        {
+            if (pipe(pipe_fd) == -1) // Create a pipe for the next command
+            {
+                perror("pipe");
+                return;
+            }
+        }
+        pid = fork();
+        if (pid == -1)
+        {
+            perror("fork");
+            return;
+        }
+        if (pid == 0) // Child process
+        {
+            if (prev_pipe_in != 0) // Redirect input from the previous pipe
+            {
+                dup2(prev_pipe_in, STDIN_FILENO);
+                close(prev_pipe_in);
+            }
+            if (cmd->next) // Redirect output to the current pipe
+            {
+                dup2(pipe_fd[WRITE_END], STDOUT_FILENO);
+                close(pipe_fd[WRITE_END]);
+                close(pipe_fd[READ_END]);
+            }
+            
+            // Check execute permissions for the command
+            if (access(cmd->args[0], X_OK) != 0)
+            {
+                fprintf(stderr, "minishell: %s: Permission denied (execute)\n", cmd->args[0]);
+                exit(126); // Exit with 126 for permission error
+            }
+            
+            handle_dup(cmd); // Set up redirections with permission checks
+            execve(cmd->args[0], cmd->args, shell->env);
+            perror(cmd->args[0]); // Print error if execve fails
+            exit(127);
+        }
+        else // Parent process
+        {
+            if (prev_pipe_in != 0) // Close the previous pipe's read end
+            close(prev_pipe_in);
+            if (cmd->next) // Close the current pipe's write end
+            close(pipe_fd[WRITE_END]);
+            prev_pipe_in = cmd->next ? pipe_fd[READ_END] : 0; // Update for the next iteration
+            cmd = cmd->next;
+        }
+    }
+    while (wait(NULL) > 0);
+}
+
+/* Main executor function */
+void	executor(t_cmd *cmd, t_shell *shell)
+{
+    if (!cmd)
+        return;
+    if (!cmd->next) // Single command
+        execute_single_command(cmd, shell);
+    else // Pipeline
+        execute_pipeline(cmd, shell);
+}
