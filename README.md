@@ -1,7 +1,6 @@
 # Minishell
 
 Tests left to pass:
-Based on the provided log and the visible code, here is a list of issues to fix or improve in your Minishell implementation:
 
 ---
 
