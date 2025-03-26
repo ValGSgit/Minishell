@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:34:42 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/25 16:25:56 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/26 10:23:56 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,12 +124,16 @@ static int check_file_permissions(const char *filename)
 {
     if (access(filename, F_OK) != 0) // Check if the file exists
     {
-        fprintf(stderr, "minishell: %s: No such file or directory\n", filename);
+        write(2, "minishell: ", 11);
+        write(2, filename, ft_strlen(filename));
+        write(2, ": No such file or directory\n", 28);
         return (-1);
     }
     if (access(filename, R_OK) != 0) // Check read permission
     {
-        fprintf(stderr, "minishell: %s: Permission denied (read)\n", filename);
+        write(2, "minishell: ", 11);
+        write(2, filename, ft_strlen(filename));
+        write(2, ": Permission denied\n", 20);
         return (-1);
     }
     return (0); // Permissions are valid
@@ -153,7 +157,9 @@ void handle_dup(t_cmd *cmd)
         // Check write permissions for output redirection
         if (access(cmd->out_file, W_OK) != 0)
         {
-            fprintf(stderr, "minishell: %s: Permission denied (write)\n", cmd->out_file);
+            write(2, "minishell: ", 11);
+            write(2, cmd->out_file, ft_strlen(cmd->out_file));
+            write(2, ": Permission denied (write)\n", 29);
             exit(1); // Exit if permissions are invalid
         }
         dup2(cmd->out_fd, STDOUT_FILENO);
@@ -174,7 +180,9 @@ static void execute_single_command(t_cmd *cmd, t_shell *shell)
     // Check execute permissions for the command
     else if (access(cmd->args[0], X_OK) != 0)
     {
-        fprintf(stderr, "minishell: %s: Permission denied (execute)\n", cmd->args[0]);
+        write(2, "minishell: ", 11);
+        write(2, cmd->args[0], ft_strlen(cmd->args[0]));
+        write(2, ": Permission denied (execute)\n", 30);
         shell->exit_status = 127; // Set exit status for permission error
         return;
     }
@@ -237,7 +245,9 @@ static void execute_pipeline(t_cmd *cmd, t_shell *shell)
             // Check execute permissions for the command
             if (access(cmd->args[0], X_OK) != 0)
             {
-                fprintf(stderr, "minishell: %s: Permission denied (execute)\n", cmd->args[0]);
+                write(2, "minishell: ", 11);
+                write(2, cmd->args[0], ft_strlen(cmd->args[0]));
+                write(2, ": Permission denied (execute)\n", 30);
                 exit(126); // Exit with 126 for permission error
             }
             

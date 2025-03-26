@@ -6,7 +6,7 @@
 #    By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/09/06 13:05:58 by vagarcia          #+#    #+#              #
-#    Updated: 2025/03/24 14:15:07 by vagarcia         ###   ########.fr        #
+#    Updated: 2025/03/26 09:54:02 by vagarcia         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,8 +26,7 @@ CFILES = ft_isalpha.c ft_isascii.c ft_isalnum.c ft_isdigit.c \
 	 ft_memchr.c ft_memcmp.c ft_memmove.c ft_putchar_fd.c \
 	 ft_putendl_fd.c ft_putnbr_fd.c ft_putstr_fd.c ft_substr.c \
 	 ft_striteri.c ft_strmapi.c ft_strnstr.c ft_strjoin.c \
-	 ft_strtrim.c ft_itoa.c ft_split.c ft_printf.c ft_printhex.c \
-	 ft_printptr.c ft_printunsigned.c ft_printint.c get_next_line_bonus.c \
+	 ft_strtrim.c ft_itoa.c ft_split.c get_next_line_bonus.c \
 	 get_next_line_utils_bonus.c ft_strcmp.c ft_strndup.c \
 	 ft_lstnew_bonus.c ft_lstadd_front_bonus.c ft_lstsize_bonus.c \
 	 ft_lstlast_bonus.c ft_lstadd_back_bonus.c ft_lstdelone_bonus.c \

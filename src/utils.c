@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 15:03:09 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/25 16:14:09 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/26 10:24:02 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,8 +54,7 @@ t_cmd	*create_cmd_node(void)
 	node->in_fd = STDIN_FILENO;
 	node->out_fd = STDOUT_FILENO;
 	node->args = NULL;
-	node->input = NULL;
-	node->output = NULL;
+	node->redirs = NULL;
 	node->next = NULL;
 	return (node);
 }
@@ -95,7 +94,6 @@ void	test_file_permissions(const char *filename)
 	}
 	if (access(filename, R_OK) != 0)
 	{
-		fprintf(stderr, "minishell: %s: Permission denied (read)\n", filename);
 		write(2, "minishell: ", 11);
 		write(2, filename, ft_strlen(filename));
 		write(2, ": Permission denied (read)\n", 28);

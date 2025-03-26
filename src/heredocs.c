@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 13:18:31 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/24 10:03:15 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/26 10:20:15 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ int	my_mkstemp(char *template)
 	{
 		i = -1;
 		while (++i < 6)
-			template[ft_strlen(template) - 6 + i] = chars[rand() % 62];
+			template[ft_strlen(template) - 6 + i] = chars[i % 62];
 		fd = open(template, O_RDWR | O_CREAT | O_EXCL, 0600);
 		if (fd != -1 || errno != EEXIST)
 			return (fd);

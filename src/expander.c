@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/24 14:19:28 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/26 09:58:48 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,8 @@ char	*resolve_path(char *cmd, char **env)
 	char	**paths;
 
 	i = 0;
+	if (ft_strchr(cmd, '/'))
+		return (cmd);
 	paths = ft_split(get_env_value("PATH", env), ':');
 	if (!paths)
 		return (cmd);

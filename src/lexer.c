@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:56:16 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/25 14:48:07 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/26 10:17:36 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,7 @@
 // 	return (0);
 // }
 
-// char	**lexer(char *input)
+// char	**lexer(char *input, t_shell *shell)
 // {
 // 	char	**tokens;
 // 	t_lexer	lx;
@@ -110,7 +110,7 @@
 // 		}
 // 		input++;
 // 	}
-// 	return (end_check(lx, input, tokens));
+// 	return (end_check(lx, input, tokens, shell));
 // }
 
 static char	*remove_quotes(char *start, char *end, t_shell *shell)

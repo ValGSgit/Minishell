@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/25 14:42:12 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/26 10:25:22 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,10 +30,11 @@ void	print_parsed_command(t_cmd *cmd)
             while (current->args[i])
                 printf("  - %s\n", current->args[i++]);
         }
-        if (current->input)
-            printf("Input redirection: %s\n", current->input->file);
-        if (current->output)
-            printf("Output redirection: %s\n", current->output->file);
+        if (current->redirs)
+		{
+            printf("Input redirection: %s\n", current->redirs->file);
+            printf("Output redirection: %s\n", current->redirs->file);
+		}
         current = current->next;
     }
 }

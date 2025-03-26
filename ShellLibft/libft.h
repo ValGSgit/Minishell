@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 10:39:01 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/24 14:16:09 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/26 10:15:22 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,10 +31,10 @@ typedef struct s_list
 
 // Struct || Nodes;
 t_list				*ft_lstnew(void *content);
-void				ft_lstadd_front(t_list **lst, t_list *new);
+void				ft_lstadd_front(t_list **lst, t_list *new_thing);
 int					ft_lstsize(t_list *lst);
 t_list				*ft_lstlast(t_list *lst);
-void				ft_lstadd_back(t_list **lst, t_list *new);
+void				ft_lstadd_back(t_list **lst, t_list *new_thing);
 void				ft_lstdelone(t_list *lst, void (*del)(void *));
 void				ft_lstclear(t_list **lst, void (*del)(void *));
 void				ft_lstiter(t_list *lst, void (*f)(void *));
@@ -82,14 +82,14 @@ int					ft_isascii(int c);
 int					ft_isdigit(int c);
 int					ft_isprint(int c);
 // Ft_Printf
-int					ft_printf(const char *format, ...);
-int					ft_printptr(unsigned long long ptr);
-int					ft_printunsigned(unsigned int n);
-int					ft_printhex(unsigned int num, const char format);
-size_t				intputnbr(int n);
-size_t				uintputnbr(unsigned int n);
-int					ft_printpercent(void);
-int					ft_printstr(char *s);
+// int					ft_printf(const char *format, ...);
+// int					ft_printptr(unsigned long long ptr);
+// int					ft_printunsigned(unsigned int n);
+// int					ft_printhex(unsigned int num, const char format);
+// size_t				intputnbr(int n);
+// size_t				uintputnbr(unsigned int n);
+// int					ft_printpercent(void);
+// int					ft_printstr(char *s);
 size_t				ft_putchar(int c);
 // Get_next_line
 char				*get_next_line(int fd);
@@ -98,7 +98,7 @@ char				*nextline(char *buf);
 char				*makeline(char *buf);
 void				*bytecheck(ssize_t bytes, char *buf, char *line);
 char				*ft_strjoin(char const *s1, char const *s2);
-char				*ft_freejoin(char *buffer, char *new);
+char				*ft_freejoin(char *buffer, char *new_thing);
 char				*ft_strchr(const char *str, int car);
 size_t				ft_strlen(const char *str);
 void				*ft_calloc(size_t nmemb, size_t size);
