@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:56:16 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/26 10:17:36 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/26 11:13:25 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,7 +155,7 @@ static char	*remove_quotes(char *start, char *end, t_shell *shell)
         else
             *dst++ = *start++;
     }
-    *dst = '\0';
+    //*dst = '\0';
     return (result);
 }
 

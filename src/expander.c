@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/26 09:58:48 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/26 11:41:21 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,12 +68,14 @@ static char	*expand_variable(char *arg, t_shell *shell)
 {
     char	*value;
 
+	if (ft_strcmp(arg, "PWD") == 0)
+		return (getcwd(value, sizeof(value)));
     if (ft_strcmp(arg, "$?") == 0) // Handle exit status
         return (ft_itoa(shell->exit_status));
     if (ft_strcmp(arg, "$-") == 0) // Handle shell flags
         return (ft_strdup("himBHs"));
     if (arg[1] == '\0') // Handle single '$'
-       return (ft_strdup("$"));
+       return (ft_strdup(" $ "));
     if (ft_isdigit(arg[1])) // Handle $ followed by digits
         return (ft_strdup("")); // Positional parameters not supported
     if (!ft_isspace(arg[1]))

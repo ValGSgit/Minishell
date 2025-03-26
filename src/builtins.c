@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:33:20 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/24 13:36:57 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/26 11:31:49 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,7 @@ void	ft_echo(t_cmd *cmd)
 			x = 0;
 			while (cmd->args[i][x])
 			{
-				if (cmd->args[i][x] != '\\' || (cmd->args[i][x] == ';'
-						&& cmd->args[i][x + 1] == ';'))
+				if (cmd->args[i][x] != '\\' || (cmd->args[i][x] != ';'))
 					printf("%c", cmd->args[i][x]);
 				x++;
 			}
@@ -135,39 +134,6 @@ void	ft_sort_strings(char **arr, int count)
 		}
 	}
 }
-// /* Need some more work but its almost there */
-// void	ft_export(t_cmd *cmd)
-// {
-// 	char	**env;
-// 	char	*arg;
-// 	char	*eq;
-// 	int		i;
-
-// 	if (!cmd->args[1]) // No arguments, print current environment
-// 	{
-// 		ft_env(cmd);
-// 		return ;
-// 	}
-// 	i = 1;
-// 	while (cmd->args[i])
-// 	{
-// 		arg = cmd->args[i];
-// 		eq = ft_strchr(arg, '='); // Find '=' in the argument
-// 		env = cmd->env;
-// 		while (env && *env && !((eq && !ft_strncmp(*env, arg, eq - arg)
-// 					&& (*env)[eq - arg] == '=') || (!eq && !ft_strncmp(*env,
-// 						arg, ft_strlen(arg)) && (*env)[ft_strlen(arg)] == '=')))
-// 			env++;
-// 		if (env && *env) // If the variable exists, update it
-// 		{
-// 			free(*env);
-// 			*env = ft_strdup(arg);
-// 		}
-// 		else if (add_new_env_var(arg, env)) // Add a new variable
-// 			return ;
-// 		i++;
-// 	}
-// }
 
 void	ft_unset(t_cmd *cmd)
 {
