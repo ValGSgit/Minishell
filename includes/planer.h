@@ -166,6 +166,7 @@ int			add_new_env_var(char *arg, char **env);
 char		*update_prompt(void);
 bool		is_special_char(char c);
 int			ft_isspace(char c);
+int			is_redir_without_space(char **input);
 // void		*end_check(t_lexer lx, char *input, char **tokens);
 // int			add_token(char **tokens, int *count, char *start, char *end);
 int			add_token(char **tokens, int *count, char *start, char *end,

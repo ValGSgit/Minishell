@@ -101,7 +101,7 @@ void apply_redirection(t_cmd *cmd) //handle dup and permissions // lacks HEREDOC
         }
         if (redir->type == REDIR_APPEND)
         {
-            fd = open(redir->file, O_RDWR | O_CREAT | O_APPEND, 0644);
+            fd = open(redir->file, O_WRONLY | O_APPEND | O_CREAT , 0644);
             if (access(redir->file, W_OK) != 0)
             {
                 write(2, "minishell: ", 11);

@@ -38,3 +38,16 @@ bool	is_special_char(char c)
 {
 	return (c == '|' || c == '<' || c == '>' || c == ';');
 }
+int	is_redir_without_space(char **input)
+{
+    if (**input == '>' && !ft_isspace(*(*input + 1)) && !is_special_char(*(*input + 1)))
+        return (1);
+    else if (**input == '<' && !ft_isspace(*(*input + 1)) && !is_special_char(*(*input + 1)))
+        return (1);
+    else if (**input == '<' && *(*input + 1) == '<' && !ft_isspace(*(*input + 2)) && !is_special_char(*(*input + 2)))
+        return (2);
+    else if (**input == '>' && *(*input + 1) == '>' && !ft_isspace(*(*input + 2)) && !is_special_char(*(*input + 2)))
+        return (2);
+    else 
+        return (0);
+}
