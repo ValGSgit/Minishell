@@ -14,21 +14,22 @@
 
 size_t	ft_strlcpy(char *dest, const char *src, size_t size)
 {
-	size_t	len;
+    size_t	src_len;
+    size_t	i;
 
-	len = 0;
-	if (size > 0)
-	{
-		while (src[len] && len < (size - 1))
-		{
-			dest[len] = src[len];
-			len++;
-		}
-		dest[len] = '\0';
-	}
-	while (src[len] != '\0')
-		len++;
-	return (len);
+    src_len = 0;
+    while (src[src_len]) // Calculate the length of the source string
+        src_len++;
+    if (size == 0) // If size is 0, just return the length of the source string
+        return (src_len);
+    i = 0;
+    while (src[i] && i < (size - 1)) // Copy up to size - 1 characters
+    {
+        dest[i] = src[i];
+        i++;
+    }
+    dest[i] = '\0'; // Null-terminate the destination string
+    return (src_len); // Return the total length of the source string
 }
 /*
 #include <unistd.h>

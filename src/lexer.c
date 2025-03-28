@@ -12,179 +12,7 @@
 
 #include "../includes/planer.h"
 
-// static char	*remove_quotes(char *start, char *end)
-// {
-// 	char	*result;
-// 	char	*dst;
-// 	char	quote_char;
-// 	bool	in_quote;
-
-// 	result = ft_calloc(end - start + 1, sizeof(char));
-// 	if (!result)
-// 		return (NULL);
-// 	dst = result;
-// 	in_quote = false;
-// 	while (start < end)
-// 	{
-// 		if (!in_quote && (*start == '\'' || *start == '\"'))
-// 		{
-// 			in_quote = true;
-// 			quote_char = *start++;
-// 		}
-// 		else if (in_quote && *start == quote_char && start++)
-// 			in_quote = false;
-// 		else
-// 			*dst++ = *start++;
-// 	}
-// 	*dst = '\0';
-// 	return (result);
-// }
-
-// int	add_token(char **tokens, int *count, char *start, char *end)
-// {
-// 	char	*cleaned_token;
-
-// 	if (*count >= MAX_TOKENS - 1)
-// 		return (-1);
-// 	cleaned_token = remove_quotes(start, end);
-// 	if (!cleaned_token)
-// 		return (-1);
-// 	tokens[*count] = cleaned_token;
-// 	(*count)++;
-// 	return (0);
-// }
-
-// static int	process_special_char(char **tokens, int *count, char **input)
-// {
-// 	if (is_special_char(**input))
-// 	{
-// 		if (add_token(tokens, count, *input, *input + 1) < 0)
-// 			return (-1);
-// 		(*input)++;
-// 		return (1);
-// 	}
-// 	return (0);
-// }
-
-// static int	handle_quotes(char **input, bool *in_quote, char *quote_char)
-// {
-// 	if (!*in_quote && (**input == '\'' || **input == '\"'))
-// 	{
-// 		*in_quote = true;
-// 		*quote_char = **input;
-// 		(*input)++;
-// 		return (1);
-// 	}
-// 	else if (*in_quote && **input == *quote_char)
-// 	{
-// 		*in_quote = false;
-// 		*quote_char = '\0';
-// 		(*input)++;
-// 		return (1);
-// 	}
-// 	return (0);
-// }
-
-// char	**lexer(char *input, t_shell *shell)
-// {
-// 	char	**tokens;
-// 	t_lexer	lx;
-
-// 	lx = (t_lexer){0};
-// 	tokens = ft_calloc(MAX_TOKENS, sizeof(char *));
-// 	if (!tokens || !input)
-// 		return (free(tokens), NULL);
-// 	lx.start = input;
-// 	while (*input && lx.tokcount < MAX_TOKENS - 1)
-// 	{
-// 		if (handle_quotes(&input, &lx.in_quote, &lx.quote_char))
-// 			continue ;
-// 		if (!lx.in_quote && (ft_isspace(*input) || is_special_char(*input)))
-// 		{
-// 			if (lx.start != input && add_token(tokens, &lx.tokcount, lx.start,
-// 					input) < 0)
-// 				return (free_tokens(tokens), NULL);
-// 			if (process_special_char(tokens, &lx.tokcount, &input) < 0)
-// 				return (free_tokens(tokens), NULL);
-// 			lx.start = input + 1;
-// 		}
-// 		input++;
-// 	}
-// 	return (end_check(lx, input, tokens, shell));
-// }
-
-static char	*remove_quotes(char *start, char *end, t_shell *shell)
-{
-    char	*result;
-    char	*dst;
-    char	quote_char;
-    bool	in_quote;
-
-    result = ft_calloc(end - start + 1, sizeof(char));
-    if (!result)
-        return (NULL);
-    dst = result;
-    in_quote = false;
-    while (start < end)
-    {
-        if (!in_quote && (*start == '\'' || *start == '\"'))
-        {
-            in_quote = true;
-            quote_char = *start++;
-        }
-        else if (in_quote && *start == quote_char)
-        {
-            in_quote = false;
-            start++;
-        }
-        else if (in_quote && quote_char == '\"' && *start == '$') // Expand variables in double quotes
-        {
-            char *var_start = start + 1;
-            while (var_start < end && (ft_isalnum(*var_start) || *var_start == '_'))
-                var_start++;
-            char *var_name = ft_substr(start + 1, 0, var_start - (start + 1));
-            char *value = get_env_value(var_name, shell->env);
-            free(var_name);
-            if (value)
-            {
-                ft_strlcpy(dst, value, ft_strlen(value) + 1);
-                dst += ft_strlen(value);
-            }
-            start = var_start;
-        }
-        else
-            *dst++ = *start++;
-    }
-    //*dst = '\0';
-    return (result);
-}
-
-int	add_token(char **tokens, int *count, char *start, char *end, t_shell *shell)
-{
-    char	*cleaned_token;
-
-    if (*count >= MAX_TOKENS - 1)
-        return (-1);
-    cleaned_token = remove_quotes(start, end, shell);
-    if (!cleaned_token)
-        return (-1);
-    tokens[*count] = cleaned_token;
-    (*count)++;
-    return (0);
-}
-
-static int	process_special_char(char **tokens, int *count, char **input, t_shell *shell)
-{
-    if (is_special_char(**input))
-    {
-        if (add_token(tokens, count, *input, *input + 1, shell) < 0)
-            return (-1);
-        (*input)++;
-        return (1);
-    }
-    return (0);
-}
-
+/* Handles quotes and toggles the in_quote state */
 static int	handle_quotes(char **input, bool *in_quote, char *quote_char)
 {
     if (!*in_quote && (**input == '\'' || **input == '\"'))
@@ -204,30 +32,88 @@ static int	handle_quotes(char **input, bool *in_quote, char *quote_char)
     return (0);
 }
 
+/* Processes special characters like |, >, >>, <, << */
+static int	process_special_char(char **tokens, int *count, char **input)
+{
+    if (is_special_char(**input))
+    {
+        if ((**input == '>' && *(*input + 1) == '>') || (**input == '<' && *(*input + 1) == '<'))
+        {
+            tokens[(*count)++] = ft_substr(*input, 0, 2);
+            (*input) += 2;
+            return (1);
+        }
+        tokens[(*count)++] = ft_substr(*input, 0, 1);
+        (*input)++;
+        return (1);
+    }
+    return (0);
+}
+
+/* Adds a token to the tokens array */
+static int	add_token(char **tokens, int *count, char *start, char *end)
+{
+    char	*token;
+
+    if (start == end)
+        return (0);
+    token = ft_substr(start, 0, end - start);
+    if (!token)
+        return (-1);
+    tokens[(*count)++] = token;
+    return (0);
+}
+
+/* Processes the input string and tokenizes it */
+static int	process_input(char **input, t_lexer *lx, char **tokens)
+{
+    while (**input && lx->tokcount < MAX_TOKENS - 1)
+    {
+        if (handle_quotes(input, &lx->in_quote, &lx->quote_char))
+            continue;
+        if (!lx->in_quote && (ft_isspace(**input) || is_special_char(**input)))
+        {
+            if (lx->start != *input && add_token(tokens, &lx->tokcount, lx->start, *input) < 0)
+                return (-1);
+            if (process_special_char(tokens, &lx->tokcount, input))
+            {
+                lx->start = *input;
+                continue;
+            }
+            lx->start = *input + 1;
+        }
+        (*input)++;
+    }
+    return (0);
+}
+
+/* Finalizes tokenization by adding the last token if necessary */
+static int	finalize_tokens(t_lexer lx, char *input, char **tokens)
+{
+    if (lx.start != input)
+    {
+        if (add_token(tokens, &lx.tokcount, lx.start, input) < 0)
+            return (0);
+    }
+    tokens[lx.tokcount] = NULL;
+    return (1);
+}
+
+/* Main lexer function */
 char	**lexer(char *input, t_shell *shell)
 {
     char	**tokens;
     t_lexer	lx;
 
-    lx = (t_lexer){0};
+    (void)shell; // Shell is unused since we are not expanding variables here
     tokens = ft_calloc(MAX_TOKENS, sizeof(char *));
     if (!tokens || !input)
         return (free(tokens), NULL);
+    lx = (t_lexer){0};
     lx.start = input;
-    while (*input && lx.tokcount < MAX_TOKENS - 1)
-    {
-        if (handle_quotes(&input, &lx.in_quote, &lx.quote_char))
-            continue ;
-        if (!lx.in_quote && (ft_isspace(*input) || is_special_char(*input)))
-        {
-            if (lx.start != input && add_token(tokens, &lx.tokcount, lx.start,
-                    input, shell) < 0)
-                return (free_tokens(tokens), NULL);
-            if (process_special_char(tokens, &lx.tokcount, &input, shell) < 0)
-                return (free_tokens(tokens), NULL);
-            lx.start = input + 1;
-        }
-        input++;
-    }
-    return (end_check(lx, input, tokens, shell));
+    if (process_input(&input, &lx, tokens) < 0)
+        return (free_tokens(tokens), NULL);
+    if (!finalize_tokens(lx, input, tokens))
+        return (free_tokens(tokens), NULL);
+    return (tokens);
 }

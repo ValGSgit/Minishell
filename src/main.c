@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/26 11:27:25 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/28 09:55:43 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,21 +63,19 @@ void	minishell_loop(t_shell *shell)
 		if (*input)
 			add_history(input);
 		tokens = lexer(input, shell);
+		//debug_shell_state(tokens, NULL, "After Lexer");
 		if (!tokens)
-		{
 			free(input);
-			continue ;
-		}
-		cmd = parser(tokens);
+		cmd = parser(tokens, shell);
+		//debug_shell_state(tokens, cmd, "After Parser");
 		if (!cmd)
 		{
 			free(input);
 			free_tokens(tokens);
 			continue ;
 		}
-		//print_parsed_command(cmd);
 		expander(cmd, shell);
-		print_parsed_command(cmd);
+		//debug_shell_state(tokens, cmd, "After expander");
 		executor(cmd, shell);
 		free_cmd(cmd);
 		free_tokens(tokens);
