@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/14 16:46:52 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/24 16:49:04 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/28 10:52:44 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,17 @@
 
 static int	numlen(int n)
 {
-	int	count;
+    int	count;
 
-	count = 0;
-	while (n)
-	{
-		count++;
-		n /= 10;
-	}
-	return (count);
+    if (n == 0) // Handle zero explicitly
+        return (1);
+    count = 0;
+    while (n)
+    {
+        count++;
+        n /= 10;
+    }
+    return (count);
 }
 
 char	*ft_itoa(int n)

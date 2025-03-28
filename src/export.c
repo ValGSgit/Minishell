@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 10:35:57 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/25 16:10:24 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/28 12:35:02 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,9 @@ void	ft_export(t_cmd *cmd)
 {
     int		i;
 
-    if (!cmd->args[1])
+    if (!cmd->env)
+        return;
+    if (!cmd->args[1] || cmd->args[1][0] == '\0')
     {
         print_sorted_env(cmd->env);
         return;
