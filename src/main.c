@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/28 12:32:13 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/28 13:56:40 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,27 +16,27 @@ int		g_signal_received = 0;
 
 void	print_parsed_command(t_cmd *cmd)
 {
-    t_cmd	*current;
-    int		i;
+	t_cmd	*current;
+	int		i;
 
-    current = cmd;
-    while (current)
-    {
-        printf("Command: %s\n", current->args[0]);
-        if (current->args)
-        {
-            printf("Arguments:\n");
-            i = 1;
-            while (current->args[i])
-                printf("  - %s\n", current->args[i++]);
-        }
-        if (current->redirs)
+	current = cmd;
+	while (current)
+	{
+		printf("Command: %s\n", current->args[0]);
+		if (current->args)
 		{
-            printf("Input redirection: %s\n", current->redirs->file);
-            printf("Output redirection: %s\n", current->redirs->file);
+			printf("Arguments:\n");
+			i = 1;
+			while (current->args[i])
+				printf("  - %s\n", current->args[i++]);
 		}
-        current = current->next;
-    }
+		if (current->redirs)
+		{
+			printf("Input redirection: %s\n", current->redirs->file);
+			printf("Output redirection: %s\n", current->redirs->file);
+		}
+		current = current->next;
+	}
 }
 
 void	minishell_loop(t_shell *shell)
@@ -50,9 +50,9 @@ void	minishell_loop(t_shell *shell)
 	prompt = "Minishell-> ";
 	while (1)
 	{
-		//prompt = update_prompt();
+		// prompt = update_prompt();
 		input = readline(prompt);
-		//free(prompt);
+		// free(prompt);
 		if (!input)
 			break ;
 		if (ft_strcmp(input, "exit") == 0)
@@ -94,7 +94,7 @@ char	**copy_env(char **envp)
 		return (NULL);
 	while (envp[i])
 		i++;
-	env = malloc(sizeof(char *) * (i + 1));
+	env = ft_calloc(sizeof(char *), (i + 1));
 	if (!env)
 		return (NULL);
 	i = 0;
@@ -128,6 +128,7 @@ int	main(int argc, char **argv, char **envp)
 	setup_signals();
 	minishell_loop(&shell);
 	rl_clear_history();
-	free_env(shell.env);
+	free_shell(&shell);
+	//free_env(shell.env);
 	return (shell.exit_status);
 }
