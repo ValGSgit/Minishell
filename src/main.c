@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/26 14:59:14 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/28 09:55:43 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,27 +32,8 @@ void	print_parsed_command(t_cmd *cmd)
         }
         if (current->redirs)
 		{
-            printf("Redirection file: %s\n", current->redirs->file);
-			if (current->redirs->type == REDIR_IN)
-				printf("Type: REDIR_IN\n");
-			else if (current->redirs->type == REDIR_OUT)
-				printf("Type: REDIR_OUT\n");
-			else if (current->redirs->type == REDIR_APPEND)
-				printf("Type: REDIR_APPEND\n");
-			else if (current->redirs->type == REDIR_HEREDOC)
-				printf("Type: REDIR_HEREDOC\n");
-			if (current->redirs->next)
-			{
-				printf("Next redirection file: %s\n", current->redirs->next->file);
-				if (current->redirs->next->type == REDIR_IN)
-					printf("Type: REDIR_IN\n");
-				else if (current->redirs->next->type == REDIR_OUT)
-					printf("Type: REDIR_OUT\n");
-				else if (current->redirs->next->type == REDIR_APPEND)
-					printf("Type: REDIR_APPEND\n");
-				else if (current->redirs->next->type == REDIR_HEREDOC)
-					printf("Type: REDIR_HEREDOC\n");
-			}
+            printf("Input redirection: %s\n", current->redirs->file);
+            printf("Output redirection: %s\n", current->redirs->file);
 		}
         current = current->next;
     }
@@ -81,24 +62,21 @@ void	minishell_loop(t_shell *shell)
 		}
 		if (*input)
 			add_history(input);
-		tokens = lexer(input, shell); //Handle quotes and metacharacters
+		tokens = lexer(input, shell);
+		//debug_shell_state(tokens, NULL, "After Lexer");
 		if (!tokens)
-		{
 			free(input);
-			continue ;
-		}
-		cmd = parser(tokens); // Parse tokens into commands and redirs into nodes
+		cmd = parser(tokens, shell);
+		//debug_shell_state(tokens, cmd, "After Parser");
 		if (!cmd)
 		{
 			free(input);
 			free_tokens(tokens);
 			continue ;
 		}
-		print_parsed_command(cmd);
-		expander(cmd, shell); // Quote removal and var expansion
-		print_parsed_command(cmd);
+		expander(cmd, shell);
+		//debug_shell_state(tokens, cmd, "After expander");
 		executor(cmd, shell);
-		shell->exit_status = cmd->exit_status;
 		free_cmd(cmd);
 		free_tokens(tokens);
 		free(input);
@@ -144,10 +122,10 @@ int	main(int argc, char **argv, char **envp)
 		shell.env = copy_env(envp);
 	if (!shell.env)
 		return (write(2, "environment copy failed\n", 25), EXIT_FAILURE);
+	shell.exit_status = 0;
 	shell.is_interactive = isatty(STDIN_FILENO);
 	shell.signal_status = 0;
 	setup_signals();
-	shell.exit_status = 0;
 	minishell_loop(&shell);
 	rl_clear_history();
 	free_env(shell.env);

@@ -12,21 +12,6 @@
 
 #include "../includes/planer.h"
 
-static int	is_valid_identifier(char *arg)
-{
-    int	i;
-
-    if (!arg || (!ft_isalpha(arg[0]) && arg[0] != '_'))
-        return (0);
-    i = 1;
-    while (arg[i] && arg[i] != '=')
-    {
-        if (!ft_isalnum(arg[i]) && arg[i] != '_')
-            return (write(2, "Not a valid identifier\n", 24), 0);
-        i++;
-    }
-    return (1);
-}
 
 static void	print_sorted_env(char **env)
 {
@@ -39,7 +24,7 @@ static void	print_sorted_env(char **env)
         printf("declare -x %s\n", env[i++]);
 }
 
-static void	update_or_add_env(char *arg, char **env)
+void	update_or_add_env(char *arg, char **env)
 {
     char	*key;
     char	*value;
@@ -72,31 +57,45 @@ static void	update_or_add_env(char *arg, char **env)
         return;
 }
 
-static void	handle_invalid_identifier(char *arg, int *exit_status)
+
+static int	is_valid_identifier(char *arg)
 {
-	(void)arg;
-    write(2, "not a valid identifier\n", 24);
-    *exit_status = 1;
-	exit(*exit_status);
+    int i;
+
+    i = 1;
+    if (!ft_isalpha(arg[0]) && arg[0] != '_')
+        return (0);
+    while (arg[i] && arg[i] != '=')
+    {
+        if (!ft_isalnum(arg[i]) && arg[i] != '_')
+            return (0);
+        i++;
+    }
+    return (1);
 }
 
 void	ft_export(t_cmd *cmd)
 {
-    int	i;
+    int		i;
 
-    if (!cmd->args[1]) // No arguments, print sorted environment
+    if (!cmd->args[1])
     {
-		print_sorted_env(cmd->env);
+        print_sorted_env(cmd->env);
         return;
     }
-    cmd->exit_status = 0;
     i = 1;
     while (cmd->args[i])
     {
         if (!is_valid_identifier(cmd->args[i]))
-            handle_invalid_identifier(cmd->args[i], &cmd->exit_status);
+        {
+            write(2, "export: not a valid identifier\n", 31);
+            cmd->exit_status = 1;
+        }
         else
+        {
             update_or_add_env(cmd->args[i], cmd->env);
+            cmd->exit_status = 0;
+        }
         i++;
     }
 }
