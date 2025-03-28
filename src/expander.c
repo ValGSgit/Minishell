@@ -6,11 +6,12 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/28 12:36:15 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/28 13:48:26 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/planer.h"
+
 
 char	*get_env_value(char *name, char **env)
 {
@@ -81,14 +82,15 @@ static char	*append_str(char *dest, char *src)
 	return (new_str);
 }
 
-
 static char	*expand_variable(char *str, int *i, t_shell *shell, bool in_dquote)
 {
 	char	*var_name;
 	char	*value;
-	int		start = *i + 1;
-	int		len = 0;
+	int		start;
+	int		len;
 
+	start = *i + 1;
+	len = 0;
 	if (!str[start])
 		return (ft_strdup("$"));
 	if (str[start] == '?') // Special case for $?
@@ -113,8 +115,10 @@ static char	*expand_variable(char *str, int *i, t_shell *shell, bool in_dquote)
 		value = ft_strdup("");
 	else if (!value)
 	{
-		value = ft_strdup(""); // No trailing text for undefined vars
-		*i += len; // Move past the variable name
+		value = ft_strdup("");                        
+			// No trailing text for undefined vars
+		*i += len;                                    
+			// Move past the variable name
 		return (append_str(value, str + start + len)); // Append remaining text
 	}
 	else
@@ -127,6 +131,7 @@ static char	*process_argument(char *arg, t_shell *shell)
 {
 	t_expander_state	state;
 	int					i;
+	char				*value;
 
 	ft_memset(&state, 0, sizeof(t_expander_state));
 	state.result = ft_strdup("");
@@ -141,7 +146,7 @@ static char	*process_argument(char *arg, t_shell *shell)
 			state.in_dquote = !state.in_dquote;
 		else if (arg[i] == '$' && !state.in_quote)
 		{
-			char *value = expand_variable(arg, &i, shell, state.in_dquote);
+			value = expand_variable(arg, &i, shell, state.in_dquote);
 			state.result = append_str(state.result, value);
 			free(value);
 		}
@@ -159,8 +164,9 @@ void	expander(t_cmd *cmd, t_shell *shell)
 
 	if (!cmd || !cmd->args)
 		return ;
-	if (ft_strncmp(cmd->args[0], "./", 2) != 0 && ft_strncmp(cmd->args[0], "../", 3
-	|| is_builtin(cmd->args[0])) == 0)
+	if (ft_strncmp(cmd->args[0], "./", 2) != 0 && ft_strncmp(cmd->args[0],
+			"../", 3) != 0 && ft_strncmp(cmd->args[0], "/", 1) != 0
+		&& !is_builtin(cmd->args[0]))
 	{
 		expanded = resolve_path(cmd->args[0], shell->env);
 		free(cmd->args[0]);
@@ -181,7 +187,7 @@ void	expander(t_cmd *cmd, t_shell *shell)
 
 void	expand_nodes(t_cmd *cmd, t_shell *shell)
 {
-	t_cmd	*node;
+	t_cmd *node;
 
 	node = cmd;
 	while (node)
