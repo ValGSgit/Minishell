@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:33:20 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/28 10:05:33 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/28 12:34:04 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,7 +161,6 @@ void	execute_builtin(t_cmd *cmd)
 		ft_exit(cmd);
 }
 
-
 void	ft_echo(t_cmd *cmd)
 {
     int		i;
@@ -169,9 +168,12 @@ void	ft_echo(t_cmd *cmd)
 
     i = 1;
     n_flag = 0;
-    if (cmd->args[1] && ft_strcmp(cmd->args[1], "-n") == 0)
+	while (cmd->args[i] && cmd->args[i][0] == '-' && ft_strcmp(cmd->args[i], "n") == 0)
+    // if (cmd->args[1] && ft_strncmp(cmd->args[1], "-n")) == 0)
     {
         n_flag = 1;
+		if (!cmd->args[2])
+			return ;
         i++;
     }
     while (cmd->args[i])
@@ -230,9 +232,11 @@ void	ft_env(t_cmd *cmd)
 {
     int		i;
 
+	if (!cmd->env)
+		return ;
     if (cmd->args[1])
     {
-        write(2, "env: too many arguments\n", 25);
+        //write(2, "env: too many arguments\n", 25);
         cmd->exit_status = 1;
         return;
     }

@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/24 12:52:51 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/28 12:36:15 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,10 @@ static char	*expand_variable(char *str, int *i, t_shell *shell, bool in_dquote)
 	if (str[start] == '?') // Special case for $?
 	{
 		*i += 1; // Skip $?
-		return (ft_itoa(shell->exit_status));
+		if (!shell->exit_status)
+			return (ft_strdup("0"));
+		else
+			return (ft_itoa(shell->exit_status));
 	}
 	while (str[start + len] && ft_isalnum(str[start + len]))
 		len++; // Only alphanumeric chars for regular vars
@@ -105,6 +108,7 @@ static char	*expand_variable(char *str, int *i, t_shell *shell, bool in_dquote)
 		return (ft_strdup("$"));
 	}
 	value = get_env_value(var_name, shell->env);
+	free(var_name);
 	if (!value && in_dquote)
 		value = ft_strdup("");
 	else if (!value)
@@ -116,7 +120,6 @@ static char	*expand_variable(char *str, int *i, t_shell *shell, bool in_dquote)
 	else
 		value = ft_strdup(value);
 	*i += len;
-	free(var_name);
 	return (value);
 }
 
@@ -156,7 +159,8 @@ void	expander(t_cmd *cmd, t_shell *shell)
 
 	if (!cmd || !cmd->args)
 		return ;
-	if (ft_strncmp(cmd->args[0], "./", 2) != 0 && ft_strncmp(cmd->args[0], "../", 3) != 0)
+	if (ft_strncmp(cmd->args[0], "./", 2) != 0 && ft_strncmp(cmd->args[0], "../", 3
+	|| is_builtin(cmd->args[0])) == 0)
 	{
 		expanded = resolve_path(cmd->args[0], shell->env);
 		free(cmd->args[0]);
@@ -172,5 +176,18 @@ void	expander(t_cmd *cmd, t_shell *shell)
 			cmd->args[i] = expanded;
 		}
 		i++;
+	}
+}
+
+void	expand_nodes(t_cmd *cmd, t_shell *shell)
+{
+	t_cmd	*node;
+
+	node = cmd;
+	while (node)
+	{
+		expander(node, shell);
+		node->env = copy_env(shell->env);
+		node = node->next;
 	}
 }

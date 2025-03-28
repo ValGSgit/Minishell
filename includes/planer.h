@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 12:01:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/24 12:43:56 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/28 11:42:22 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,6 +132,7 @@ char		**lexer(char *input, t_shell *shell);
 t_cmd		*parser(char **tokens, t_shell *shell);
 
 /* Expander */
+void	expand_nodes(t_cmd *cmd, t_shell *shell);
 void		expander(t_cmd *cmd, t_shell *shell);
 
 /* Executor */
