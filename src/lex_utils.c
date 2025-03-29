@@ -12,22 +12,6 @@
 
 #include "../includes/planer.h"
 
-void	*end_check(t_lexer lx, char *input, char **tokens, t_shell *shell)
-{
-    // If there is remaining input, add it as a token
-    if (lx.start != input)
-    {
-        if (add_token(tokens, &lx.tokcount, lx.start, input, shell) < 0)
-        {
-            free_tokens(tokens);
-            return (NULL);
-        }
-    }
-    // Null-terminate the tokens array
-    tokens[lx.tokcount] = NULL;
-    return (tokens);
-}
-
 int	ft_isspace(char c)
 {
 	return (c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f'

@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:34:42 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/26 11:23:14 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/28 12:31:24 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,48 +26,22 @@ static int check_file_permissions(const char *filename)
 {
     if (access(filename, F_OK) != 0) // Check if the file exists
     {
-        write(2, "minishell: ", 11);
-        write(2, filename, ft_strlen(filename));
+        //write(2, "minishell: ", 11);
+        //write(2, filename, ft_strlen(filename));
         write(2, ": No such file or directory\n", 28);
         return (-2);
     }
     if (access(filename, R_OK) != 0) // Check read permission
     {
-        write(2, "minishell: ", 11);
-        write(2, filename, ft_strlen(filename));
+        //write(2, "minishell: ", 11);
+        //write(2, filename, ft_strlen(filename));
         write(2, ": Permission denied\n", 20);
         return (-1);
     }
     return (0); // Permissions are valid
 }
 
-/* Handles redirections for a command with permission checks */
-/*void handle_dup(t_cmd *cmd)
-{
-    if (cmd->in_fd != STDIN_FILENO)
-    {
-        // Check read permissions for input redirection
-        if (check_file_permissions(cmd->in_file) < 0)
-        {
-            exit(1); // Exit if permissions are invalid
-        }
-        dup2(cmd->in_fd, STDIN_FILENO);
-        close(cmd->in_fd);
-    }
-    if (cmd->out_fd != STDOUT_FILENO)
-    {
-        // Check write permissions for output redirection
-        if (access(cmd->out_file, W_OK) != 0)
-        {
-            write(2, "minishell: ", 11);
-            write(2, cmd->out_file, ft_strlen(cmd->out_file));
-            write(2, ": Permission denied (write)\n", 29);
-            exit(1); // Exit if permissions are invalid
-        }
-        dup2(cmd->out_fd, STDOUT_FILENO);
-        close(cmd->out_fd);
-    }
-}*/
+
 void apply_redirection(t_cmd *cmd) //handle dup and permissions // lacks HEREDOCS RN
 {
     t_redir *redir;
@@ -80,7 +54,7 @@ void apply_redirection(t_cmd *cmd) //handle dup and permissions // lacks HEREDOC
     {
         if (redir->type == REDIR_IN)
         {
-            fd = open(redir->file, O_RDWR | O_CREAT, 0644);
+            fd = open(redir->file, O_RDWR, 0644);
             if (check_file_permissions(redir->file) < 0)
                exit(1); // Exit if permissions are invalid
             dup2(fd, STDIN_FILENO);
@@ -91,10 +65,11 @@ void apply_redirection(t_cmd *cmd) //handle dup and permissions // lacks HEREDOC
             fd = open(redir->file, O_RDWR | O_CREAT, 0644);
             if (access(redir->file, W_OK) != 0)
              {
-                write(2, "minishell: ", 11);
-                write(2, redir->file, ft_strlen(redir->file));
-                write(2, ": Permission denied (write)\n", 29);
+               // write(2, "minishell: ", 11);
+               // write(2, redir->file, ft_strlen(redir->file));
+                write(2, " Permission denied\n", 20);
                 exit(1); // Exit if permissions are invalid
+                return ;
             }
             dup2(fd, STDOUT_FILENO);
             close(fd);
@@ -104,10 +79,11 @@ void apply_redirection(t_cmd *cmd) //handle dup and permissions // lacks HEREDOC
             fd = open(redir->file, O_WRONLY | O_APPEND | O_CREAT , 0644);
             if (access(redir->file, W_OK) != 0)
             {
-                write(2, "minishell: ", 11);
-                write(2, redir->file, ft_strlen(redir->file));
-                write(2, ": Permission denied (write)\n", 29);
+               // write(2, "minishell: ", 11);
+               // write(2, redir->file, ft_strlen(redir->file));
+                write(2, " Permission denied\n", 20);
                 exit(1); // Exit if permissions are invalid
+                return ;
             }
             dup2(fd, STDOUT_FILENO);
             close(fd);
@@ -127,10 +103,13 @@ static void execute_single_command(t_cmd *cmd, t_shell *shell)
         return;
     }
     // Check execute permissions for the command
-    else if (access(cmd->args[0], X_OK) != 0)
+    if (access(cmd->args[0], X_OK) != 0)
     {
         if (check_file_permissions(cmd->args[0]) == -1)
         {
+            // write(2, "minishell: ", 11);
+            // write(2, cmd->args[0], ft_strlen(cmd->args[0]));
+            // write(2, ": Permission denied (execute)\n", 30);
             shell->exit_status = 126; // Set exit status for permission error
             return ;
         }
@@ -164,7 +143,7 @@ static void execute_single_command(t_cmd *cmd, t_shell *shell)
     }
 }
 
-/* Executes a pipeline of commands */
+
 static void execute_pipeline(t_cmd *cmd, t_shell *shell)
 {
     int pipe_fd[2];
@@ -204,9 +183,9 @@ static void execute_pipeline(t_cmd *cmd, t_shell *shell)
             // Check execute permissions for the command
             if (access(cmd->args[0], X_OK) != 0)
             {
-                write(2, "minishell: ", 11);
-                write(2, cmd->args[0], ft_strlen(cmd->args[0]));
-                write(2, ": Permission denied (execute)\n", 30);
+                // write(2, "minishell: ", 11);
+                // write(2, cmd->args[0], ft_strlen(cmd->args[0]));
+                // write(2, ": Permission denied (execute)\n", 30);
                 exit(126); // Exit with 126 for permission error
             }
             

@@ -21,6 +21,11 @@ void	create_redir_node(t_cmd *cmd, int type, char *file)
 	if (!node)
 		return ;
 	node->type = type;
+	if (is_quoted(file))
+	{
+		file++;
+		file[strlen(file) - 1] = '\0';
+	}
 	node->file = ft_strdup(file);
 	node->next = NULL;
 	if (!cmd->redirs)
@@ -93,31 +98,3 @@ char	*update_prompt(void)
 	return (prompt);
 }
 
-void	test_file_permissions(const char *filename)
-{
-	if (access(filename, F_OK) != 0)
-	{
-		write(2, "minishell: ", 11);
-		write(2, filename, ft_strlen(filename));
-		write(2, ": No such file or directory\n", 28);
-		return ;
-	}
-	if (access(filename, R_OK) != 0)
-	{
-		write(2, "minishell: ", 11);
-		write(2, filename, ft_strlen(filename));
-		write(2, ": Permission denied (read)\n", 28);
-	}
-	if (access(filename, W_OK) != 0)
-	{
-		write(2, "minishell: ", 11);
-		write(2, filename, ft_strlen(filename));
-		write(2, ": Permission denied (write)\n", 29);
-	}
-	if (access(filename, X_OK) != 0)
-	{
-		write(2, "minishell: ", 11);
-		write(2, filename, ft_strlen(filename));
-		write(2, ": Permission denied (execute)\n", 31);
-	}
-}

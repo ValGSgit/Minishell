@@ -12,67 +12,67 @@
 
 #include "../includes/planer.h"
 
+
+/* Checks if the token is quoted */
+bool	is_quoted(char *token)
+{
+    if (!token)
+	{
+        return (false);
+	}
+	return ((token[0] == '\'' && token[ft_strlen(token) - 1] == '\'') ||
+	(token[0] == '"' && token[ft_strlen(token) - 1] == '"'));
+}
+
 /* Checks if the token is a metacharacter (|, <, >, >>, <<) */
 bool	is_metacharacter(char *token)
 {
+	if (is_quoted(token))
+		return (false);
 	return (ft_strcmp(token, "|") == 0 || ft_strcmp(token, "<") == 0
 		|| ft_strcmp(token, ">") == 0 || ft_strcmp(token, ">>") == 0
 		|| ft_strcmp(token, "<<") == 0);
 }
-
-/* Counts the number of arguments until the next metacharacter */
-int	count_args(char **tokens)
+/* Handles syntax errors for unexpected tokens */
+static bool	handle_syntax_error(char *token, t_shell *shell)
 {
-	int	count;
-
-	count = 0;
-	while (tokens[count] && !is_metacharacter(tokens[count]))
-		count++;
-	return (count);
+    if (!token || ft_strcmp(token, "|") == 0)
+        write(2, "syntax error near unexpected token `|'\n", 39);
+    else if (ft_strcmp(token, "<") == 0 || ft_strcmp(token, ">") == 0
+        || ft_strcmp(token, ">>") == 0 || ft_strcmp(token, "<<") == 0)
+        write(2, "syntax error near unexpected token `newline'\n", 45);
+    else if (ft_strcmp(token, ">>>") == 0)
+        write(2, "syntax error near unexpected token `>'\n", 39);
+    else
+    {
+        write(2, "syntax error near unexpected token `", 37);
+        write(2, token, ft_strlen(token));
+        write(2, "'\n", 2);
+    }
+    shell->exit_status = 2;
+    return (true);
 }
 
-/* Handles redirections and adds them to the command structure */
-void	handle_redirections(t_cmd *cmd, char **tokens, int *i)
+/* Handles pipelines */
+void	handle_pipeline(t_cmd **current, t_shell *shell)
 {
-	if (!tokens[*i + 1]) // Check for missing redirection target
-	{
-		write(2, "Syntax error: missing redirection target\n", 41);
-		cmd->syntax_error = true;
-		return ;
-	}
-	if (ft_strcmp(tokens[*i], "<") == 0)
-		create_redir_node(cmd, REDIR_IN, tokens[++(*i)]);
-	else if (ft_strcmp(tokens[*i], ">") == 0)
-		create_redir_node(cmd, REDIR_OUT, tokens[++(*i)]);
-	else if (ft_strcmp(tokens[*i], ">>") == 0)
-		create_redir_node(cmd, REDIR_APPEND, tokens[++(*i)]);
-	else if (ft_strcmp(tokens[*i], "<<") == 0)
-		create_redir_node(cmd, REDIR_HEREDOC,	tokens[++(*i)]);
-}
+    t_cmd	*new_cmd;
 
-/* Handles pipelines and links commands together */
-void	handle_pipeline(t_cmd **cmd)
-{
-	t_cmd	*pipeline;
-
-	// Check for empty command before the pipe
-	if (!(*cmd)->args)
-	{
-		write(2, "Syntax error: empty command before pipe\n", 39);
-		(*cmd)->syntax_error = true;
-		return ;
-	}
-	// Create a new command node for the pipeline
-	pipeline = create_cmd_node();
-	if (!pipeline)
-	{
-		write(2, "Error: failed to allocate memory for pipeline\n", 46);
-		(*cmd)->syntax_error = true;
-		return ;
-	}
-	// Link the current command to the new pipeline node
-	(*cmd)->next = pipeline;
-	*cmd = pipeline;
+    if (!(*current)->args && !(*current)->redirs)
+    {
+        handle_syntax_error("|", shell);
+        (*current)->syntax_error = true;
+        return;
+    }
+    new_cmd = create_cmd_node();
+    if (!new_cmd)
+    {
+        perror("minishell");
+        shell->exit_status = 1;
+        return;
+    }
+    (*current)->next = new_cmd;
+    *current = new_cmd;
 }
 
 /* Builds the arguments array for a command */
@@ -100,48 +100,107 @@ char	**build_args_array(char **tokens, int argc)
 	return (args);
 }
 
-/* Main parser function */
-t_cmd	*parser(char **tokens)
+/* Adds an argument to the command */
+void	add_argument(t_cmd *node, char *arg)
 {
-	t_cmd	*head;
-	t_cmd	*current;
+	char	**new_args;
 	int		i;
-	int		argc;
 
-	head = NULL;
-	current = NULL;
-	if (!tokens)
-		return (NULL);
-	i = -1;
-	while (tokens[++i])
+	if (!node || !arg)
+		return;
+	if (!node->args)
 	{
-		if (!head && (head = create_cmd_node()))
-			current = head;
-		else if (!current)
-			break ;
-		if (is_metacharacter(tokens[i]))
-		{
-			if (ft_strcmp(tokens[i], "|") == 0)
-				handle_pipeline(&current);
-			else
-				handle_redirections(current, tokens, &i);
-		}
-		else
-		{
-			argc = count_args(&tokens[i]);
-			current->args = build_args_array(&tokens[i], argc);
-			if (!current->args)
-				return (free_cmd(head), NULL);
-			i += argc - 1;
-		}
-		if (current->syntax_error) // Stop parsing on syntax error
-			return (free_cmd(head), NULL);
+		node->args = ft_calloc(2, sizeof(char *));
+		if (!node->args)
+			return;
+		node->args[0] = ft_strdup(arg);
+		if (!node->args[0])
+			return;
 	}
-	if (current && !current->args)
-		// Check for empty command after the last pipe
+	else
 	{
-		write(2, "Syntax error: empty command after pipe\n", 39);
-		return (free_cmd(head), NULL);
+		i = 0;
+		while (node->args[i])
+			i++;
+		new_args = ft_calloc(i + 2, sizeof(char *));
+		if (!new_args)
+			return;
+		i = -1;
+		while (node->args[++i])
+		{
+			new_args[i] = node->args[i];
+			node->args[i] = NULL;
+		}
+		new_args[i] = ft_strdup(arg);
+		if (!new_args[i])
+		{
+			free_tokens(new_args);
+			return;
+		}
+		free(node->args);
+		node->args = new_args;
 	}
-	return (head);
+}
+
+/* Handles redirections */
+void	handle_redirections(t_cmd *cmd, char **tokens, int *i, t_shell *shell)
+{
+    if (is_quoted(tokens[*i]))
+    {
+        add_argument(cmd, tokens[*i]);
+        return;
+    }
+    if (!tokens[*i + 1] || is_metacharacter(tokens[*i + 1]))
+    {
+        handle_syntax_error(tokens[*i + 1] ? tokens[*i + 1] : "newline", shell);
+        cmd->syntax_error = true;
+        return;
+    }
+    if (ft_strcmp(tokens[*i], ">") == 0)
+        create_redir_node(cmd, REDIR_OUT, tokens[++(*i)]);
+    else if (ft_strcmp(tokens[*i], ">>") == 0)
+        create_redir_node(cmd, REDIR_APPEND, tokens[++(*i)]);
+    else if (ft_strcmp(tokens[*i], "<") == 0)
+        create_redir_node(cmd, REDIR_IN, tokens[++(*i)]);
+    else if (ft_strcmp(tokens[*i], "<<") == 0)
+        create_redir_node(cmd, REDIR_HEREDOC, tokens[++(*i)]);
+    else
+    {
+        handle_syntax_error(tokens[*i], shell);
+        cmd->syntax_error = true;
+    }
+}
+
+
+/* Main parser function */
+t_cmd	*parser(char **tokens, t_shell *shell)
+{
+    t_cmd	*head = NULL;
+    t_cmd	*current = NULL;
+    int		i = -1;
+
+    if (!tokens)
+        return (NULL);
+    while (tokens[++i])
+    {
+        if (!head && (head = create_cmd_node()))
+            current = head;
+        else if (!current)
+            break;
+
+        if (is_metacharacter(tokens[i]) && ft_strcmp(tokens[i], "|") == 0)
+        {
+            if (!current->args && !current->redirs)
+            {
+                handle_syntax_error("|", shell);
+                return (free_cmd(head), NULL);
+            }
+            handle_pipeline(&current, shell);
+        }
+        else if (is_metacharacter(tokens[i]))
+            handle_redirections(current, tokens, &i, shell);
+        else
+            add_argument(current, tokens[i]);
+    }
+    return (head);
 }

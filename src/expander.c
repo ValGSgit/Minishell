@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/24 12:52:51 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/28 12:36:15 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ char	*resolve_path(char *cmd, char **env)
 	i = 0;
 	paths = ft_split(get_env_value("PATH", env), ':');
 	if (!paths)
-		return (cmd);
+		return (ft_strdup(cmd));
 	while (paths[i])
 	{
 		temp = ft_strjoin(paths[i], "/");
@@ -59,81 +59,135 @@ char	*resolve_path(char *cmd, char **env)
 		i++;
 	}
 	free_env(paths);
-	return (cmd);
+	return (ft_strdup(cmd));
 }
 
-static char	*expand_variable(char *arg, t_shell *shell)
+static char	*append_str(char *dest, char *src)
 {
-    char	*value;
-    char	*result;
+	char	*new_str;
 
-    if (ft_strcmp(arg, "$?") == 0) // Handle exit status
-        return (ft_itoa(shell->exit_status));
-    if (ft_strcmp(arg, "$-") == 0) // Handle shell flags
-        return (ft_strdup("himBHs"));
-    if (arg[1] == '\0') // Handle single '$'
-        return (ft_strdup("$"));
-    if (arg[0] == '$' && ft_isdigit(arg[1])) // Handle $ followed by digits
-        return (ft_strdup("")); // Positional parameters not supported
-    if (arg[0] == '$' && !ft_isspace(arg[1]))
-    {
-        value = get_env_value(arg + 1, shell->env); // Get value from environment
-        if (value)
-        {
-            result = ft_strjoin(value, arg); // Append remaining string
-            return (result);
-        }
-        return (ft_strdup(arg + 1)); // Return remaining string if no match
-    }
-    return (ft_strdup(arg)); // Default case
+	if (!dest)
+	{
+		if (src)
+			return (ft_strdup(src));
+		else
+			return (ft_strdup(""));
+	}
+	if (src)
+		new_str = ft_strjoin(dest, src);
+	else
+		new_str = ft_strjoin(dest, "");
+	free(dest);
+	return (new_str);
 }
 
-// void	expander(t_cmd *cmd, t_shell *shell)
-// {
-// 	int		i;
-// 	char	*value;
 
-// 	i = 0;
-// 	if (!cmd->args)
-// 		return ;
-// 	if (ft_strncmp(cmd->args[0], "./", 2) != 0 && ft_strncmp(cmd->args[0],
-// 			"../", 3) != 0)
-// 		cmd->args[0] = resolve_path(cmd->args[0], shell->env);
-// 	while (cmd->args[++i])
-// 	{
-// 		if (ft_strchr(cmd->args[i], '$'))
-// 		{
-// 			value = expand_variable(cmd->args[i], shell);
-// 			if (value)
-// 			{
-// 				free(cmd->args[i]);
-// 				cmd->args[i] = value;
-// 			}
-// 		}
-// 	}
-// }
+static char	*expand_variable(char *str, int *i, t_shell *shell, bool in_dquote)
+{
+	char	*var_name;
+	char	*value;
+	int		start = *i + 1;
+	int		len = 0;
+
+	if (!str[start])
+		return (ft_strdup("$"));
+	if (str[start] == '?') // Special case for $?
+	{
+		*i += 1; // Skip $?
+		if (!shell->exit_status)
+			return (ft_strdup("0"));
+		else
+			return (ft_itoa(shell->exit_status));
+	}
+	while (str[start + len] && ft_isalnum(str[start + len]))
+		len++; // Only alphanumeric chars for regular vars
+	var_name = ft_substr(str, start, len);
+	if (!var_name || !var_name[0])
+	{
+		free(var_name);
+		return (ft_strdup("$"));
+	}
+	value = get_env_value(var_name, shell->env);
+	free(var_name);
+	if (!value && in_dquote)
+		value = ft_strdup("");
+	else if (!value)
+	{
+		value = ft_strdup(""); // No trailing text for undefined vars
+		*i += len; // Move past the variable name
+		return (append_str(value, str + start + len)); // Append remaining text
+	}
+	else
+		value = ft_strdup(value);
+	*i += len;
+	return (value);
+}
+
+static char	*process_argument(char *arg, t_shell *shell)
+{
+	t_expander_state	state;
+	int					i;
+
+	ft_memset(&state, 0, sizeof(t_expander_state));
+	state.result = ft_strdup("");
+	if (!state.result || !arg)
+		return (state.result);
+	i = 0;
+	while (arg[i])
+	{
+		if (arg[i] == '\'' && !state.in_dquote)
+			state.in_quote = !state.in_quote;
+		else if (arg[i] == '"' && !state.in_quote)
+			state.in_dquote = !state.in_dquote;
+		else if (arg[i] == '$' && !state.in_quote)
+		{
+			char *value = expand_variable(arg, &i, shell, state.in_dquote);
+			state.result = append_str(state.result, value);
+			free(value);
+		}
+		else
+			state.result = append_str(state.result, (char[]){arg[i], 0});
+		i++;
+	}
+	return (state.result);
+}
 
 void	expander(t_cmd *cmd, t_shell *shell)
 {
-    int		i;
-    char	*value;
+	int		i;
+	char	*expanded;
 
-    i = 0;
-    if (!cmd->args)
-        return ;
-    if (ft_strncmp(cmd->args[0], "./", 2) != 0 && ft_strncmp(cmd->args[0],
-            "../", 3) != 0)
-        cmd->args[0] = resolve_path(cmd->args[0], shell->env);
-    while (cmd->args[++i])
-    {
-        if (ft_strchr(cmd->args[i], '$'))
-        {
-            value = expand_variable(cmd->args[i], shell);
-            if (value)
-            {
-                free(cmd->args[i]);
-                cmd->args[i] = value;
-            }
-        }
-    }
+	if (!cmd || !cmd->args)
+		return ;
+	if (ft_strncmp(cmd->args[0], "./", 2) != 0 && ft_strncmp(cmd->args[0], "../", 3
+	|| !is_builtin(cmd->args[0])))
+	{
+		expanded = resolve_path(cmd->args[0], shell->env);
+		free(cmd->args[0]);
+		cmd->args[0] = expanded;
+	}
+	i = 0;
+	while (cmd->args[i])
+	{
+		expanded = process_argument(cmd->args[i], shell);
+		if (expanded)
+		{
+			free(cmd->args[i]);
+			cmd->args[i] = expanded;
+		}
+		i++;
+	}
+}
+
+void	expand_nodes(t_cmd *cmd, t_shell *shell)
+{
+	t_cmd	*node;
+
+	node = cmd;
+	while (node)
+	{
+		expander(node, shell);
+		node->env = copy_env(shell->env);
+		node = node->next;
+	}
 }
