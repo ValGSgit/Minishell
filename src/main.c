@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/28 13:56:40 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/31 12:28:20 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,27 +16,27 @@ int		g_signal_received = 0;
 
 void	print_parsed_command(t_cmd *cmd)
 {
-	t_cmd	*current;
-	int		i;
+    t_cmd	*current;
+    int		i;
 
-	current = cmd;
-	while (current)
-	{
-		printf("Command: %s\n", current->args[0]);
-		if (current->args)
+    current = cmd;
+    while (current)
+    {
+        printf("Command: %s\n", current->args[0]);
+        if (current->args)
+        {
+            printf("Arguments:\n");
+            i = 1;
+            while (current->args[i])
+                printf("  - %s\n", current->args[i++]);
+        }
+        if (current->redirs)
 		{
-			printf("Arguments:\n");
-			i = 1;
-			while (current->args[i])
-				printf("  - %s\n", current->args[i++]);
+            printf("Input redirection: %s\n", current->redirs->file);
+            printf("Output redirection: %s\n", current->redirs->file);
 		}
-		if (current->redirs)
-		{
-			printf("Input redirection: %s\n", current->redirs->file);
-			printf("Output redirection: %s\n", current->redirs->file);
-		}
-		current = current->next;
-	}
+        current = current->next;
+    }
 }
 
 void	minishell_loop(t_shell *shell)
@@ -50,9 +50,20 @@ void	minishell_loop(t_shell *shell)
 	prompt = "Minishell-> ";
 	while (1)
 	{
-		// prompt = update_prompt();
 		input = readline(prompt);
-		// free(prompt);
+	/*	if (isatty(fileno(stdin)))
+		{
+		//prompt = update_prompt();
+			input = readline(prompt);
+		//free(prompt);
+		}
+		else
+		{
+			char *line;
+			line = get_next_line(fileno(stdin));
+			if (line)
+				input = ft_strtrim(line, "\n");
+		}*/
 		if (!input)
 			break ;
 		if (ft_strcmp(input, "exit") == 0)
@@ -67,7 +78,7 @@ void	minishell_loop(t_shell *shell)
 		if (!tokens)
 			free(input);
 		cmd = parser(tokens, shell);
-		//debug_shell_state(tokens, cmd, "After Parser");
+		debug_shell_state(tokens, cmd, "After Parser");
 		if (!cmd)
 		{
 			free(input);
@@ -75,7 +86,7 @@ void	minishell_loop(t_shell *shell)
 			continue ;
 		}
 		expand_nodes(cmd, shell);
-		//debug_shell_state(tokens, cmd, "After expander");
+		debug_shell_state(tokens, cmd, "After expander");
 		executor(cmd, shell);
 		free_cmd(cmd);
 		free_tokens(tokens);
@@ -94,7 +105,7 @@ char	**copy_env(char **envp)
 		return (NULL);
 	while (envp[i])
 		i++;
-	env = ft_calloc(sizeof(char *), (i + 1));
+	env = malloc(sizeof(char *) * (i + 1));
 	if (!env)
 		return (NULL);
 	i = 0;
@@ -128,7 +139,6 @@ int	main(int argc, char **argv, char **envp)
 	setup_signals();
 	minishell_loop(&shell);
 	rl_clear_history();
-	free_shell(&shell);
-	//free_env(shell.env);
+	free_env(shell.env);
 	return (shell.exit_status);
 }

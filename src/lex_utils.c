@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/20 13:13:39 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/28 13:29:58 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/24 14:18:32 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,18 +24,14 @@ bool	is_special_char(char c)
 }
 int	is_redir_without_space(char **input)
 {
-	if (**input == '>' && !ft_isspace(*(*input + 1))
-		&& !is_special_char(*(*input + 1)))
-		return (1);
-	else if (**input == '<' && !ft_isspace(*(*input + 1))
-		&& !is_special_char(*(*input + 1)))
-		return (1);
-	else if (**input == '<' && *(*input + 1) == '<' && !ft_isspace(*(*input
-				+ 2)) && !is_special_char(*(*input + 2)))
-		return (2);
-	else if (**input == '>' && *(*input + 1) == '>' && !ft_isspace(*(*input
-				+ 2)) && !is_special_char(*(*input + 2)))
-		return (2);
-	else
-		return (0);
+    if (**input == '>' && !ft_isspace(*(*input + 1)) && !is_special_char(*(*input + 1)))
+        return (1);
+    else if (**input == '<' && !ft_isspace(*(*input + 1)) && !is_special_char(*(*input + 1)))
+        return (1);
+    else if (**input == '<' && *(*input + 1) == '<' && !ft_isspace(*(*input + 2)) && !is_special_char(*(*input + 2)))
+        return (2);
+    else if (**input == '>' && *(*input + 1) == '>' && !ft_isspace(*(*input + 2)) && !is_special_char(*(*input + 2)))
+        return (2);
+    else 
+        return (0);
 }
