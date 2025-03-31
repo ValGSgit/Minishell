@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/31 12:07:58 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/31 15:17:23 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,11 +188,6 @@ void	expand_nodes(t_cmd *cmd, t_shell *shell)
 	while (node)
 	{
 		expander(node, shell);
-		// if (shell->env != NULL)
-		// 	node->env = copy_env(shell->env);
-		// else
-		// 	node->env = NULL;
-		//node->env = copy_env(shell->env);
 		cmd->shell = shell;
 		node = node->next;
 	}
