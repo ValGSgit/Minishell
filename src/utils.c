@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 15:03:09 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/28 13:40:12 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/31 12:09:08 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ void	create_redir_node(t_cmd *cmd, int type, char *file)
 	if (!node)
 		return ;
 	node->type = type;
-	node->file = ft_strdup(file);
+	node->file = process_argument(file, cmd->shell);
 	node->next = NULL;
 	if (!cmd->redirs)
 		cmd->redirs = node;
