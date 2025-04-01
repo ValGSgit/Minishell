@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:33:20 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 13:02:29 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,9 +106,10 @@ void	ft_exit(t_cmd *cmd)
 		exit(0);
 	if (cmd->args[1] && cmd->args[2])
 	{
-		write(2, " too many arguments\n", 26);
+		write(1, "exit\n", 5);
+		write(2, "exit: too many arguments\n", 24);
 		exit_code = 1;
-		exit(exit_code);
+		exit(1);
 	}
 	if (cmd->args[1])
 	{
