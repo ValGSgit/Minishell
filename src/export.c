@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 10:35:57 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 13:45:42 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,40 +23,6 @@ static void	print_env(char **env)
     while (env[i] != NULL)
         printf("declare -x %s\n", env[i++]);
 }
-
-void	update_or_add_env(char *arg, char **env)
-{
-    char	*key;
-    char	*value;
-    char	*eq;
-    int		i;
-
-    eq = ft_strchr(arg, '=');
-	i = 0;
-    if (eq)
-    {
-        key = ft_substr(arg, 0, eq - arg);
-        value = ft_strdup(eq + 1);
-        while (env[i++])
-        {
-            if (ft_strncmp(env[i], key, ft_strlen(key) == 0) && env[i][ft_strlen(key)] == '=')
-            {
-                free(env[i]);
-                env[i] = ft_strjoin(key, "=");
-                env[i] = ft_strjoin(env[i], value);
-                free(key);
-                free(value);
-                return;
-            }
-        }
-        add_new_env_var(arg, env); // Add new variable if not found
-        free(key);
-        free(value);
-    }
-    else if (!add_new_env_var(arg, env)) // Add variable without value
-        return;
-}
-
 
 static int	is_valid_identifier(char *arg)
 {

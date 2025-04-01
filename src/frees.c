@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:04 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 13:07:55 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ void	free_cmd(t_cmd *cmd)
         if (cmd->out_file)
             free(cmd->out_file);
         free_redir(cmd->redirs);
-        free(cmd);
+        //free(cmd);
         cmd = temp;
     }
 }

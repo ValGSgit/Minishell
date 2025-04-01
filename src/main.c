@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 14:08:51 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ void	print_parsed_command(t_cmd *cmd)
     }
 }
 
+// Version with debugging functions
 void	minishell_loop(t_shell *shell)
 {
 	char	*input;
@@ -76,7 +77,10 @@ void	minishell_loop(t_shell *shell)
 		tokens = lexer(input, shell);
 		//debug_shell_state(tokens, NULL, "After Lexer");
 		if (!tokens)
+		{
 			free(input);
+			continue ;
+		}
 		cmd = parser(tokens, shell);
 		//debug_shell_state(tokens, cmd, "After Parser");
 		if (!cmd)
@@ -86,42 +90,47 @@ void	minishell_loop(t_shell *shell)
 			continue ;
 		}
 		expand_nodes(cmd, shell);
-		//debug_shell_state(tokens, cmd, "After expander");
-		executor(cmd, shell);
+		//debug_shell_state(tokens, cmd, "After Expander");
+		if (cmd->args[0] != NULL)
+			executor(cmd, shell);
 		free_cmd(cmd);
 		free_tokens(tokens);
 		free(input);
 	}
-	//rl_clear_history();
 }
 
-char	**copy_env(char **envp)
-{
-	int		i;
-	char	**env;
+// Version complying with the norm (25 lines or less)
+// void	minishell_loop(t_shell *shell)
+// {
+// 	char	*input;
+// 	char	**tokens;
+// 	t_cmd	*cmd;
 
-	i = 0;
-	if (!envp)
-		return (NULL);
-	while (envp[i])
-		i++;
-	env = malloc(sizeof(char *) * (i + 1));
-	if (!env)
-		return (NULL);
-	i = 0;
-	while (envp[i])
-	{
-		env[i] = ft_strdup(envp[i]);
-		if (!env[i])
-		{
-			free_env(env);
-			return (NULL);
-		}
-		i++;
-	}
-	env[i] = NULL;
-	return (env);
-}
+// 	while (1)
+// 	{
+// 		input = readline("Minishell-> ");
+// 		if (ft_strcmp(input, "exit") == 0)
+// 			(free_shell(shell), exit(0));
+// 		if (*input)
+// 			add_history(input);
+// 		tokens = lexer(input, shell);
+// 		if (!tokens)
+// 			free(input);
+// 		cmd = parser(tokens, shell);
+// 		if (!cmd)
+// 		{
+// 			free(input);
+// 			free_tokens(tokens);
+// 			continue ;
+// 		}
+// 		expand_nodes(cmd, shell);
+// 		if (cmd->args[0] != NULL)
+// 			executor(cmd, shell);
+// 		free_cmd(cmd);
+// 		free_tokens(tokens);
+// 		free(input);
+// 	}
+// }
 
 int	main(int argc, char **argv, char **envp)
 {
