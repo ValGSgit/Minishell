@@ -12,7 +12,7 @@
 
 #include "../includes/planer.h"
 
-
+/*
 static void	print_env(char **env)
 {
     int		i;
@@ -100,4 +100,78 @@ void	ft_export(t_cmd *cmd)
         }
         i++;
     }
+} */
+
+/* Export a variable to the environment */
+void ft_export(char **env, const char *key, const char *value)
+{
+    int i = 0;
+    char *new_entry;
+    size_t len = strlen(key) + strlen(value) + 2; // +2 for '=' and null terminator
+    
+    new_entry = malloc(len);
+    if (!new_entry)
+        return;
+    snprintf(new_entry, len, "%s=%s", key, value);
+    
+    while (env[i])
+    {
+        if (strncmp(env[i], key, strlen(key)) == 0 && env[i][strlen(key)] == '=')
+        {
+            free(env[i]);
+            env[i] = new_entry;
+            return;
+        }
+        i++;
+    }
+    env[i] = new_entry;
+    env[i + 1] = NULL;
+}
+
+/* Unset a variable from the environment */
+void ft_unset(char **env, const char *key)
+{
+    int i = 0;
+    size_t key_len = strlen(key);
+    
+    while (env[i])
+    {
+        if (strncmp(env[i], key, key_len) == 0 && env[i][key_len] == '=')
+        {
+            free(env[i]);
+            while (env[i + 1])
+            {
+                env[i] = env[i + 1];
+                i++;
+            }
+            env[i] = NULL;
+            return;
+        }
+        i++;
+    }
+}
+
+/* Remove null or empty strings from args array */
+char **ft_clean_args(char **args)
+{
+    int i = 0, j = 0;
+    int count = 0;
+    char **cleaned;
+    
+    while (args[count])
+        count++;
+    cleaned = malloc(sizeof(char *) * (count + 1));
+    if (!cleaned)
+        return NULL;
+    while (args[i])
+    {
+        if (args[i] && *args[i])
+            cleaned[j++] = args[i];
+        else
+            free(args[i]);
+        i++;
+    }
+    cleaned[j] = NULL;
+    free(args);
+    return cleaned;
 }
