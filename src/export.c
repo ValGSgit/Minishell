@@ -6,14 +6,14 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 10:35:57 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/28 12:35:02 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/planer.h"
+#include "../includes/minishell.h"
 
 
-static void	print_sorted_env(char **env)
+static void	print_env(char **env)
 {
     int		i;
 
@@ -80,9 +80,9 @@ void	ft_export(t_cmd *cmd)
 
     if (!cmd->env)
         return;
-    if (!cmd->args[1] || cmd->args[1][0] == '\0')
+    if (!cmd->args[1])
     {
-        print_sorted_env(cmd->env);
+        print_env(cmd->env);
         return;
     }
     i = 1;

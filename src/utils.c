@@ -6,11 +6,11 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 15:03:09 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/26 10:24:02 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/planer.h"
+#include "../includes/minishell.h"
 
 void	create_redir_node(t_cmd *cmd, int type, char *file)
 {
@@ -21,12 +21,7 @@ void	create_redir_node(t_cmd *cmd, int type, char *file)
 	if (!node)
 		return ;
 	node->type = type;
-	if (is_quoted(file))
-	{
-		file++;
-		file[strlen(file) - 1] = '\0';
-	}
-	node->file = ft_strdup(file);
+	node->file = process_argument(file, cmd->shell);
 	node->next = NULL;
 	if (!cmd->redirs)
 		cmd->redirs = node;

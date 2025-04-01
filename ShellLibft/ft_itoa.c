@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/14 16:46:52 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/28 10:52:44 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/31 15:22:36 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,17 @@
 
 static int	numlen(int n)
 {
-    int	count;
+	int	count;
 
-    if (n == 0) // Handle zero explicitly
-        return (1);
-    count = 0;
-    while (n)
-    {
-        count++;
-        n /= 10;
-    }
-    return (count);
+	if (n == 0)
+		return (1);
+	count = 0;
+	while (n)
+	{
+		count++;
+		n /= 10;
+	}
+	return (count);
 }
 
 char	*ft_itoa(int n)
@@ -33,7 +33,7 @@ char	*ft_itoa(int n)
 	int		len;
 	long	num;
 
-	if (n ==0)
+	if (n == 0)
 		return (ft_strdup("0"));
 	num = n;
 	len = numlen(n);

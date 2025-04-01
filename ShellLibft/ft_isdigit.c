@@ -6,10 +6,11 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/02 12:59:53 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/24 11:26:00 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/31 15:22:45 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft.h"
 
 int	ft_isdigit(int c)
 {

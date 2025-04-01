@@ -6,11 +6,11 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 13:18:31 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/26 10:20:15 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/planer.h"
+#include "../includes/minishell.h"
 
 int	my_mkstemp(char *template)
 {

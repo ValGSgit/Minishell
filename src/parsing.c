@@ -6,11 +6,11 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:43:36 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/26 11:15:43 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/planer.h"
+#include "../includes/minishell.h"
 
 
 /* Checks if the token is quoted */
@@ -37,7 +37,7 @@ bool	is_metacharacter(char *token)
 static bool	handle_syntax_error(char *token, t_shell *shell)
 {
     if (!token || ft_strcmp(token, "|") == 0)
-        write(2, "syntax error near unexpected token `|'\n", 39);
+        write(2, " syntax error near unexpected token `|'\n", 40);
     else if (ft_strcmp(token, "<") == 0 || ft_strcmp(token, ">") == 0
         || ft_strcmp(token, ">>") == 0 || ft_strcmp(token, "<<") == 0)
         write(2, "syntax error near unexpected token `newline'\n", 45);
@@ -152,7 +152,10 @@ void	handle_redirections(t_cmd *cmd, char **tokens, int *i, t_shell *shell)
     }
     if (!tokens[*i + 1] || is_metacharacter(tokens[*i + 1]))
     {
-        handle_syntax_error(tokens[*i + 1] ? tokens[*i + 1] : "newline", shell);
+        if (tokens[*i + 1])
+            handle_syntax_error(tokens[*i + 1], shell);
+        else
+            handle_syntax_error("newline", shell);
         cmd->syntax_error = true;
         return;
     }
@@ -187,7 +190,6 @@ t_cmd	*parser(char **tokens, t_shell *shell)
             current = head;
         else if (!current)
             break;
-
         if (is_metacharacter(tokens[i]) && ft_strcmp(tokens[i], "|") == 0)
         {
             if (!current->args && !current->redirs)

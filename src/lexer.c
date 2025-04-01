@@ -6,11 +6,11 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:56:16 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/26 11:13:25 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/planer.h"
+#include "../includes/minishell.h"
 
 /* Handles quotes and toggles the in_quote state */
  int	handle_quotes(char **input, bool *in_quote, char *quote_char)

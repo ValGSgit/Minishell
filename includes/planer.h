@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 12:01:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/28 11:42:22 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/31 15:04:14 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,8 @@
 /******************************
  *          DEFINES           *
  ******************************/
+# define LMAX "9223372036854775808"
+# define LMIN "-9223372036854775809"
 # define SUCCESS 0
 # define FAILURE 1
 # define PROMPT "minishell-> "
@@ -133,6 +135,8 @@ int			handle_quotes(char **input, bool *in_quote, char *quote_char);
 t_cmd		*parser(char **tokens, t_shell *shell);
 
 /* Expander */
+char	*process_argument(char *arg, t_shell *shell);
+char	*expand_variable(char *arg, int *i, t_shell *shell, bool in_dquote);
 void	expand_nodes(t_cmd *cmd, t_shell *shell);
 void		expander(t_cmd *cmd, t_shell *shell);
 
@@ -191,5 +195,5 @@ void		free_tokens(char **tokens);
 void		free_env(char **env);
 void		print_error(char *msg, char *arg);
 bool		is_quoted(char *token);
-
+void	free_shell(t_shell *shell);
 #endif
