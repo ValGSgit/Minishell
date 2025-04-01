@@ -6,11 +6,11 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/31 12:28:20 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/planer.h"
+#include "../includes/minishell.h"
 
 int		g_signal_received = 0;
 
@@ -51,19 +51,19 @@ void	minishell_loop(t_shell *shell)
 	while (1)
 	{
 		input = readline(prompt);
-	/*	if (isatty(fileno(stdin)))
-		{
-		//prompt = update_prompt();
-			input = readline(prompt);
-		//free(prompt);
-		}
-		else
-		{
-			char *line;
-			line = get_next_line(fileno(stdin));
-			if (line)
-				input = ft_strtrim(line, "\n");
-		}*/
+		// if (isatty(fileno(stdin)))
+		// {
+		// //prompt = update_prompt();
+		// 	input = readline(prompt);
+		// //free(prompt);
+		// }
+		// else
+		// {
+		// 	char *line;
+		// 	line = get_next_line(fileno(stdin));
+		// 	if (line)
+		// 		input = ft_strtrim(line, "\n");
+		// }
 		if (!input)
 			break ;
 		if (ft_strcmp(input, "exit") == 0)
@@ -78,7 +78,7 @@ void	minishell_loop(t_shell *shell)
 		if (!tokens)
 			free(input);
 		cmd = parser(tokens, shell);
-		debug_shell_state(tokens, cmd, "After Parser");
+		//debug_shell_state(tokens, cmd, "After Parser");
 		if (!cmd)
 		{
 			free(input);
@@ -86,13 +86,13 @@ void	minishell_loop(t_shell *shell)
 			continue ;
 		}
 		expand_nodes(cmd, shell);
-		debug_shell_state(tokens, cmd, "After expander");
+		//debug_shell_state(tokens, cmd, "After expander");
 		executor(cmd, shell);
 		free_cmd(cmd);
 		free_tokens(tokens);
 		free(input);
 	}
-	rl_clear_history();
+	//rl_clear_history();
 }
 
 char	**copy_env(char **envp)

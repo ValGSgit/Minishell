@@ -6,11 +6,11 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:43:36 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/31 12:19:59 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/planer.h"
+#include "../includes/minishell.h"
 
 
 /* Checks if the token is quoted */
@@ -190,7 +190,6 @@ t_cmd	*parser(char **tokens, t_shell *shell)
             current = head;
         else if (!current)
             break;
-
         if (is_metacharacter(tokens[i]) && ft_strcmp(tokens[i], "|") == 0)
         {
             if (!current->args && !current->redirs)

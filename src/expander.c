@@ -6,11 +6,11 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/31 12:07:58 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/planer.h"
+#include "../includes/minishell.h"
 
 char	*get_env_value(char *name, char **env)
 {
@@ -62,7 +62,7 @@ char	*resolve_path(char *cmd, char **env)
 	return (ft_strdup(cmd));
 }
 
-static char	*append_str(char *dest, char *src)
+char	*append_str(char *dest, char *src)
 {
 	char	*new_str;
 
@@ -81,48 +81,6 @@ static char	*append_str(char *dest, char *src)
 	return (new_str);
 }
 
-
-char	*expand_variable(char *str, int *i, t_shell *shell, bool in_dquote)
-{
-	char	*var_name;
-	char	*value;
-	int		start = *i + 1;
-	int		len = 0;
-
-	if (!str[start])
-		return (ft_strdup("$"));
-	if (str[start] == '?') // Special case for $?
-	{
-		*i += 1; // Skip $?
-		if (!shell->exit_status)
-			return (ft_strdup("0"));
-		else
-			return (ft_itoa(shell->exit_status));
-	}
-	while (str[start + len] && ft_isalnum(str[start + len]))
-		len++; // Only alphanumeric chars for regular vars
-	var_name = ft_substr(str, start, len);
-	if (!var_name || !var_name[0])
-	{
-		free(var_name);
-		return (ft_strdup("$"));
-	}
-	value = get_env_value(var_name, shell->env);
-	free(var_name);
-	if (!value && in_dquote)
-		value = ft_strdup("");
-	else if (!value)
-	{
-		value = ft_strdup(""); // No trailing text for undefined vars
-		*i += len; // Move past the variable name
-		return (append_str(value, str + start + len)); // Append remaining text
-	}
-	else
-		value = ft_strdup(value);
-	*i += len;
-	return (value);
-}
-
 char	*process_argument(char *arg, t_shell *shell)
 {
 	t_expander_state	state;
@@ -133,8 +91,8 @@ char	*process_argument(char *arg, t_shell *shell)
 	state.result = ft_strdup("");
 	if (!state.result || !arg)
 		return (state.result);
-	i = 0;
-	while (arg[i])
+	i = -1;
+	while (arg[++i])
 	{
 		if (arg[i] == '\'' && !state.in_dquote)
 			state.in_quote = !state.in_quote;
@@ -148,7 +106,6 @@ char	*process_argument(char *arg, t_shell *shell)
 		}
 		else
 			state.result = append_str(state.result, (char[]){arg[i], 0});
-		i++;
 	}
 	return (state.result);
 }
@@ -160,8 +117,8 @@ void	expander(t_cmd *cmd, t_shell *shell)
 
 	if (!cmd || !cmd->args)
 		return ;
-	if ((ft_strncmp(cmd->args[0], "./", 2) != 0 || ft_strncmp(cmd->args[0], "../", 3))
-	&& !is_builtin(cmd->args[0]))
+	if ((ft_strncmp(cmd->args[0], "./", 2) != 0 || ft_strncmp(cmd->args[0],
+				"../", 3)) && !is_builtin(cmd->args[0]))
 	{
 		expanded = resolve_path(cmd->args[0], shell->env);
 		free(cmd->args[0]);
@@ -180,20 +137,48 @@ void	expander(t_cmd *cmd, t_shell *shell)
 	}
 }
 
+/* Remove null or empty strings from args array */
+static char	**ft_clean_args(char **args)
+{
+	int		i;
+	int		j;
+	char	**cleaned;
+
+	i = 0;
+	j = 0;
+	if (!args)
+		return (NULL);
+	while (args[i])
+		i++;
+	cleaned = malloc(sizeof(char *) * (i + 1));
+	i = 0;
+	if (!cleaned)
+		return (NULL);
+	while (args[i])
+	{
+		if (args[i] && *args[i])
+			cleaned[j++] = args[i];
+		else
+			free(args[i]);
+		i++;
+	}
+	cleaned[j] = NULL;
+	free(args);
+	return (cleaned);
+}
+
 void	expand_nodes(t_cmd *cmd, t_shell *shell)
 {
-	t_cmd	*node;
+	t_cmd *node;
 
 	node = cmd;
 	while (node)
 	{
 		expander(node, shell);
-		// if (shell->env != NULL)
-		// 	node->env = copy_env(shell->env);
-		// else
-		// 	node->env = NULL;
-		//node->env = copy_env(shell->env);
-		cmd->shell = shell;
+		node->shell = shell;
+		if (node->args)
+			node->args = ft_clean_args(node->args);
+		node->env = copy_env(shell->env);
 		node = node->next;
 	}
 }

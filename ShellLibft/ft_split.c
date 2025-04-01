@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/16 18:39:05 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/28 10:53:45 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/31 15:22:01 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,14 +62,13 @@ static char	*wordup(const char *s, int start, int finish)
 	word[i] = '\0';
 	return (word);
 }
+
 static void	*ft_woodchipper(char const *s, char **tab, char c)
 {
 	size_t	i;
 	int		j;
 	int		beg;
 
-	if (!tab)
-		tab = malloc((sizeof(char *) * (ft_wc(s, c) + 1)));
 	if (!tab)
 		return (NULL);
 	i = 0;
@@ -92,49 +91,19 @@ static void	*ft_woodchipper(char const *s, char **tab, char c)
 	tab[j] = NULL;
 	return (tab);
 }
-// static void	*ft_woodchipper(char const *s, char **tab, char c)
-// {
-// 	size_t	i;
-// 	int		j;
-// 	int		beg;
-
-// 	i = 0;
-// 	j = 0;
-// 	beg = -1;
-// 	while (j < ft_wc(s, c))
-// 	{
-// 		if (s[i] != c && beg < 0)
-// 			beg = i;
-// 		else if ((s[i] == c || i == ft_strlen(s)) && beg >= 0)
-// 		{
-// 			tab[j] = wordup(s, beg, i);
-// 			if (!tab[j])
-// 				return (ft_free(tab), NULL);
-// 			j++;
-// 			beg = -1;
-// 		}
-// 		i++;
-// 	}
-// 	tab[j] = NULL;
-// 	return (tab);
-// }
 
 char	**ft_split(char const *s, char c)
 {
+	char	**tab;
+
 	if (!s)
 		return (NULL);
-	return (ft_woodchipper(s, NULL, c));
+	tab = malloc((sizeof(char *) * (ft_wc(s, c) + 1)));
+	if (!s || !tab)
+		return (NULL);
+	tab = ft_woodchipper(s, tab, c);
+	return (tab);
 }
-// char	**ft_split(char const *s, char c)
-// {
-// 	char	**tab;
-
-// 	tab = malloc((sizeof(char *) * (ft_wc(s, c) + 1)));
-// 	if (!s || !tab)
-// 		return (NULL);
-// 	tab = ft_woodchipper(s, tab, c);
-// 	return (tab);
-// }
 /*
 #include <stdio.h>
 
