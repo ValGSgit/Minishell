@@ -6,11 +6,11 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:33:20 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/31 15:26:57 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/planer.h"
+#include "../includes/minishell.h"
 
 /* Helper function (put in separate file) */
 int	add_new_env_var(char *arg, char **env)
@@ -39,39 +39,44 @@ int	add_new_env_var(char *arg, char **env)
 	return (0);
 }
 
-// To-Rewrite
-void	ft_unset(t_cmd *cmd)
+static void remove_env_var(t_cmd *cmd, char *arg)
 {
-	char	**e;
-	char	*arg;
-	int		i;
-	int		j;
+    int i;
+    
+    i = 0;
+    if (!cmd->env)
+        return;
+    while (cmd->env[i] && cmd->env[i + 1])
+    {
+        if (ft_strncmp(cmd->env[i], arg, ft_strlen(arg)) == 0 && cmd->env[i][ft_strlen(arg)] == '=')
+        {
+            free(cmd->env[i]);
+            while (cmd->env[i])
+            {
+                cmd->env[i] = cmd->env[i + 1];
+                i++;
+            }
+            break;
+        }
+        i++;
+    }
+}
 
-	if (!cmd || !cmd->args)
-		return ;
-	i = 0;
-	cmd->exit_status = 0;
-	while (cmd->args[i])
-	{
-		arg = cmd->args[i++];
-		e = cmd->env;
-		j = 0;
-		while (e[j])
-		{
-			if (!ft_strncmp(e[j], arg, ft_strlen(arg))
-				&& e[j][ft_strlen(arg)] == '=')
-			{
-				free(e[j]);
-				while (e[j]) // Shift the remaining variables
-				{
-					e[j] = e[j + 1];
-					j++;
-				}
-				break ;
-			}
-			j++;
-		}
-	}
+void    ft_unset(t_cmd *cmd)
+{
+    int i;
+
+    if (!cmd->args[1] || !cmd->env)
+        return;
+    i = 0;
+    while (cmd->env[i])
+    {
+        if (ft_strncmp(cmd->env[i], cmd->args[1], ft_strlen(cmd->args[1])) == 0 && cmd->env[i][ft_strlen(cmd->args[1])] == '=')
+            remove_env_var(cmd, cmd->args[i]);
+        else
+            write(2, "unset: not a valid identifier\n", 31);
+        i++;
+    }
 }
 
 int	ft_isnumber(char *str)
@@ -165,18 +170,15 @@ void	ft_echo(t_cmd *cmd)
 
 	i = 1;
 	n_flag = 0;
-	while (cmd->args[i] && cmd->args[i][0] == '-' && ft_strcmp(cmd->args[i],
-			"n") == 0)
-	// if (cmd->args[1] && ft_strncmp(cmd->args[1], "-n")) == 0)
+	if (cmd->args[1] && ft_strcmp(cmd->args[1], "-n") == 0)
 	{
 		n_flag = 1;
-		if (!cmd->args[2])
-			return ;
 		i++;
 	}
 	while (cmd->args[i])
 	{
-		printf("%s", cmd->args[i]);
+		if (cmd->args[i])
+			printf("%s", cmd->args[i]);
 		if (cmd->args[i + 1])
 			printf(" ");
 		i++;
@@ -223,7 +225,7 @@ void	ft_cd(t_cmd *cmd)
 	{
 		write(2, "cd: too many arguments\n", 24);
 		cmd->exit_status = 1;
-		return ;
+		exit(1);
 	}
 	else
 		path = cmd->args[1];
@@ -243,9 +245,9 @@ void	ft_pwd(t_cmd *cmd)
 
 	// if (cmd->args[1])
 	// {
-	// 	write(2, "pwd: too many arguments\n", 24);
+	// 	write(2, "too many arguments\n", 20);
 	// 	cmd->exit_status = 1;
-	// 	return ;
+	// 	//return ;
 	// }
 	if (getcwd(cwd, sizeof(cwd)) != NULL)
 		printf("%s\n", cwd);

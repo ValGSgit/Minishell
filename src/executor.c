@@ -6,11 +6,11 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:34:42 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/31 15:24:11 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/planer.h"
+#include "../includes/minishell.h"
 
 /* Restores redirections after command execution */
 void	restore_redirections(t_cmd *cmd)
@@ -102,7 +102,7 @@ static void	execute_single_command(t_cmd *cmd, t_shell *shell)
 		return ;
 	}
 	// Check execute permissions for the command
-	if (access(cmd->args[0], X_OK) != 0)
+	else if (access(cmd->args[0], X_OK) != 0)
 	{
 		if (check_file_permissions(cmd->args[0]) == -1)
 		{

@@ -6,12 +6,12 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:19:53 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/24 10:04:19 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #define _GNU_SOURCE
-#include "../includes/planer.h"
+#include "../includes/minishell.h"
 
 /* Setup signal handlers */
 void	setup_signals(void)
