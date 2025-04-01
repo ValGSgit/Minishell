@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:43:36 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 13:48:53 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 15:02:46 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,8 +195,11 @@ t_cmd	*parser(char **tokens, t_shell *shell)
 		return (NULL);
 	while (tokens[++i])
 	{
-		if (!head && (head = create_cmd_node()))
+		if (!head)
+        {
+            head = create_cmd_node();
 			current = head;
+        }
 		else if (!current)
 			break ;
 		if (is_metacharacter(tokens[i]) && ft_strcmp(tokens[i], "|") == 0)

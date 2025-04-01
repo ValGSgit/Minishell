@@ -6,13 +6,13 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:34:42 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 13:53:45 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 16:14:24 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-/* Restores redirections after command execution */
+//* Restores redirections after command execution */
 void	restore_redirections(t_cmd *cmd)
 {
     if (cmd->in_fd != STDIN_FILENO)
@@ -104,14 +104,28 @@ static void execute_single_command(t_cmd *cmd, t_shell *shell)
 	pid_t	pid;
 	
 
+	// if (is_builtin(cmd->args[0]) && !cmd->next && !cmd->redirs) // not in a pipeline
+	// {
+	// 	apply_redirection(cmd);
+	// 	execute_builtin(cmd);
+	// 	restore_redirections(cmd);
+	// 	return ;
+	// }
 	if (is_builtin(cmd->args[0]))
 	{
+		if (!cmd->next && !cmd->redirs) // not in a pipeline
+		{
+			execute_builtin(cmd);
+			restore_redirections(cmd);
+			return ;
+		}
 		pid = fork();
 		if (pid == 0)
 		{
 			apply_redirection(cmd);
 			execute_builtin(cmd);
 			restore_redirections(cmd);
+			//shell->exit_status = 0; // Set exit 
 			exit(0);
 		}
 		else
@@ -162,110 +176,6 @@ static void execute_single_command(t_cmd *cmd, t_shell *shell)
 	}
 }
 
-
-/* static void execute_pipeline(t_cmd *cmd, t_shell *shell) 
-{
-	int		pipe_fd[2];
-	int		prev_pipe_in;
-	pid_t	pid;
-
-	prev_pipe_in = 0;
-	while (cmd)
-	{
-		if (cmd->next)
-		{
-			if (pipe(pipe_fd) == -1) // Create a pipe for the next command
-			{
-				perror("pipe");
-				return ;
-			}
-		}
-		if (is_builtin(cmd->args[0])) 
-        {
-           pid = fork();
-		   if (pid == 0)
-		   {
-			if (prev_pipe_in != 0)
-				{
-					dup2(prev_pipe_in, STDIN_FILENO);
-					close(prev_pipe_in);
-				}
-				if (cmd->next)
-				{
-					dup2(pipe_fd[WRITE_END], STDOUT_FILENO);
-					close(pipe_fd[WRITE_END]);
-					close(pipe_fd[READ_END]);
-				}
-				if (access(cmd->args[0], X_OK) != 0)
-				{
-				// write(2, "minishell: ", 11);
-				// write(2, cmd->args[0], ft_strlen(cmd->args[0]));
-				// write(2, ": Permission denied (execute)\n", 30);
-					exit(126); // Exit with 126 for permission error
-				}
-				apply_redirection(cmd);
-				execute_builtin(cmd);
-				//restore_redirections(cmd);
-				exit(0);
-		   }
-		   else
-		   {
-				waitpid(pid, &shell->exit_status, 0);
-				//restore_redirections(cmd);
-				return ;
-		   }
-		   
-        }
-		pid = fork();
-		if (pid == -1)
-		{
-			perror("fork");
-			return ;
-		}
-		if (pid == 0)
-		{
-			if (prev_pipe_in != 0)
-			{
-				dup2(prev_pipe_in, STDIN_FILENO);
-				close(prev_pipe_in);
-			}
-			if (cmd->next)
-			{
-				dup2(pipe_fd[WRITE_END], STDOUT_FILENO);
-				close(pipe_fd[WRITE_END]);
-				close(pipe_fd[READ_END]);
-			}
-			if (access(cmd->args[0], X_OK) != 0)
-			{
-				// write(2, "minishell: ", 11);
-				// write(2, cmd->args[0], ft_strlen(cmd->args[0]));
-				// write(2, ": Permission denied (execute)\n", 30);
-				exit(126); // Exit with 126 for permission error
-			}
-			apply_redirection(cmd);
-				// Set up redirections with permission checks
-			execve(cmd->args[0], cmd->args, shell->env);
-			perror(cmd->args[0]); // Print error if execve fails
-			exit(127);
-		}
-		else // Parent process
-		{
-			if (prev_pipe_in != 0) // Close the previous pipe's read end
-				close(prev_pipe_in);
-			if (cmd->next)
-			{
-				close(pipe_fd[WRITE_END]);
-                prev_pipe_in = pipe_fd[READ_END];
-			}
-         	else
-            	prev_pipe_in = 0;
-		}
-            // Update for the next iteration
-		cmd = cmd->next;
-	}
-	while (wait(NULL) > 0);
-}
-*/
 
 static void execute_pipeline(t_cmd *cmd, t_shell *shell)
 {

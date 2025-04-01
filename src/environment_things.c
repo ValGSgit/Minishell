@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/01 12:15:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 13:46:38 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 15:26:21 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,27 +91,86 @@ char	*resolve_path(char *cmd, char **env)
 	return (ft_strdup(cmd));
 }
 
+// void	update_env_value(char *key, char *value, char **env)
+// {
+// 	int		i;
+// 	char	*temp;
+
+// 	i = 0;
+// 	if (!key || !value || !env)
+// 		return ;
+// 	temp = NULL;
+// 	while (env[i])
+// 	{
+// 		if (ft_strncmp(env[i], key, ft_strlen(key)) == 0
+// 			&& env[i][ft_strlen(key)] == '=')
+// 		{
+// 			free(env[i]);
+// 			temp = ft_strjoin(key, "=");
+// 			if (!temp) // Check for allocation failure
+// 				return ;
+// 			env[i] = ft_strjoin(temp, value);
+// 			free(temp); // Free intermediate memory
+// 			if (!env[i]) // Check for allocation failure
+// 				return ;
+// 			return ;
+// 		}
+// 		i++;
+// 	}
+// 	temp = ft_strjoin(key, "=");
+// 	if (!temp)
+// 		return ;
+// 	add_new_env_var(temp, env);
+// 	free(temp);
+// }
+
+static void	replace_env_value(char *key, char *value, char **env_entry)
+{
+	char	*temp;
+	char	*new_value;
+
+	temp = ft_strjoin(key, "=");
+	if (!temp)
+		return;
+	new_value = ft_strjoin(temp, value);
+	free(temp);
+	if (!new_value)
+		return;
+	free(*env_entry);
+	*env_entry = new_value;
+}
+
+void	add_new_env_entry(char *key, char **env)
+{
+	char	*temp;
+
+	temp = ft_strjoin(key, "=");
+	if (!temp)
+		return;
+	add_new_env_var(temp, env);
+	free(temp);
+}
 
 void	update_env_value(char *key, char *value, char **env)
 {
-	int	i;
+	int		i;
 
-	i = 0;
 	if (!key || !value || !env)
 		return;
+	i = 0;
 	while (env[i])
 	{
-		if (ft_strncmp(env[i], key, ft_strlen(key)) == 0 && env[i][ft_strlen(key)] == '=')
+		if (ft_strncmp(env[i], key, ft_strlen(key)) == 0
+			&& env[i][ft_strlen(key)] == '=')
 		{
-			free(env[i]);
-			env[i] = ft_strjoin(key, "=");
-			env[i] = ft_strjoin(env[i], value);
+			replace_env_value(key, value, &env[i]);
 			return;
 		}
 		i++;
 	}
-	add_new_env_var(ft_strjoin(key, "="), env);
+	add_new_env_entry(key, env);
 }
+
 
 void	update_or_add_env(char *arg, char **env)
 {
@@ -120,15 +179,18 @@ void	update_or_add_env(char *arg, char **env)
 	char	*eq;
 
 	if (!arg || !env)
-		return;
+		return ;
 	eq = ft_strchr(arg, '=');
 	if (eq)
 	{
 		key = ft_substr(arg, 0, eq - arg);
 		value = ft_strdup(eq + 1);
-		update_env_value(key, value, env);
-		free(key);
-		free(value);
+		if (value)
+		{
+			update_env_value(key, value, env);
+			free(key);
+			free(value);
+		}
 	}
 	else
 		add_new_env_var(arg, env);

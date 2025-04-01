@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 12:01:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 14:13:56 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 16:04:43 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@
 /* Enums */
 typedef enum e_redir_type
 {
+	REDIR_NONE,
 	REDIR_IN,     // <
 	REDIR_OUT,    // >
 	REDIR_APPEND, // >>
