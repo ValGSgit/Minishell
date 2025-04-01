@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:33:20 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 13:02:29 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 16:44:08 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,8 @@ int	add_new_env_var(char *arg, char **env)
 	new_env[count] = ft_strdup(arg);
 	new_env[count + 1] = 0;
 	env = new_env;
+	//if (env)
+	//	free_env(env);
 	return (0);
 }
 
@@ -71,10 +73,8 @@ void    ft_unset(t_cmd *cmd)
     i = 0;
     while (cmd->env[i])
     {
-        if (ft_strncmp(cmd->env[i], cmd->args[1], ft_strlen(cmd->args[1])) == 0 && cmd->env[i][ft_strlen(cmd->args[1])] == '=')
+        if (ft_strcmp(cmd->args[1], cmd->env[i]) == 0)
             remove_env_var(cmd, cmd->args[i]);
-        else
-            write(2, "unset: not a valid identifier\n", 31);
         i++;
     }
 }
@@ -101,9 +101,9 @@ void	ft_exit(t_cmd *cmd)
 {
 	int	exit_code;
 
-	exit_code = 0;
 	if (!cmd->args[1])
-		exit(0);
+	exit(0);
+	exit_code = ft_atoi(cmd->args[1]);
 	if (cmd->args[1] && cmd->args[2])
 	{
 		write(1, "exit\n", 5);

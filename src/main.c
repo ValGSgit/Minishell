@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 14:08:51 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/01 16:09:11 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,5 +149,6 @@ int	main(int argc, char **argv, char **envp)
 	minishell_loop(&shell);
 	rl_clear_history();
 	free_env(shell.env);
+	//free_cmd(shell.cmd);
 	return (shell.exit_status);
 }
