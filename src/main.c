@@ -14,7 +14,21 @@
 
 int		g_signal_received = 0;
 
-
+char *filter_evil_commands(char *input)
+{
+    const char *evil_commands[] = { "rm -rf /", "dd if=/dev/zero of=/dev/sdX", ":(){ :|:& };:", "mv / /dev/null", ">:|", NULL };
+    int i;
+    i = 0;
+    while (evil_commands[i] != NULL) {
+        if (ft_strcmp(input, evil_commands[i]) == 0)
+	{
+		printf("Why r u like that?");
+            return NULL;
+        }
+        i++;
+    }
+    return input;
+}
 // Version with debugging functions
 void	minishell_loop(t_shell *shell)
 {
@@ -42,8 +56,7 @@ void	minishell_loop(t_shell *shell)
 		// }
 		setup_signals();
 		input = readline(prompt);
-		if (!input)
-			break ;
+		input = filter_evil_commands(input);
 		if (ft_strcmp(input, "exit") == 0)
 		{
 			free(input);
