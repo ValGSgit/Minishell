@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/02 10:44:46 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/02 13:19:26 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ void	minishell_loop(t_shell *shell)
 			continue ;
 		}
 		shell->cmd = parser(tokens, shell);
-		//debug_shell_state(tokens, cmd, "After Parser");
+		//debug_shell_state(tokens, shell->cmd, "After Parser");
 		if (!shell->cmd)
 		{
 			free(input);
@@ -90,7 +90,7 @@ void	minishell_loop(t_shell *shell)
 			continue ;
 		}
 		expand_nodes(shell->cmd, shell);
-		//debug_shell_state(tokens, cmd, "After Expander");
+		//debug_shell_state(tokens, shell->cmd, "After Expander");
 		if (shell->cmd->args[0] != NULL)
 			executor(shell->cmd, shell);
 		if (shell->cmd->env)

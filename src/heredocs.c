@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 13:18:31 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/02 13:17:38 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,6 +100,8 @@ void	handle_heredoc(t_cmd *cmd, char *eof)
 	heredoc_prompt(eof, temp_fd);
 	close(temp_fd);
 	cmd->in_file = temp_file;
+	cmd->redirs->file = temp_file;
+	
 }
 
 void	redirect_input(t_cmd *cmd)
