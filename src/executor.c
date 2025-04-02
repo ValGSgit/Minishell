@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:34:42 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/02 13:19:04 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/02 16:23:20 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,8 @@ void	apply_redirection(t_cmd *cmd)
             handle_redirection_out(redir, 0);
         else if (redir->type == REDIR_APPEND)
             handle_redirection_out(redir, 1);
+        else if (redir->type == REDIR_HEREDOC)
+            handle_redirection_in(redir);
         redir = redir->next;
     }
 }
@@ -235,4 +237,5 @@ void	executor(t_cmd *cmd, t_shell *shell)
         execute_single_command(cmd, shell);
     else
         execute_pipeline(cmd, shell);
+    shell->env = copy_env(cmd->env);
 }

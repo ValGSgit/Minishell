@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/01 12:02:58 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/02 10:37:53 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/02 14:54:57 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,10 @@ char	*expand_variable(char *str, int *i, t_shell *shell, bool in_dquote)
 	value = get_env_value(var_name, shell->env);
 	free(var_name);
 	if (!value)
+	{
+		*i += strt_len[1];
 		return (handle_miss(i, str, strt_len, in_dquote));
+	}
 	*i += strt_len[1];
 	return (ft_strdup(value));
 }

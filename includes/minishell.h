@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 12:01:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 16:04:43 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/02 14:36:36 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@
 # include <sys/stat.h>
 # include <sys/types.h>
 # include <sys/wait.h>
+# include "heredocs.h"
 # include <unistd.h>
 
 /* Defines */
@@ -38,7 +39,6 @@
 # define PROMPT "minishell-> "
 # define READ_END 0
 # define WRITE_END 1
-# define HERE_TEMP "/tmp/heredoc_XXXXXX"
 # define MAX_TOKENS 1024
 # define RESET_COLOR "\033[0m"
 # define PROMPT_COLOR "\033[1;32m"
@@ -143,6 +143,7 @@ void				ft_env(t_cmd *cmd);
 void				ft_exit(t_cmd *cmd);
 
 /* Redirections */
+void	handle_heredoc(t_cmd *cmd, char *eof);
 t_cmd				*create_cmd_node(void);
 void				create_redir_node(t_cmd *cmd, int type, char *file);
 void				restore_redirections(t_cmd *cmd);

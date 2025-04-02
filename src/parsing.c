@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:43:36 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/02 13:14:27 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/02 15:41:02 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,20 +169,16 @@ void	handle_redirections(t_cmd *cmd, char **tokens, int *i, t_shell *shell)
 		cmd->syntax_error = true;
 		return ;
 	}
-	if (ft_strcmp(tokens[*i], ">") == 0)
-		create_redir_node(cmd, REDIR_OUT, tokens[++(*i)]);
-	else if (ft_strcmp(tokens[*i], ">>") == 0)
+	if (ft_strncmp(tokens[*i], ">>", 2) == 0)
 		create_redir_node(cmd, REDIR_APPEND, tokens[++(*i)]);
-	else if (ft_strcmp(tokens[*i], "<") == 0)
+	else if (ft_strncmp(tokens[*i], "<<", 2) == 0)
+		handle_heredoc(cmd, tokens[++(*i)]);
+	else if (ft_strncmp(tokens[*i], ">", 1) == 0)
+		create_redir_node(cmd, REDIR_OUT, tokens[++(*i)]);
+	else if (ft_strncmp(tokens[*i], "<", 1) == 0)
 		create_redir_node(cmd, REDIR_IN, tokens[++(*i)]);
-	else if (ft_strcmp(tokens[*i], "<<") == 0)
-	{
-		create_redir_node(cmd, REDIR_HEREDOC, tokens[++(*i)]);
-		//handle_heredoc(cmd, tokens[*i], shell);
-		//*i += 1;
-	}
 	else
-		cmd->syntax_error = handle_syntax_error(tokens[*i], shell);
+		cmd->syntax_error = handle_syntax_error(tokens[++(*i)], shell);
 }
 
 /* Main parser function */
@@ -206,6 +202,7 @@ t_cmd	*parser(char **tokens, t_shell *shell)
         }
 		else if (!current)
 			break ;
+		current->shell = shell;
 		if (is_metacharacter(tokens[i]) && ft_strcmp(tokens[i], "|") == 0)
 		{
 			if (!current->args && !current->redirs)
