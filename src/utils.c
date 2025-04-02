@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 15:03:09 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/02 12:58:03 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/02 15:09:22 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,19 +53,14 @@ t_cmd	*create_cmd_node(void)
 /* Updates the shell prompt based on the current working directory */
 char	*update_prompt(void)
 {
-	char	cwd[1024];
-	char	*colored_cwd;
+	static char	cwd[1024];
 	char	*prompt;
 
 	if (!getcwd(cwd, sizeof(cwd)))
 	{
-		return (ft_strdup(ERROR_COLOR "Minishell-> " RESET_COLOR));
+		return (ft_strdup("Minishell-> "));
 	}
-	colored_cwd = ft_strjoin(PROMPT_COLOR, cwd);
-	if (!colored_cwd)
-		return (NULL);
-	prompt = ft_strjoin(colored_cwd, " -> " RESET_COLOR);
-	free(colored_cwd);
+	prompt = ft_strjoin(cwd, " -> ");
 	if (!prompt)
 		return (NULL);
 	return (prompt);

@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 10:35:57 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/02 10:46:46 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/02 16:15:44 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ void	ft_export(t_cmd *cmd)
         }
         else
         {
-            update_or_add_env(cmd->args[i], cmd->shell->env);
+            update_or_add_env(cmd->args[i], cmd->env);
             cmd->shell->exit_status = 0;
         }
         i++;
