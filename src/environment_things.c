@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/01 12:15:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 15:26:21 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/02 10:34:07 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,39 +90,6 @@ char	*resolve_path(char *cmd, char **env)
 	free_env(paths);
 	return (ft_strdup(cmd));
 }
-
-// void	update_env_value(char *key, char *value, char **env)
-// {
-// 	int		i;
-// 	char	*temp;
-
-// 	i = 0;
-// 	if (!key || !value || !env)
-// 		return ;
-// 	temp = NULL;
-// 	while (env[i])
-// 	{
-// 		if (ft_strncmp(env[i], key, ft_strlen(key)) == 0
-// 			&& env[i][ft_strlen(key)] == '=')
-// 		{
-// 			free(env[i]);
-// 			temp = ft_strjoin(key, "=");
-// 			if (!temp) // Check for allocation failure
-// 				return ;
-// 			env[i] = ft_strjoin(temp, value);
-// 			free(temp); // Free intermediate memory
-// 			if (!env[i]) // Check for allocation failure
-// 				return ;
-// 			return ;
-// 		}
-// 		i++;
-// 	}
-// 	temp = ft_strjoin(key, "=");
-// 	if (!temp)
-// 		return ;
-// 	add_new_env_var(temp, env);
-// 	free(temp);
-// }
 
 static void	replace_env_value(char *key, char *value, char **env_entry)
 {

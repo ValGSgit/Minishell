@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 10:35:57 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 13:45:42 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/02 10:46:46 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,12 +57,12 @@ void	ft_export(t_cmd *cmd)
         if (!is_valid_identifier(cmd->args[i]))
         {
             write(2, "export: not a valid identifier\n", 31);
-            cmd->exit_status = 1;
+            cmd->shell->exit_status = 1;
         }
         else
         {
-            update_or_add_env(cmd->args[i], cmd->env);
-            cmd->exit_status = 0;
+            update_or_add_env(cmd->args[i], cmd->shell->env);
+            cmd->shell->exit_status = 0;
         }
         i++;
     }
