@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 16:09:11 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/02 10:44:46 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,10 +44,10 @@ void	minishell_loop(t_shell *shell)
 {
 	char	*input;
 	char	**tokens;
-	t_cmd	*cmd;
+	//t_cmd	*cmd;
 	char	*prompt;
 
-	cmd = NULL;
+	shell->cmd = NULL;
 	prompt = "Minishell-> ";
 	while (1)
 	{
@@ -81,19 +81,21 @@ void	minishell_loop(t_shell *shell)
 			free(input);
 			continue ;
 		}
-		cmd = parser(tokens, shell);
+		shell->cmd = parser(tokens, shell);
 		//debug_shell_state(tokens, cmd, "After Parser");
-		if (!cmd)
+		if (!shell->cmd)
 		{
 			free(input);
 			free_tokens(tokens);
 			continue ;
 		}
-		expand_nodes(cmd, shell);
+		expand_nodes(shell->cmd, shell);
 		//debug_shell_state(tokens, cmd, "After Expander");
-		if (cmd->args[0] != NULL)
-			executor(cmd, shell);
-		free_cmd(cmd);
+		if (shell->cmd->args[0] != NULL)
+			executor(shell->cmd, shell);
+		if (shell->cmd->env)
+			shell->env = copy_env(shell->cmd->env);
+		free_cmd(shell->cmd);
 		free_tokens(tokens);
 		free(input);
 	}

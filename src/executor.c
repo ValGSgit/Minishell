@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:34:42 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 16:14:24 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/02 10:40:26 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,43 +15,42 @@
 //* Restores redirections after command execution */
 void	restore_redirections(t_cmd *cmd)
 {
-    if (cmd->in_fd != STDIN_FILENO)
+	if (cmd->in_fd != STDIN_FILENO)
 	{
-        close(cmd->in_fd);
+		close(cmd->in_fd);
 		dup2(cmd->in_fd, STDIN_FILENO);
 	}
-    if (cmd->out_fd != STDOUT_FILENO)
+	if (cmd->out_fd != STDOUT_FILENO)
 	{
-        close(cmd->out_fd);
+		close(cmd->out_fd);
 		dup2(cmd->out_fd, STDOUT_FILENO);
 	}
 }
 
-
-static int check_file_permissions(const char *filename)
+static int	check_file_permissions(const char *filename)
 {
-    if (access(filename, F_OK) != 0) // Check if the file exists
-    {
-        //write(2, "minishell: ", 11);
-        //write(2, filename, ft_strlen(filename));
-        write(2, ": No such file or directory\n", 28);
-        return (-2);
-    }
-    if (access(filename, R_OK) != 0) // Check read permission
-    {
-        //write(2, "minishell: ", 11);
-        //write(2, filename, ft_strlen(filename));
-        write(2, ": Permission denied\n", 20);
-        return (-1);
-    }
-    return (0); // Permissions are valid
+	if (access(filename, F_OK) != 0) // Check if the file exists
+	{
+		// write(2, "minishell: ", 11);
+		// write(2, filename, ft_strlen(filename));
+		write(2, ": No such file or directory\n", 28);
+		return (-2);
+	}
+	if (access(filename, R_OK) != 0) // Check read permission
+	{
+		// write(2, "minishell: ", 11);
+		// write(2, filename, ft_strlen(filename));
+		write(2, ": Permission denied\n", 20);
+		return (-1);
+	}
+	return (0); // Permissions are valid
 }
 
 void	apply_redirection(t_cmd *cmd) // handle dup and permissions
-		// lacks HEREDOCS RN
+									// lacks HEREDOCS RN
 {
 	t_redir *redir;
-	int		fd;
+	int fd;
 
 	redir = cmd->redirs;
 	if (!redir)
@@ -99,19 +98,26 @@ void	apply_redirection(t_cmd *cmd) // handle dup and permissions
 }
 
 /* Executes a single command (builtin or external) */
-static void execute_single_command(t_cmd *cmd, t_shell *shell)
+static void	execute_single_command(t_cmd *cmd, t_shell *shell)
 {
-	pid_t	pid;
-	
+	pid_t		pid;
+	struct stat	sb;
 
-	// if (is_builtin(cmd->args[0]) && !cmd->next && !cmd->redirs) // not in a pipeline
+	// if (is_builtin(cmd->args[0]) && !cmd->next && !cmd->redirs)
+		// not in a pipeline
 	// {
 	// 	apply_redirection(cmd);
 	// 	execute_builtin(cmd);
 	// 	restore_redirections(cmd);
 	// 	return ;
 	// }
-	if (is_builtin(cmd->args[0]))
+	if (stat(cmd->args[0], &sb) == 0 && S_ISDIR(sb.st_mode))
+	{
+		fprintf(stderr, "%s: Is a directory\n", cmd->args[0]);
+		shell->exit_status = 126;
+		return ;
+	}
+	else if (is_builtin(cmd->args[0]))
 	{
 		if (!cmd->next && !cmd->redirs) // not in a pipeline
 		{
@@ -125,14 +131,14 @@ static void execute_single_command(t_cmd *cmd, t_shell *shell)
 			apply_redirection(cmd);
 			execute_builtin(cmd);
 			restore_redirections(cmd);
-			//shell->exit_status = 0; // Set exit 
+			// shell->exit_status = 0; // Set exit
 			exit(0);
 		}
 		else
 		{
 			waitpid(pid, &shell->exit_status, 0);
 			restore_redirections(cmd);
-			return;
+			return ;
 		}
 	}
 	// Check execute permissions for the command
@@ -176,32 +182,33 @@ static void execute_single_command(t_cmd *cmd, t_shell *shell)
 	}
 }
 
-
-static void execute_pipeline(t_cmd *cmd, t_shell *shell)
+static void	execute_pipeline(t_cmd *cmd, t_shell *shell)
 {
 	int		pipe_fd[2];
-	int		prev_pipe_in = 0;
+	int		prev_pipe_in;
 	pid_t	pid;
 
+	prev_pipe_in = 0;
 	while (cmd)
 	{
 		if (cmd->next && pipe(pipe_fd) == -1)
 		{
 			perror("pipe");
-			return;
+			return ;
 		}
-		if (is_builtin(cmd->args[0]) && !cmd->next && prev_pipe_in == 0) // not in a pipeline
+		if (is_builtin(cmd->args[0]) && !cmd->next && prev_pipe_in == 0)
+			// not in a pipeline
 		{
 			apply_redirection(cmd);
 			execute_builtin(cmd);
 			restore_redirections(cmd);
-			return;
+			return ;
 		}
 		pid = fork();
 		if (pid == -1)
 		{
 			perror("fork");
-			return;
+			return ;
 		}
 		if (pid == 0)
 		{
@@ -233,10 +240,9 @@ static void execute_pipeline(t_cmd *cmd, t_shell *shell)
 		{
 			if (prev_pipe_in != 0) // Close the previous pipe's read end
 				close(prev_pipe_in);
-
 			if (cmd->next) // If there's a next command, keep pipe_fd[0] for reading
 			{
-				close(pipe_fd[1]);  // Close write end
+				close(pipe_fd[1]); // Close write end
 				prev_pipe_in = pipe_fd[0];
 			}
 			else
@@ -244,15 +250,16 @@ static void execute_pipeline(t_cmd *cmd, t_shell *shell)
 		}
 		cmd = cmd->next;
 	}
-	while (wait(NULL) > 0); //wait for all children :)
+	while (wait(NULL) > 0)
+		; // wait for all children :)
 }
 
 void	executor(t_cmd *cmd, t_shell *shell)
 {
-    if (!cmd)
-        return;
-    if (!cmd->next) // Single command
-        execute_single_command(cmd, shell);
-    else // Pipeline
-        execute_pipeline(cmd, shell);
+	if (!cmd)
+		return ;
+	if (!cmd->next) // Single command
+		execute_single_command(cmd, shell);
+	else // Pipeline
+		execute_pipeline(cmd, shell);
 }
