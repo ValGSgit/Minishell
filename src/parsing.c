@@ -178,8 +178,8 @@ void	handle_redirections(t_cmd *cmd, char **tokens, int *i, t_shell *shell)
 	else if (ft_strcmp(tokens[*i], "<<") == 0)
 	{
 		create_redir_node(cmd, REDIR_HEREDOC, tokens[++(*i)]);
-		//handle_heredoc(cmd, tokens[*i], shell);
-		//*i += 1;
+		handle_heredoc(cmd, tokens[++(*i)], shell); // If issue quote this out
+		*i += 1;
 	}
 	else
 		cmd->syntax_error = handle_syntax_error(tokens[*i], shell);
