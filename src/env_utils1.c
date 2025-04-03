@@ -1,66 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   environment_things.c                               :+:      :+:    :+:   */
+/*   env_utils1.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/01 12:15:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/02 10:34:07 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/03 14:39:12 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
-
-char	**copy_env(char **envp)
-{
-	int		i;
-	char	**env;
-
-	i = 0;
-	if (!envp)
-		return (NULL);
-	while (envp[i])
-		i++;
-	env = malloc(sizeof(char *) * (i + 1));
-	if (!env)
-		return (NULL);
-	i = 0;
-	while (envp[i])
-	{
-		env[i] = ft_strdup(envp[i]);
-		if (!env[i])
-		{
-			free_env(env);
-			return (NULL);
-		}
-		i++;
-	}
-	env[i] = NULL;
-	return (env);
-}
-
-char	*get_env_value(char *name, char **env)
-{
-	int		i;
-	char	*key;
-
-	i = 0;
-	if (!env || !name)
-		return (NULL);
-	while (env[i])
-	{
-		key = ft_substr(env[i], 0, (char *)ft_strchr(env[i], '=') - env[i]);
-		if (ft_strncmp(key, name, ft_strlen(key)) == 0)
-		{
-			free(key);
-			return (ft_strchr(env[i], '=') + 1);
-		}
-		free(key);
-		i++;
-	}
-	return (NULL);
-}
 
 char	*resolve_path(char *cmd, char **env)
 {
@@ -98,11 +48,11 @@ static void	replace_env_value(char *key, char *value, char **env_entry)
 
 	temp = ft_strjoin(key, "=");
 	if (!temp)
-		return;
+		return ;
 	new_value = ft_strjoin(temp, value);
 	free(temp);
 	if (!new_value)
-		return;
+		return ;
 	free(*env_entry);
 	*env_entry = new_value;
 }
@@ -113,17 +63,17 @@ void	add_new_env_entry(char *key, char **env)
 
 	temp = ft_strjoin(key, "=");
 	if (!temp)
-		return;
+		return ;
 	add_new_env_var(temp, env);
 	free(temp);
 }
 
 void	update_env_value(char *key, char *value, char **env)
 {
-	int		i;
+	int	i;
 
 	if (!key || !value || !env)
-		return;
+		return ;
 	i = 0;
 	while (env[i])
 	{
@@ -131,13 +81,12 @@ void	update_env_value(char *key, char *value, char **env)
 			&& env[i][ft_strlen(key)] == '=')
 		{
 			replace_env_value(key, value, &env[i]);
-			return;
+			return ;
 		}
 		i++;
 	}
 	add_new_env_entry(key, env);
 }
-
 
 void	update_or_add_env(char *arg, char **env)
 {

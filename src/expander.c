@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/02 10:46:04 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/03 15:05:25 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ char	*append_str(char *dest, char *src)
 		else
 			return (ft_strdup(""));
 	}
-	if (src)
+	if (src && *src)
 		new_str = ft_strjoin(dest, src);
 	else
 		new_str = ft_strjoin(dest, "");
@@ -55,7 +55,7 @@ char	*process_argument(char *arg, t_shell *shell)
 			free(value);
 		}
 		else
-			state.result = append_str(state.result, (char[]){arg[i], 0});
+			state.result = append_str(state.result, (char[]){arg[i], '\0'});
 	}
 	return (state.result);
 }
@@ -119,17 +119,16 @@ static char	**ft_clean_args(char **args)
 
 void	expand_nodes(t_cmd *cmd, t_shell *shell)
 {
-	t_cmd *node;
+	t_cmd	*node;
 
 	node = cmd;
+	shell->cmd = node;
 	while (node)
 	{
 		expander(node, shell);
 		node->shell = shell;
 		if (node->args)
 			node->args = ft_clean_args(node->args);
-		if (!node->env)
-			node->env = copy_env(shell->env);
 		node = node->next;
 	}
 }

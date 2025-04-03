@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 15:03:09 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/03 13:23:56 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,25 +35,6 @@ void	create_redir_node(t_cmd *cmd, int type, char *file)
 	return ;
 }
 
-/*void	add_redir_node(t_redir **head, t_redir *new_node)
-{
-	t_redir	*current;
-
-	if (!*head)
-	{
-		*head = new_node;
-	}
-	else
-	{
-		current = *head;
-		while (current->next)
-		{
-			current = current->next;
-		}
-		current->next = new_node;
-	}
-}*/
-
 t_cmd	*create_cmd_node(void)
 {
 	t_cmd	*node;
@@ -72,24 +53,23 @@ t_cmd	*create_cmd_node(void)
 /* Updates the shell prompt based on the current working directory */
 char	*update_prompt(void)
 {
-	char	cwd[1024];
-	char	*colored_cwd;
-	char	*prompt;
+	static char	cwd[1024];
+	char		*prompt;
+	char		*result;
 
-	if (!getcwd(cwd, sizeof(cwd))) // Get the current working directory
+	if (!getcwd(cwd, sizeof(cwd)))
 	{
-		return (ft_strdup(ERROR_COLOR "Minishell-> " RESET_COLOR));
-			// Error fallback
+		return (ft_strdup("Minishell-> "));
 	}
-	// Add color to the current working directory
-	colored_cwd = ft_strjoin(PROMPT_COLOR, cwd);
-	if (!colored_cwd)
-		return (NULL);
-	// Add arrow and reset color
-	prompt = ft_strjoin(colored_cwd, " -> " RESET_COLOR);
-	free(colored_cwd); // Free intermediate string
+	prompt = ft_strjoin(cwd, " -> ");
 	if (!prompt)
 		return (NULL);
-	return (prompt);
+	result = ft_strdup(prompt);
+	if (!result)
+	{
+		free(prompt);
+		return (NULL);
+	}
+	free(prompt);
+	return (result);
 }
-

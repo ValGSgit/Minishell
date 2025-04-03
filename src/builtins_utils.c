@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/02 10:33:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/02 10:33:39 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/02 17:17:30 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,9 +95,9 @@ void	ft_env(t_cmd *cmd)
 		return ;
 	}
 	i = 0;
-	while (cmd->env[i])
+	while (cmd->shell->env[i])
 	{
-		printf("%s\n", cmd->env[i]);
+		printf("%s\n", cmd->shell->env[i]);
 		i++;
 	}
 }
