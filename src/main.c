@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/02 16:18:37 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/03 15:04:55 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,17 +16,43 @@ int		g_signal_received = 0;
 
 
 // Version with debugging functions
+int		handle_input(t_shell *shell, char *input)
+{
+	char	**tokens;
+	
+	if (ft_strncmp(input, "exit", ft_strlen(input) + 5) == 0)
+		return (1);
+	if (*input)
+	add_history(input);
+	tokens = lexer(input);
+	if (!tokens)
+	{
+		free(input);
+		return (0);
+	}
+	shell->cmd = parser(tokens, shell);
+	if (!shell->cmd)
+	return(free(input),free_tokens(tokens), 0);
+	expand_nodes(shell->cmd, shell);
+	if (shell->cmd->args[0] != NULL)
+	executor(shell->cmd, shell);
+	free_cmd(shell->cmd);
+	free_tokens(tokens);
+	free(input);
+	return (0);
+}
+
 void	minishell_loop(t_shell *shell)
 {
 	char	*input;
-	char	**tokens;
 	char	*prompt;
-
+	
 	shell->cmd = NULL;
 	prompt = "Minishell-> ";
 	while (1)
 	{
-		//input = readline((const char *)update_prompt());
+		setup_signals();
+		// //input = readline((const char *)update_prompt());
 		// if (isatty(fileno(stdin)))
 		// {
 		// //prompt = update_prompt();
@@ -40,76 +66,15 @@ void	minishell_loop(t_shell *shell)
 		// 	if (line)
 		// 		input = ft_strtrim(line, "\n");
 		// }
-		setup_signals();
 		input = readline(prompt);
-		if (!input)
-			break ;
-		if (ft_strcmp(input, "exit") == 0)
+		if (handle_input(shell, input) == 1)
 		{
 			free(input);
 			break ;
 		}
-		if (*input)
-			add_history(input);
-		tokens = lexer(input, shell);
-		//debug_shell_state(tokens, NULL, "After Lexer");
-		if (!tokens)
-		{
-			free(input);
-			continue ;
-		}
-		shell->cmd = parser(tokens, shell);
-		//debug_shell_state(tokens, shell->cmd, "After Parser");
-		if (!shell->cmd)
-		{
-			free(input);
-			free_tokens(tokens);
-			continue ;
-		}
-		expand_nodes(shell->cmd, shell);
-		//debug_shell_state(tokens, shell->cmd, "After Expander");
-		if (shell->cmd->args[0] != NULL)
-			executor(shell->cmd, shell);
-		//if (shell->cmd->env)
-		//	shell->env = copy_env(shell->cmd->env);
-		free_cmd(shell->cmd);
-		free_tokens(tokens);
-		free(input);
 	}
 }
 
-// Version complying with the norm (25 lines or less)
-// void	minishell_loop(t_shell *shell)
-// {
-// 	char	*input;
-// 	char	**tokens;
-// 	t_cmd	*cmd;
-
-// 	while (1)
-// 	{
-// 		input = readline("Minishell-> ");
-// 		if (ft_strcmp(input, "exit") == 0)
-// 			(free_shell(shell), exit(0));
-// 		if (*input)
-// 			add_history(input);
-// 		tokens = lexer(input, shell);
-// 		if (!tokens)
-// 			free(input);
-// 		cmd = parser(tokens, shell);
-// 		if (!cmd)
-// 		{
-// 			free(input);
-// 			free_tokens(tokens);
-// 			continue ;
-// 		}
-// 		expand_nodes(cmd, shell);
-// 		if (cmd->args[0] != NULL)
-// 			executor(cmd, shell);
-// 		free_cmd(cmd);
-// 		free_tokens(tokens);
-// 		free(input);
-// 	}
-// }
 
 int	main(int argc, char **argv, char **envp)
 {

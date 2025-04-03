@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/02 13:39:32 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/02 14:36:55 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/03 10:59:06 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@
 
 # define HERE_DOC_MAX 255
 
-# define HT1 "/tmp/heredoc_banana"
-# define HT2 "/tmp/heredoc_pineapple"
+# define HT1 "/tmp/heredoc_mumbojumbo"
+# define HT2 "/tmp/heredoc_its_free_real_estate"
 # define HT3 "/tmp/heredoc_apple"
 # define HT4 "/tmp/heredoc_orange"
 # define HT5 "/tmp/heredoc_grape"
@@ -33,7 +33,7 @@
 # define HT13 "/tmp/heredoc_raspberry"
 # define HT14 "/tmp/heredoc_blackberry"
 # define HT15 "/tmp/heredoc_coconut"
-# define HT16 "/tmp/heredoc_pomegranate"
+# define HT16 "/tmp/heredoc_pomegranade"
 # define HT17 "/tmp/heredoc_avocado"
 # define HT18 "/tmp/heredoc_papaya"
 # define HT19 "/tmp/heredoc_guava"
@@ -114,7 +114,7 @@
 # define HT94 "/tmp/heredoc_sus"
 # define HT95 "/tmp/heredoc_karen"
 # define HT96 "/tmp/heredoc_keanu_reeves"
-# define HT97 "/tmp/heredoc_its_free_real_estate"
+# define HT97 "/tmp/heredoc_pineapple"
 # define HT98 "/tmp/heredoc_this_is_fine"
 # define HT99 "/tmp/heredoc_grumpy_cat"
 # define HT100 "/tmp/heredoc_nyan_cat"

@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 15:03:09 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/02 15:09:22 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/03 13:23:56 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,8 @@ t_cmd	*create_cmd_node(void)
 char	*update_prompt(void)
 {
 	static char	cwd[1024];
-	char	*prompt;
+	char		*prompt;
+	char		*result;
 
 	if (!getcwd(cwd, sizeof(cwd)))
 	{
@@ -63,5 +64,12 @@ char	*update_prompt(void)
 	prompt = ft_strjoin(cwd, " -> ");
 	if (!prompt)
 		return (NULL);
-	return (prompt);
+	result = ft_strdup(prompt);
+	if (!result)
+	{
+		free(prompt);
+		return (NULL);
+	}
+	free(prompt);
+	return (result);
 }

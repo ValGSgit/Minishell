@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 10:35:57 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/02 16:15:44 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/02 17:17:02 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ void	ft_export(t_cmd *cmd)
         return;
     if (!cmd->args[1])
     {
-        print_env(cmd->env);
+        print_env(cmd->shell->env);
         return;
     }
     i = 1;
@@ -61,7 +61,7 @@ void	ft_export(t_cmd *cmd)
         }
         else
         {
-            update_or_add_env(cmd->args[i], cmd->env);
+            update_or_add_env(cmd->args[i], cmd->shell->env);
             cmd->shell->exit_status = 0;
         }
         i++;

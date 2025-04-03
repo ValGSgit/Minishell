@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:19:53 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/02 15:29:59 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/03 12:03:56 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ void	reset_signals(void)
 /* Ignore signals (used during child process execution) */
 void	ignore_signals(void)
 {
-	struct sigaction sa_ignore;
+	struct sigaction	sa_ignore;
 
 	sa_ignore.sa_handler = SIG_IGN;
 	sigemptyset(&sa_ignore.sa_mask);

@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:34:42 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/02 16:23:20 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/03 13:26:47 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,12 +37,14 @@ int	check_file_permissions(const char *filename)
     }
     if (stat(filename, &sb) == 0 && S_ISDIR(sb.st_mode))
     {
-        fprintf(stderr, "%s: Is a directory\n", filename);
+        write(2, filename, ft_strlen(filename));
+        write(2, ": Is a directory\n", 16);
         return (126); // Is a directory
     }
     if (access(filename, R_OK) != 0)
     {
-        fprintf(stderr, "%s: Permission denied\n", filename);
+        write(2, filename, ft_strlen(filename));
+        write(2, ": Permission denied\n", 20);
         return (126); // Permission denied
     }
     return (0); // Permissions are valid
@@ -113,7 +115,8 @@ void	execute_external_command(t_cmd *cmd, t_shell *shell)
 
     if (stat(cmd->args[0], &sb) == 0 && S_ISDIR(sb.st_mode))
     {
-        fprintf(stderr, "%s: Is a directory\n", cmd->args[0]);
+        write(2, cmd->args[0], ft_strlen(cmd->args[0]));
+        write(2, ": Is a directory\n", 16);
         exit(126); // Is a directory
     }
     if (access(cmd->args[0], X_OK) != 0)
@@ -237,5 +240,5 @@ void	executor(t_cmd *cmd, t_shell *shell)
         execute_single_command(cmd, shell);
     else
         execute_pipeline(cmd, shell);
-    shell->env = copy_env(cmd->env);
+    //shell->env = copy_env(cmd->env);cmd->shell->env
 }

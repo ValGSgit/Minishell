@@ -6,32 +6,11 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:43:36 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/02 15:41:02 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/03 13:23:50 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
-
-/* Checks if the token is quoted */
-bool	is_quoted(char *token)
-{
-	if (!token)
-	{
-		return (false);
-	}
-	return ((token[0] == '\'' && token[ft_strlen(token) - 1] == '\'')
-		|| (token[0] == '"' && token[ft_strlen(token) - 1] == '"'));
-}
-
-/* Checks if the token is a metacharacter (|, <, >, >>, <<) */
-bool	is_metacharacter(char *token)
-{
-	if (is_quoted(token))
-		return (false);
-	return (ft_strcmp(token, "|") == 0 || ft_strcmp(token, "<") == 0
-		|| ft_strcmp(token, ">") == 0 || ft_strcmp(token, ">>") == 0
-		|| ft_strcmp(token, "<<") == 0);
-}
 
 /* Handles syntax errors for unexpected tokens */
 static bool	handle_syntax_error(char *token, t_shell *shell)
@@ -103,55 +82,6 @@ char	**build_args_array(char **tokens, int argc)
 	return (args);
 }
 
-/* Adds an argument to the command */
-void	add_argument_to_array(char ***args, char *arg)
-{
-    char	**new_args;
-    int		len;
-    int		i;
-
-    len = 0;
-    while ((*args) && (*args)[len])
-        len++;
-    new_args = ft_calloc(len + 2, sizeof(char *));
-    if (!new_args)
-        return ;
-    i = 0;
-    while (i < len)
-    {
-        new_args[i] = (*args)[i];
-        i++;
-    }
-    new_args[i] = ft_strdup(arg);
-    if (!new_args[i])
-    {
-        free_tokens(new_args);
-        return ;
-    }
-    free(*args);
-    *args = new_args;
-}
-
-void	add_argument(t_cmd *node, char *arg)
-{
-    if (!node || !arg)
-        return ;
-    if (!node->args)
-    {
-        node->args = ft_calloc(2, sizeof(char *));
-        if (!node->args)
-            return ;
-        node->args[0] = ft_strdup(arg);
-        if (!node->args[0])
-        {
-            free_tokens(node->args);
-            node->args = NULL;
-        }
-        return ;
-    }
-    add_argument_to_array(&(node->args), arg);
-}
-
 /* Handles redirections */
 void	handle_redirections(t_cmd *cmd, char **tokens, int *i, t_shell *shell)
 {
@@ -196,20 +126,17 @@ t_cmd	*parser(char **tokens, t_shell *shell)
 	while (tokens[++i])
 	{
 		if (!head)
-        {
-            head = create_cmd_node();
+		{
+			head = create_cmd_node();
 			current = head;
-        }
+		}
 		else if (!current)
 			break ;
 		current->shell = shell;
 		if (is_metacharacter(tokens[i]) && ft_strcmp(tokens[i], "|") == 0)
 		{
 			if (!current->args && !current->redirs)
-			{
-				handle_syntax_error("|", shell);
-				return (free_cmd(head), NULL);
-			}
+				return (handle_syntax_error("|", shell), free_cmd(head), NULL);
 			handle_pipeline(&current, shell);
 		}
 		else if (is_metacharacter(tokens[i]))
