@@ -106,7 +106,7 @@ void	debug_shell_state(char **tokens, t_cmd *cmd, const char *stage);
 void	minishell_loop(t_shell *shell);
 
 /* Lexer */
-char	**lexer(char *input, t_shell *shell);
+char	**lexer(char *input);
 int		handle_quotes(char **input, bool *in_quote, char *quote_char);
 
 /* Parser */
@@ -117,6 +117,7 @@ char	*process_argument(char *arg, t_shell *shell);
 char	*expand_variable(char *arg, int *i, t_shell *shell, bool in_dquote);
 void	expand_nodes(t_cmd *cmd, t_shell *shell);
 void	expander(t_cmd *cmd, t_shell *shell);
+char	*resolve_path(char *cmd, char **env);
 
 /* Executor */
 void	executor(t_cmd *cmd, t_shell *shell);
@@ -137,6 +138,7 @@ t_cmd	*create_cmd_node(void);
 void	create_redir_node(t_cmd *cmd, int type, char *file);
 void	restore_redirections(t_cmd *cmd);
 void	apply_redirection(t_cmd *cmd);
+void	handle_heredoc(t_cmd *cmd, char *eof);
 
 /* Pipes */
 void	execute_command(t_cmd *cmd, t_shell *shell);
@@ -150,12 +152,12 @@ void	handle_sigint(int sig);
 void	handle_sigquit(int sig);
 
 /* Environment */
-void	update_or_add_env(char *arg, char **env);
+void	update_or_add_env(char *arg, char ***env);
+void    add_to_env(char ***env, char *new_var);
 char	**copy_env(char **env);
 char	*get_env_value(char *name, char **env);
 void	set_env_value(char *key, char *value, t_shell *shell);
 void	ft_sort_strings(char **arr, int count);
-int		add_new_env_var(char *arg, char **env);
 
 /* Utils */
 char	*update_prompt(void);
@@ -170,6 +172,8 @@ void	print_error(char *msg, char *arg);
 bool	is_quoted(char *token);
 void	free_shell(t_shell *shell);
 char	*append_str(char *dest, char *src);
+bool	is_metacharacter(char *token);
+void	add_argument(t_cmd *node, char *arg);
 
 #endif
 // #ifndef MINISHELL_H

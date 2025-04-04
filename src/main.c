@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/03 15:04:55 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,43 +14,45 @@
 
 int		g_signal_received = 0;
 
-void	print_parsed_command(t_cmd *cmd)
-{
-    t_cmd	*current;
-    int		i;
 
-    current = cmd;
-    while (current)
-    {
-        printf("Command: %s\n", current->args[0]);
-        if (current->args)
-        {
-            printf("Arguments:\n");
-            i = 1;
-            while (current->args[i])
-                printf("  - %s\n", current->args[i++]);
-        }
-        if (current->redirs)
-		{
-            printf("Input redirection: %s\n", current->redirs->file);
-            printf("Output redirection: %s\n", current->redirs->file);
-		}
-        current = current->next;
-    }
+// Version with debugging functions
+int		handle_input(t_shell *shell, char *input)
+{
+	char	**tokens;
+	
+	if (ft_strncmp(input, "exit", ft_strlen(input) + 5) == 0)
+		return (1);
+	if (*input)
+	add_history(input);
+	tokens = lexer(input);
+	if (!tokens)
+	{
+		free(input);
+		return (0);
+	}
+	shell->cmd = parser(tokens, shell);
+	if (!shell->cmd)
+	return(free(input),free_tokens(tokens), 0);
+	expand_nodes(shell->cmd, shell);
+	if (shell->cmd->args[0] != NULL)
+	executor(shell->cmd, shell);
+	free_cmd(shell->cmd);
+	free_tokens(tokens);
+	free(input);
+	return (0);
 }
 
 void	minishell_loop(t_shell *shell)
 {
 	char	*input;
-	char	**tokens;
-	t_cmd	*cmd;
 	char	*prompt;
-
-	cmd = NULL;
+	
+	shell->cmd = NULL;
 	prompt = "Minishell-> ";
 	while (1)
 	{
-		input = readline(prompt);
+		setup_signals();
+		// //input = readline((const char *)update_prompt());
 		// if (isatty(fileno(stdin)))
 		// {
 		// //prompt = update_prompt();
@@ -64,64 +66,15 @@ void	minishell_loop(t_shell *shell)
 		// 	if (line)
 		// 		input = ft_strtrim(line, "\n");
 		// }
-		if (!input)
-			break ;
-		if (ft_strcmp(input, "exit") == 0)
+		input = readline(prompt);
+		if (handle_input(shell, input) == 1)
 		{
 			free(input);
 			break ;
 		}
-		if (*input)
-			add_history(input);
-		tokens = lexer(input, shell);
-		debug_shell_state(tokens, NULL, "After Lexer");
-		if (!tokens)
-			free(input);
-		cmd = parser(tokens, shell);
-		debug_shell_state(tokens, cmd, "After Parser");
-		if (!cmd)
-		{
-			free(input);
-			free_tokens(tokens);
-			continue ;
-		}
-		expand_nodes(cmd, shell);
-		debug_shell_state(tokens, cmd, "After expander");
-		executor(cmd, shell);
-		free_cmd(cmd);
-		free_tokens(tokens);
-		free(input);
 	}
-	//rl_clear_history();
 }
 
-char	**copy_env(char **envp)
-{
-	int		i;
-	char	**env;
-
-	i = 0;
-	if (!envp)
-		return (NULL);
-	while (envp[i])
-		i++;
-	env = malloc(sizeof(char *) * (i + 1));
-	if (!env)
-		return (NULL);
-	i = 0;
-	while (envp[i])
-	{
-		env[i] = ft_strdup(envp[i]);
-		if (!env[i])
-		{
-			free_env(env);
-			return (NULL);
-		}
-		i++;
-	}
-	env[i] = NULL;
-	return (env);
-}
 
 int	main(int argc, char **argv, char **envp)
 {
@@ -136,9 +89,9 @@ int	main(int argc, char **argv, char **envp)
 	shell.exit_status = 0;
 	shell.is_interactive = isatty(STDIN_FILENO);
 	shell.signal_status = 0;
-	setup_signals();
 	minishell_loop(&shell);
 	rl_clear_history();
 	free_env(shell.env);
+	//free_cmd(shell.cmd);
 	return (shell.exit_status);
 }

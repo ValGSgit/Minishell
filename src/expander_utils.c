@@ -6,28 +6,13 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/01 12:02:58 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/03 11:57:39 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-char	*handle_missing_value(int *i, char *str, int start, int len, bool in_dquote)
-{
-	char	*value;
-
-	if (in_dquote)
-		value = ft_strdup("");
-	else
-	{
-		value = ft_strdup("");
-		*i += len;
-		value = append_str(value, str + start + len);
-	}
-	return (value);
-}
-
-char	*expand_exit_status(int *i, t_shell *shell)
+static char	*expand_exit_status(int *i, t_shell *shell)
 {
 	char	*status;
 
@@ -39,34 +24,54 @@ char	*expand_exit_status(int *i, t_shell *shell)
 	return (status);
 }
 
-char	*handle_empty_var_name(char *var_name)
+static char	*handle_empty_var_name(char *var_name)
 {
 	free(var_name);
 	return (ft_strdup("$"));
+}
+
+static char	*handle_miss(int *i, char *str, int strt_len[2], bool in_dquote)
+{
+	char	*value;
+
+	if (in_dquote)
+		value = ft_strdup("");
+	else
+	{
+		value = ft_strdup("");
+		*i += strt_len[1];
+		value = append_str(value, str + strt_len[0] + strt_len[1]);
+	}
+	*i = ft_strlen(str) - 1;
+	return (value);
 }
 
 char	*expand_variable(char *str, int *i, t_shell *shell, bool in_dquote)
 {
 	char	*var_name;
 	char	*value;
-	int		start;
-	int		len;
+	int		strt_len[2];
 
-	start = *i + 1;
-	len = 0;
-	if (!str[start])
+	strt_len[0] = *i + 1;
+	strt_len[1] = 0;
+	if (!str[strt_len[0]])
 		return (ft_strdup("$"));
-	if (str[start] == '?')
+	if (str[strt_len[0]] == '?')
 		return (expand_exit_status(i, shell));
-	while (str[start + len] && ft_isalnum(str[start + len]))
-		len++;
-	var_name = ft_substr(str, start, len);
+	while (str[strt_len[0] + strt_len[1]]
+		&& ft_isalnum(str[strt_len[0] + strt_len[1]]))
+		strt_len[1]++;
+	var_name = ft_substr(str, strt_len[0], strt_len[1]);
 	if (!var_name || !var_name[0])
 		return (handle_empty_var_name(var_name));
 	value = get_env_value(var_name, shell->env);
 	free(var_name);
 	if (!value)
-		return (handle_missing_value(i, str, start, len, in_dquote));
-	*i += len;
+	{
+		*i += strt_len[1];
+		return (handle_miss(i, str, strt_len, in_dquote));
+	}
+	*i += strt_len[1];
 	return (ft_strdup(value));
 }
+

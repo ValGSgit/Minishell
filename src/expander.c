@@ -6,61 +6,11 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/03 15:05:25 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
-
-char	*get_env_value(char *name, char **env)
-{
-	int		i;
-	char	*key;
-
-	i = 0;
-	if (!env || !name)
-		return (NULL);
-	while (env[i])
-	{
-		key = ft_substr(env[i], 0, (char *)ft_strchr(env[i], '=') - env[i]);
-		if (ft_strncmp(key, name, ft_strlen(key)) == 0)
-		{
-			free(key);
-			return (ft_strchr(env[i], '=') + 1);
-		}
-		free(key);
-		i++;
-	}
-	return (NULL);
-}
-
-char	*resolve_path(char *cmd, char **env)
-{
-	int		i;
-	char	*full_path;
-	char	*temp;
-	char	**paths;
-
-	i = 0;
-	paths = ft_split(get_env_value("PATH", env), ':');
-	if (!paths)
-		return (ft_strdup(cmd));
-	while (paths[i])
-	{
-		temp = ft_strjoin(paths[i], "/");
-		full_path = ft_strjoin(temp, cmd);
-		free(temp);
-		if (access(full_path, F_OK | X_OK) == 0)
-		{
-			free_env(paths);
-			return (full_path);
-		}
-		free(full_path);
-		i++;
-	}
-	free_env(paths);
-	return (ft_strdup(cmd));
-}
 
 char	*append_str(char *dest, char *src)
 {
@@ -73,7 +23,7 @@ char	*append_str(char *dest, char *src)
 		else
 			return (ft_strdup(""));
 	}
-	if (src)
+	if (src && *src)
 		new_str = ft_strjoin(dest, src);
 	else
 		new_str = ft_strjoin(dest, "");
@@ -105,7 +55,7 @@ char	*process_argument(char *arg, t_shell *shell)
 			free(value);
 		}
 		else
-			state.result = append_str(state.result, (char[]){arg[i], 0});
+			state.result = append_str(state.result, (char[]){arg[i], '\0'});
 	}
 	return (state.result);
 }
@@ -169,16 +119,16 @@ static char	**ft_clean_args(char **args)
 
 void	expand_nodes(t_cmd *cmd, t_shell *shell)
 {
-	t_cmd *node;
+	t_cmd	*node;
 
 	node = cmd;
+	shell->cmd = node;
 	while (node)
 	{
 		expander(node, shell);
 		node->shell = shell;
 		if (node->args)
 			node->args = ft_clean_args(node->args);
-		node->env = copy_env(shell->env);
 		node = node->next;
 	}
 }

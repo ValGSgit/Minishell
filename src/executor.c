@@ -6,344 +6,239 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:34:42 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/28 12:31:24 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/03 13:26:47 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/planer.h"
+#include "../includes/minishell.h"
 
-
-/* Restores redirections after command execution */
 void	restore_redirections(t_cmd *cmd)
 {
     if (cmd->in_fd != STDIN_FILENO)
-	{
+    {
         close(cmd->in_fd);
-		dup2(cmd->in_fd, STDIN_FILENO);
-	}
+        dup2(cmd->in_fd, STDIN_FILENO);
+    }
     if (cmd->out_fd != STDOUT_FILENO)
-	{
+    {
         close(cmd->out_fd);
-		dup2(cmd->out_fd, STDOUT_FILENO);
-	}
+        dup2(cmd->out_fd, STDOUT_FILENO);
+    }
 }
 
-
-static int check_file_permissions(const char *filename)
+int	check_file_permissions(const char *filename)
 {
-    if (access(filename, F_OK) != 0) // Check if the file exists
+    struct stat sb;
+
+    if (access(filename, F_OK) != 0)
     {
-        //write(2, "minishell: ", 11);
-        //write(2, filename, ft_strlen(filename));
-        write(2, ": No such file or directory\n", 28);
-        return (-2);
+        perror(filename);
+        return (127); // File not found
     }
-    if (access(filename, R_OK) != 0) // Check read permission
+    if (stat(filename, &sb) == 0 && S_ISDIR(sb.st_mode))
     {
-        //write(2, "minishell: ", 11);
-        //write(2, filename, ft_strlen(filename));
+        write(2, filename, ft_strlen(filename));
+        write(2, ": Is a directory\n", 16);
+        return (126); // Is a directory
+    }
+    if (access(filename, R_OK) != 0)
+    {
+        write(2, filename, ft_strlen(filename));
         write(2, ": Permission denied\n", 20);
-        return (-1);
+        return (126); // Permission denied
     }
     return (0); // Permissions are valid
 }
 
-void	apply_redirection(t_cmd *cmd) // handle dup and permissions
-		// lacks HEREDOCS RN
+void	handle_redirection_in(t_redir *redir)
 {
-	t_redir *redir;
-	int		fd;
+    int fd;
 
-	redir = cmd->redirs;
-	if (!redir)
-		return ;
-	while (redir)
-	{
-		if (redir->type == REDIR_IN)
-		{
-			fd = open(redir->file, O_RDWR, 0644);
-			if (check_file_permissions(redir->file) < 0)
-				exit(1); // Exit if permissions are invalid
-			dup2(fd, STDIN_FILENO);
-			close(fd);
-		}
-		if (redir->type == REDIR_OUT)
-		{
-			fd = open(redir->file, O_RDWR | O_CREAT, 0644);
-			if (access(redir->file, W_OK) != 0)
-			{
-				// write(2, "minishell: ", 11);
-				// write(2, redir->file, ft_strlen(redir->file));
-				write(2, " Permission denied\n", 20);
-				exit(1); // Exit if permissions are invalid
-				return ;
-			}
-			dup2(fd, STDOUT_FILENO);
-			close(fd);
-		}
-		if (redir->type == REDIR_APPEND)
-		{
-			fd = open(redir->file, O_WRONLY | O_APPEND | O_CREAT, 0644);
-			if (access(redir->file, W_OK) != 0)
-			{
-				// write(2, "minishell: ", 11);
-				// write(2, redir->file, ft_strlen(redir->file));
-				write(2, " Permission denied\n", 20);
-				exit(1); // Exit if permissions are invalid
-				return ;
-			}
-			dup2(fd, STDOUT_FILENO);
-			close(fd);
-		}
-		redir = redir->next;
-	}
+    fd = open(redir->file, O_RDONLY);
+    if (fd == -1)
+    {
+        perror(redir->file);
+        exit(1); // Exit with error code 1 for missing files
+    }
+    dup2(fd, STDIN_FILENO);
+    close(fd);
 }
 
-/* Executes a single command (builtin or external) */
-static void execute_single_command(t_cmd *cmd, t_shell *shell)
+void	handle_redirection_out(t_redir *redir, int append)
 {
-	pid_t	pid;
-	
+    int fd;
+    int writable;
 
-	if (is_builtin(cmd->args[0]))
-	{
-		pid = fork();
-		if (pid == 0)
-		{
-			apply_redirection(cmd);
-			execute_builtin(cmd);
-			restore_redirections(cmd);
-			exit(0);
-		}
-		else
-		{
-			waitpid(pid, &shell->exit_status, 0);
-			restore_redirections(cmd);
-			return;
-		}
-	}
-	// Check execute permissions for the command
-	if (access(cmd->args[0], X_OK) != 0)
-	{
-		if (check_file_permissions(cmd->args[0]) == -1)
-		{
-			// write(2, "minishell: ", 11);
-			// write(2, cmd->args[0], ft_strlen(cmd->args[0]));
-			// write(2, ": Permission denied (execute)\n", 30);
-			shell->exit_status = 126; // Set exit status for permission error
-			return ;
-		}
-		else if (check_file_permissions(cmd->args[0]) == -2)
-		{
-			shell->exit_status = 127; // Set exit status for file not found
-			return ;
-		}
-		write(2, "minishell: ", 11);
-		write(2, cmd->args[0], ft_strlen(cmd->args[0]));
-		write(2, ": command not found\n", 20);
-		shell->exit_status = 127; // Set exit status for permission error
-		return ;
-	}
-	pid = fork();
-	if (pid == 0)
-	{
-		apply_redirection(cmd); // Set up redirections with permission checks
-		execve(cmd->args[0], cmd->args, shell->env);
-		perror(cmd->args[0]); // Print error if execve fails
-		exit(127);            // Exit with 127 if command not found
-	}
-	else
-	{
-		waitpid(pid, &shell->exit_status, 0);
-		if (WIFEXITED(shell->exit_status))
-			shell->exit_status = WEXITSTATUS(shell->exit_status);
-		else
-			shell->exit_status = 1; // Handle signals
-		restore_redirections(cmd);  // Restore redirections
-	}
+    if (append)
+        fd = open(redir->file, O_WRONLY | O_APPEND | O_CREAT, 0644);
+    else
+        fd = open(redir->file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    writable = access(redir->file, W_OK);
+    if (writable != 0)
+    {
+        write(2, " Permission denied\n", 20);
+        exit(1);
+    }
+    dup2(fd, STDOUT_FILENO);
+    close(fd);
 }
 
-
-/* static void execute_pipeline(t_cmd *cmd, t_shell *shell) 
+void	apply_redirection(t_cmd *cmd)
 {
-	int		pipe_fd[2];
-	int		prev_pipe_in;
-	pid_t	pid;
+    t_redir *redir;
 
-	prev_pipe_in = 0;
-	while (cmd)
-	{
-		if (cmd->next)
-		{
-			if (pipe(pipe_fd) == -1) // Create a pipe for the next command
-			{
-				perror("pipe");
-				return ;
-			}
-		}
-		if (is_builtin(cmd->args[0])) 
+    redir = cmd->redirs;
+    while (redir)
+    {
+        if (redir->type == REDIR_IN)
+            handle_redirection_in(redir);
+        else if (redir->type == REDIR_OUT)
+            handle_redirection_out(redir, 0);
+        else if (redir->type == REDIR_APPEND)
+            handle_redirection_out(redir, 1);
+        else if (redir->type == REDIR_HEREDOC)
+            handle_redirection_in(redir);
+        redir = redir->next;
+    }
+}
+
+void	execute_builtin_or_exit(t_cmd *cmd)
+{
+    execute_builtin(cmd);
+    restore_redirections(cmd);
+    exit(0);
+}
+
+void	execute_external_command(t_cmd *cmd, t_shell *shell)
+{
+    struct stat sb;
+
+    if (stat(cmd->args[0], &sb) == 0 && S_ISDIR(sb.st_mode))
+    {
+        write(2, cmd->args[0], ft_strlen(cmd->args[0]));
+        write(2, ": Is a directory\n", 16);
+        exit(126); // Is a directory
+    }
+    if (access(cmd->args[0], X_OK) != 0)
+    {
+        perror(cmd->args[0]);
+        exit(127); // Command not found or permission denied
+    }
+    execve(cmd->args[0], cmd->args, shell->env);
+    perror(cmd->args[0]);
+    exit(127);
+}
+
+void	execute_single_command(t_cmd *cmd, t_shell *shell)
+{
+    pid_t pid;
+    int status;
+    int is_built;
+
+    is_built = is_builtin(cmd->args[0]);
+    if (is_built && !cmd->next && !cmd->redirs)
+    {
+        execute_builtin(cmd);
+        restore_redirections(cmd);
+        return;
+    }
+    pid = fork();
+    if (pid == 0)
+    {
+        apply_redirection(cmd);
+        if (is_built)
+            execute_builtin_or_exit(cmd);
+        execute_external_command(cmd, shell);
+    }
+    waitpid(pid, &status, 0);
+    if (WIFEXITED(status)) // Check if the child exited normally
+        shell->exit_status = WEXITSTATUS(status); // Extract the exit code
+    else if (WIFSIGNALED(status)) // Check if the child was terminated by a signal
+        shell->exit_status = 128 + WTERMSIG(status); // Set exit code to 128 + signal number
+    restore_redirections(cmd);
+}
+
+void	setup_pipeline(t_cmd *cmd, int *pipe_fd, int *prev_pipe_in)
+{
+    if (cmd->next)
+    {
+        pipe(pipe_fd);
+        dup2(pipe_fd[WRITE_END], STDOUT_FILENO);
+        close(pipe_fd[WRITE_END]);
+    }
+    if (*prev_pipe_in != 0)
+    {
+        dup2(*prev_pipe_in, STDIN_FILENO);
+        close(*prev_pipe_in);
+    }
+}
+
+void	execute_pipeline(t_cmd *cmd, t_shell *shell)
+{
+    int pipe_fd[2];
+    int prev_pipe_in = 0;
+    pid_t pid;
+    int status;
+
+    while (cmd)
+    {
+        if (cmd->next && pipe(pipe_fd) == -1)
         {
-           pid = fork();
-		   if (pid == 0)
-		   {
-			if (prev_pipe_in != 0)
-				{
-					dup2(prev_pipe_in, STDIN_FILENO);
-					close(prev_pipe_in);
-				}
-				if (cmd->next)
-				{
-					dup2(pipe_fd[WRITE_END], STDOUT_FILENO);
-					close(pipe_fd[WRITE_END]);
-					close(pipe_fd[READ_END]);
-				}
-				if (access(cmd->args[0], X_OK) != 0)
-				{
-				// write(2, "minishell: ", 11);
-				// write(2, cmd->args[0], ft_strlen(cmd->args[0]));
-				// write(2, ": Permission denied (execute)\n", 30);
-					exit(126); // Exit with 126 for permission error
-				}
-				apply_redirection(cmd);
-				execute_builtin(cmd);
-				//restore_redirections(cmd);
-				exit(0);
-		   }
-		   else
-		   {
-				waitpid(pid, &shell->exit_status, 0);
-				//restore_redirections(cmd);
-				return ;
-		   }
-		   
+            perror("pipe");
+            return;
         }
-		pid = fork();
-		if (pid == -1)
-		{
-			perror("fork");
-			return ;
-		}
-		if (pid == 0)
-		{
-			if (prev_pipe_in != 0)
-			{
-				dup2(prev_pipe_in, STDIN_FILENO);
-				close(prev_pipe_in);
-			}
-			if (cmd->next)
-			{
-				dup2(pipe_fd[WRITE_END], STDOUT_FILENO);
-				close(pipe_fd[WRITE_END]);
-				close(pipe_fd[READ_END]);
-			}
-			if (access(cmd->args[0], X_OK) != 0)
-			{
-				// write(2, "minishell: ", 11);
-				// write(2, cmd->args[0], ft_strlen(cmd->args[0]));
-				// write(2, ": Permission denied (execute)\n", 30);
-				exit(126); // Exit with 126 for permission error
-			}
-			apply_redirection(cmd);
-				// Set up redirections with permission checks
-			execve(cmd->args[0], cmd->args, shell->env);
-			perror(cmd->args[0]); // Print error if execve fails
-			exit(127);
-		}
-		else // Parent process
-		{
-			if (prev_pipe_in != 0) // Close the previous pipe's read end
-				close(prev_pipe_in);
-			if (cmd->next)
-			{
-				close(pipe_fd[WRITE_END]);
-                prev_pipe_in = pipe_fd[READ_END];
-			}
-         	else
-            	prev_pipe_in = 0;
-		}
-            // Update for the next iteration
-		cmd = cmd->next;
-	}
-	while (wait(NULL) > 0);
-}
-*/
-
-static void execute_pipeline(t_cmd *cmd, t_shell *shell)
-{
-	int		pipe_fd[2];
-	int		prev_pipe_in = 0;
-	pid_t	pid;
-
-	while (cmd)
-	{
-		if (cmd->next && pipe(pipe_fd) == -1)
-		{
-			perror("pipe");
-			return;
-		}
-		if (is_builtin(cmd->args[0]) && !cmd->next && prev_pipe_in == 0) // not in a pipeline
-		{
-			apply_redirection(cmd);
-			execute_builtin(cmd);
-			restore_redirections(cmd);
-			return;
-		}
-		pid = fork();
-		if (pid == -1)
-		{
-			perror("fork");
-			return;
-		}
-		if (pid == 0)
-		{
-			if (prev_pipe_in != 0) // it s pipeline
-			{
-				dup2(prev_pipe_in, STDIN_FILENO);
-				close(prev_pipe_in);
-			}
-			if (cmd->next)
-			{
-				dup2(pipe_fd[1], STDOUT_FILENO);
-				close(pipe_fd[1]);
-				close(pipe_fd[0]);
-			}
-			apply_redirection(cmd);
-			if (is_builtin(cmd->args[0]))
-				execute_builtin(cmd);
-			else
-			{
-				if (access(cmd->args[0], X_OK) != 0)
-					exit(126);
-				execve(cmd->args[0], cmd->args, shell->env);
-				perror(cmd->args[0]);
-				exit(127);
-			}
-			exit(0);
-		}
-		else // parent
-		{
-			if (prev_pipe_in != 0) // Close the previous pipe's read end
-				close(prev_pipe_in);
-
-			if (cmd->next) // If there's a next command, keep pipe_fd[0] for reading
-			{
-				close(pipe_fd[1]);  // Close write end
-				prev_pipe_in = pipe_fd[0];
-			}
-			else
-				prev_pipe_in = 0; // Reset for last command
-		}
-		cmd = cmd->next;
-	}
-	while (wait(NULL) > 0); //wait for all children :)
+        pid = fork();
+        if (pid == -1)
+        {
+            perror("fork");
+            return;
+        }
+        if (pid == 0) // Child process
+        {
+            if (prev_pipe_in != 0) // If there's input from a previous pipe
+            {
+                dup2(prev_pipe_in, STDIN_FILENO);
+                close(prev_pipe_in);
+            }
+            if (cmd->next) // If there's a next command, set up output to pipe
+            {
+                dup2(pipe_fd[WRITE_END], STDOUT_FILENO);
+                close(pipe_fd[WRITE_END]);
+                close(pipe_fd[READ_END]);
+            }
+            apply_redirection(cmd); // Apply redirections
+            if (is_builtin(cmd->args[0]))
+                execute_builtin_or_exit(cmd);
+            execute_external_command(cmd, shell);
+        }
+        // Parent process
+        if (prev_pipe_in != 0)
+            close(prev_pipe_in); // Close the previous pipe's read end
+        if (cmd->next)
+        {
+            close(pipe_fd[WRITE_END]); // Close the write end of the current pipe
+            prev_pipe_in = pipe_fd[READ_END]; // Save the read end for the next command
+        }
+        else
+            prev_pipe_in = 0; // Reset for the last command
+        cmd = cmd->next;
+    }
+    while (wait(&status) > 0) // Wait for all child processes
+    {
+        if (WIFEXITED(status)) // Check if the child exited normally
+            shell->exit_status = WEXITSTATUS(status); // Extract the exit code
+        else if (WIFSIGNALED(status)) // Check if the child was terminated by a signal
+            shell->exit_status = 128 + WTERMSIG(status); // Set exit code to 128 + signal number
+    }
 }
 
 void	executor(t_cmd *cmd, t_shell *shell)
 {
     if (!cmd)
         return;
-    if (!cmd->next) // Single command
+    if (!cmd->next)
         execute_single_command(cmd, shell);
-    else // Pipeline
+    else
         execute_pipeline(cmd, shell);
+    //shell->env = copy_env(cmd->env);cmd->shell->env
 }
