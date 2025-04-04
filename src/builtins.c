@@ -6,56 +6,28 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:33:20 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/03 14:55:55 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/04 16:55:28 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-/* Helper function (put in separate file) */
-int	add_new_env_var(char *arg, char **env)
-{
-	int		count;
-	char	**new_env;
-	int		i;
-
-	count = 0;
-	if (!env)
-		return (1);
-	while (env[count])
-		count++;
-	new_env = malloc(sizeof(char *) * (count + 2));
-	if (!new_env)
-		return (1);
-	i = 0;
-	while (i < count)
-	{
-		new_env[i] = env[i];
-		i++;
-	}
-	new_env[count] = ft_strdup(arg);
-	new_env[count + 1] = 0;
-	env = new_env;
-	//if (env)
-	//	free_env(env);
-	return (0);
-}
-
 static void remove_env_var(t_cmd *cmd, char *arg)
 {
     int i;
-    
-    i = 0;
-    if (!cmd->env)
+	
+	i = 0;
+    size_t arg_len = ft_strlen(arg);
+	if (!cmd->shell->env)
         return;
-    while (cmd->env[i] && cmd->env[i + 1])
+    while (cmd->shell->env[i])
     {
-        if (ft_strncmp(cmd->env[i], arg, ft_strlen(arg)) == 0 && cmd->env[i][ft_strlen(arg)] == '=')
+		if (strncmp(cmd->shell->env[i], arg, arg_len) == 0 && cmd->shell->env[i][arg_len] == '=')
         {
-            free(cmd->env[i]);
-            while (cmd->env[i])
+        	free(cmd->shell->env[i]);
+            while (cmd->shell->env[i])
             {
-                cmd->env[i] = cmd->env[i + 1];
+                cmd->shell->env[i] = cmd->shell->env[i + 1];
                 i++;
             }
             break;
@@ -64,17 +36,16 @@ static void remove_env_var(t_cmd *cmd, char *arg)
     }
 }
 
-void    ft_unset(t_cmd *cmd)
+void ft_unset(t_cmd *cmd)
 {
     int i;
 
-    if (!cmd->args[1] || !cmd->env)
+    if (!cmd->args[1] || !cmd->shell->env)
         return;
-    i = 0;
-    while (cmd->env[i])
+    i = 1;
+    while (cmd->args[i])
     {
-        if (ft_strcmp(cmd->args[1], cmd->env[i]) == 0)
-            remove_env_var(cmd, cmd->args[1]);
+        remove_env_var(cmd, cmd->args[i]);
         i++;
     }
 }
@@ -121,7 +92,7 @@ void	ft_exit(t_cmd *cmd)
 		}
 		exit_code = ft_atoi(cmd->args[1]);
 	}
-	free_env(cmd->env);
+	free_env(cmd->shell->env);
 	exit(exit_code % 256);
 }
 

@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/02 10:33:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/02 17:17:30 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/04 16:55:21 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,12 +19,11 @@ void	update_pwd(t_shell *shell)
 	char	*new_pwd;
 	int		i;
 
-	cwd = getcwd(NULL, 0); // Get the current working directory
+	cwd = getcwd(NULL, 0);
 	if (!cwd)
-		return ;                        // Handle error if needed
-	new_pwd = ft_strjoin("PWD=", cwd); // Create the "PWD=" string
+		return ;
+	new_pwd = ft_strjoin("PWD=", cwd);
 	free(cwd);
-	// Update the environment variable
 	i = 0;
 	while (shell->env[i])
 	{
@@ -36,8 +35,7 @@ void	update_pwd(t_shell *shell)
 		}
 		i++;
 	}
-	// If PWD is not found, add it to the environment
-	update_or_add_env(new_pwd, shell->env);
+	update_or_add_env(new_pwd, &shell->env);
 	free(new_pwd);
 }
 
@@ -69,12 +67,6 @@ void	ft_pwd(t_cmd *cmd)
 {
 	char	cwd[1024];
 
-	// if (cmd->args[1])
-	// {
-	// 	write(2, "too many arguments\n", 20);
-	// 	cmd->exit_status = 1;
-	// 	//return ;
-	// }
 	if (getcwd(cwd, sizeof(cwd)) != NULL)
 		printf("%s\n", cwd);
 	else
@@ -82,22 +74,18 @@ void	ft_pwd(t_cmd *cmd)
 	cmd->exit_status = 0;
 }
 
-void	ft_env(t_cmd *cmd)
+void ft_env(t_cmd *cmd)
 {
-	int	i;
+    int i;
 
-	if (!cmd->env)
-		return ;
-	if (cmd->args[1])
-	{
-		// write(2, "env: too many arguments\n", 25);
-		cmd->exit_status = 1;
-		return ;
-	}
+    if (!cmd->shell->env)
+        return;
+    if (cmd->args[1])
+    {
+        cmd->exit_status = 1;
+        return;
+    }
 	i = 0;
-	while (cmd->shell->env[i])
-	{
-		printf("%s\n", cmd->shell->env[i]);
-		i++;
-	}
+    while (cmd->shell->env[i])
+    	printf("%s\n", cmd->shell->env[i++]);
 }
