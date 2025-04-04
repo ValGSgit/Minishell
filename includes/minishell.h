@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 12:01:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/03 13:24:02 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/04 16:13:12 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,6 @@ typedef struct s_cmd
 	char			*out_file;
 	char			**args;
 	t_redir			*redirs;
-	char			**env;
 	int				exit_status;
 	bool			syntax_error;
 	char			*err_msg;
@@ -163,7 +162,7 @@ void				handle_sigquit(int sig);
 
 /* Environment */
 char				*resolve_path(char *cmd, char **env);
-void				update_or_add_env(char *arg, char **env);
+void				update_or_add_env(char *arg, char ***env);
 char				**copy_env(char **env);
 char				*get_env_value(char *name, char **env);
 void				set_env_value(char *key, char *value, t_shell *shell);

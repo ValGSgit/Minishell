@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 13:18:31 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/03 15:05:04 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/04 16:54:19 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ static const char	*get_random_temp_name(void)
 	close(fd);
 	i = -1;
 	while (++i < 6)
-		temp_name[13 + i] = '0' + (random_bytes[i] % 10); // Generate digits
+		temp_name[13 + i] = '0' + (random_bytes[i] % 10);
 	temp_name[19] = '\0';
 	return (temp_name);
 }
@@ -79,7 +79,8 @@ static void	read_heredoc_input(const char *delimiter, int fd, t_cmd *shell)
 	while (1)
 	{
 		line = readline("> ");
-		if (!line || ft_strcmp(line, delimiter) == 0)
+		if (line && ft_strlen(delimiter) == ft_strlen(line)
+			&& ft_strcmp(line, delimiter) == 0)
 		{
 			free(line);
 			break ;
@@ -93,8 +94,7 @@ static void	read_heredoc_input(const char *delimiter, int fd, t_cmd *shell)
 		}
 		else
 		{
-			write(fd, line, ft_strlen(line));
-			write(fd, "\n", 1);
+			(write(fd, line, ft_strlen(line)), write(fd, "\n", 1));
 			free(line);
 		}
 	}
@@ -103,13 +103,13 @@ static void	read_heredoc_input(const char *delimiter, int fd, t_cmd *shell)
 /**
  * Handle heredoc redirection.
  */
+// printf("Temporary file name: %s\n", temp_name);
 void	handle_heredoc(t_cmd *cmd, char *eof)
 {
 	const char	*temp_name;
 	int			fd;
 
 	temp_name = get_random_temp_name();
-	// printf("Temporary file name: %s\n", temp_name);
 	fd = open(temp_name, O_CREAT | O_WRONLY | O_TRUNC, 0600);
 	if (fd == -1)
 	{

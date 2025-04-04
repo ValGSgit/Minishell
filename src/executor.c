@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:34:42 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/03 13:26:47 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/04 15:38:47 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,6 +136,7 @@ void	execute_single_command(t_cmd *cmd, t_shell *shell)
     int is_built;
 
     is_built = is_builtin(cmd->args[0]);
+    status = 0;
     if (is_built && !cmd->next && !cmd->redirs)
     {
         execute_builtin(cmd);
