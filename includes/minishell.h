@@ -83,7 +83,7 @@ typedef struct s_cmd {
     char			**args;
     t_redir			*redirs;
     char			**env;
-    int				exit_status;
+   // int				exit_status;
     bool			syntax_error;
     struct s_cmd	*next;
     struct s_shell	*shell;

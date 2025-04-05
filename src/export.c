@@ -42,6 +42,22 @@ int find_env_var(char **env, const char *var)
     return -1;
 }
 
+/*int find_env_var(char **env, const char *name)
+{
+    int i;
+    int name_len;
+
+    i = 0;
+    name_len = ft_strlen(name);
+    while (env[i])
+    {
+        if (strncmp(env[i] + 11, name, name_len) == 0 && env[i][name_len + 11] == '=')
+            return i;
+        i++;
+    }
+    return (-1);
+}*/
+
 static void	print_env(char **env)
 {
     int		i;
@@ -109,7 +125,15 @@ void add_to_env(char ***env, char *new_var)
     int     i;
     char    **new_env;
 
+    printf("Adding variable: %s\n", new_var);
+    printf("Current environment:\n");
+    for (i = 0; (*env)[i] != NULL; i++)
+    {
+        printf("env[%d]: %s\n", i, (*env)[i]);
+    }
+
     i = 0;
+    printf("Adding variable: %s\n", new_var);
     while ((*env)[i])
         i++;
     new_env = malloc((i + 2) * sizeof(char *));
@@ -122,6 +146,11 @@ void add_to_env(char ***env, char *new_var)
     }
     new_env[i] = new_var;
     new_env[i + 1] = NULL;
+    printf("Updated environment:\n");
+    for (i = 0; new_env[i] != NULL; i++)
+    {
+        printf("new_env[%d]: %s\n", i, new_env[i]);
+    }
     free(*env);
     *env = new_env;
 }

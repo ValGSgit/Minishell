@@ -44,7 +44,7 @@ int	check_file_permissions(const char *filename)
     if (access(filename, R_OK) != 0)
     {
         write(2, filename, ft_strlen(filename));
-        write(2, ": Permission denied\n", 20);
+        write(2, " Permission denied\n", 20);
         return (126); // Permission denied
     }
     return (0); // Permissions are valid
@@ -67,18 +67,24 @@ void	handle_redirection_in(t_redir *redir)
 void	handle_redirection_out(t_redir *redir, int append)
 {
     int fd;
-    int writable;
+   // int writable;
 
     if (append)
         fd = open(redir->file, O_WRONLY | O_APPEND | O_CREAT, 0644);
     else
         fd = open(redir->file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    writable = access(redir->file, W_OK);
+   
+    /*writable = access(redir->file, W_OK);
     if (writable != 0)
     {
         write(2, " Permission denied\n", 20);
         exit(1);
-    }
+    }*/
+   if (fd == -1)
+   {
+        perror("this is typing");
+        exit(1);
+   }
     dup2(fd, STDOUT_FILENO);
     close(fd);
 }

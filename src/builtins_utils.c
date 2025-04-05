@@ -49,9 +49,9 @@ void	ft_cd(t_cmd *cmd)
 		path = getenv("HOME");
 	if (cmd->args[2])
 	{
-		write(2, "cd: too many arguments\n", 24);
-		cmd->exit_status = 1;
-		exit(1);
+		write(2, " too many arguments\n", 20);
+		cmd->shell->exit_status = 1;
+		return;
 	}
 	else
 		path = cmd->args[1];
@@ -79,7 +79,7 @@ void	ft_pwd(t_cmd *cmd)
 		printf("%s\n", cwd);
 	else
 		perror("pwd");
-	cmd->exit_status = 0;
+	cmd->shell->exit_status = 0;
 }
 
 void ft_env(t_cmd *cmd)
@@ -90,7 +90,7 @@ void ft_env(t_cmd *cmd)
         return;
     if (cmd->args[1])
     {
-        cmd->exit_status = 1;
+        cmd->shell->exit_status = 1;
         return;
     }
 	i = 0;

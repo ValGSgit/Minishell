@@ -1,0 +1,5 @@
+fixed some exit codes (set them to shell.status instead of cmd status). maybe we should delete cmd.exit_status?
+exit codes for pipes maybe need some signal handling? should we use that?
+fixed redirections error messeges (from permission checks)
+
+need to look into more error messeges extras($?, $, ./file)
