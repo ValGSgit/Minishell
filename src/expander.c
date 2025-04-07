@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/04 16:38:48 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/07 16:17:20 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ char	*append_str(char *dest, char *src)
 	return (new_str);
 }
 
-
 char	*process_argument(char *arg, t_shell *shell)
 {
 	t_expander_state	state;
@@ -40,8 +39,8 @@ char	*process_argument(char *arg, t_shell *shell)
 
 	ft_memset(&state, 0, sizeof(t_expander_state));
 	state.result = ft_strdup("");
-	 if (!arg)
-	 	return (state.result);
+	if (!state.result || !arg)
+		return (state.result);
 	i = -1;
 	while (arg[++i])
 	{
@@ -76,7 +75,7 @@ void	expander(t_cmd *cmd, t_shell *shell)
 		cmd->args[0] = expanded;
 	}
 	i = 0;
-	while (cmd->args && cmd->args[i])
+	while (cmd->args[i])
 	{
 		expanded = process_argument(cmd->args[i], shell);
 		if (expanded)
@@ -127,9 +126,9 @@ void	expand_nodes(t_cmd *cmd, t_shell *shell)
 	while (node)
 	{
 		expander(node, shell);
+		node->shell = shell;
 		if (node->args)
 			node->args = ft_clean_args(node->args);
-		node->shell = shell;
 		node = node->next;
 	}
 }

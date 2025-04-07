@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/14 16:46:52 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/04 16:40:21 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/03/31 15:22:36 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,6 @@ static int	numlen(int n)
 	if (n == 0)
 		return (1);
 	count = 0;
-	if (n < 0)
-		count++;
 	while (n)
 	{
 		count++;

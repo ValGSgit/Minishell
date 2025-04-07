@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/02 10:33:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/04 16:55:21 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/07 16:11:54 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,12 @@ void	update_pwd(t_shell *shell)
 	char	*new_pwd;
 	int		i;
 
-	cwd = getcwd(NULL, 0);
+	cwd = getcwd(NULL, 0); // Get the current working directory
 	if (!cwd)
-		return ;
-	new_pwd = ft_strjoin("PWD=", cwd);
+		return ;                        // Handle error if needed
+	new_pwd = ft_strjoin("PWD=", cwd); // Create the "PWD=" string
 	free(cwd);
+	// Update the environment variable
 	i = 0;
 	while (shell->env[i])
 	{
@@ -35,6 +36,7 @@ void	update_pwd(t_shell *shell)
 		}
 		i++;
 	}
+	// If PWD is not found, add it to the environment
 	update_or_add_env(new_pwd, &shell->env);
 	free(new_pwd);
 }
@@ -47,9 +49,9 @@ void	ft_cd(t_cmd *cmd)
 		path = getenv("HOME");
 	if (cmd->args[2])
 	{
-		write(2, "cd: too many arguments\n", 24);
-		cmd->exit_status = 1;
-		exit(1);
+		write(2, " too many arguments\n", 20);
+		cmd->shell->exit_status = 1;
+		return;
 	}
 	else
 		path = cmd->args[1];
@@ -67,11 +69,17 @@ void	ft_pwd(t_cmd *cmd)
 {
 	char	cwd[1024];
 
+	// if (cmd->args[1])
+	// {
+	// 	write(2, "too many arguments\n", 20);
+	// 	cmd->exit_status = 1;
+	// 	//return ;
+	// }
 	if (getcwd(cwd, sizeof(cwd)) != NULL)
 		printf("%s\n", cwd);
 	else
 		perror("pwd");
-	cmd->exit_status = 0;
+	cmd->shell->exit_status = 0;
 }
 
 void ft_env(t_cmd *cmd)
@@ -82,10 +90,11 @@ void ft_env(t_cmd *cmd)
         return;
     if (cmd->args[1])
     {
-        cmd->exit_status = 1;
+        cmd->shell->exit_status = 1;
         return;
     }
 	i = 0;
     while (cmd->shell->env[i])
     	printf("%s\n", cmd->shell->env[i++]);
 }
+
