@@ -143,6 +143,9 @@ void	handle_heredoc(t_cmd *cmd, char *eof);
 /* Pipes */
 void	execute_command(t_cmd *cmd, t_shell *shell);
 void	handle_pipes(t_cmd *cmd);
+void    pipe_exit_status(pid_t last_pid, t_shell *shell);
+pid_t	fork_child_process(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2], t_shell *shell);
+void	setup_parent_after_fork(t_cmd *cmd, int *prev_pipe_in, int pipe_fd[2]);
 
 /* Signals */
 void	setup_signals(void);

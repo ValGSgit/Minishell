@@ -43,8 +43,9 @@ int	check_file_permissions(const char *filename)
     }
     if (access(filename, R_OK) != 0)
     {
-        write(2, filename, ft_strlen(filename));
-        write(2, " Permission denied\n", 20);
+        //write(2, filename, ft_strlen(filename));
+        //write(2, " Permission denied\n", 20);
+        perror("error code fixes:");
         return (126); // Permission denied
     }
     return (0); // Permissions are valid
@@ -119,17 +120,27 @@ void	execute_external_command(t_cmd *cmd, t_shell *shell)
 {
     struct stat sb;
 
+    if (access(cmd->args[0], F_OK) != 0)
+    {
+        if (cmd->args[0][0] != '.')
+        {
+            write(2, " command not found\n", 19);
+            exit(127);
+        }
+        perror(cmd->args[0]);
+        exit(127); // command not found
+    }
     if (stat(cmd->args[0], &sb) == 0 && S_ISDIR(sb.st_mode))
     {
         write(2, cmd->args[0], ft_strlen(cmd->args[0]));
         write(2, ": Is a directory\n", 16);
         exit(126); // Is a directory
-    }
+    }    
     if (access(cmd->args[0], X_OK) != 0)
     {
         perror(cmd->args[0]);
-        exit(127); // Command not found or permission denied
-    }
+        exit(126); // permission denied
+    } 
     execve(cmd->args[0], cmd->args, shell->env);
     perror(cmd->args[0]);
     exit(127);
@@ -157,10 +168,10 @@ void	execute_single_command(t_cmd *cmd, t_shell *shell)
         execute_external_command(cmd, shell);
     }
     waitpid(pid, &status, 0);
-    if (WIFEXITED(status)) // Check if the child exited normally
-        shell->exit_status = WEXITSTATUS(status); // Extract the exit code
-    else if (WIFSIGNALED(status)) // Check if the child was terminated by a signal
-        shell->exit_status = 128 + WTERMSIG(status); // Set exit code to 128 + signal number
+    if (WIFEXITED(status))
+        shell->exit_status = WEXITSTATUS(status); 
+    else if (WIFSIGNALED(status))
+        shell->exit_status = 128 + WTERMSIG(status);
     restore_redirections(cmd);
 }
 
@@ -179,13 +190,72 @@ void	setup_pipeline(t_cmd *cmd, int *pipe_fd, int *prev_pipe_in)
     }
 }
 
+void pipe_exit_status(pid_t last_pid, t_shell *shell)
+{
+    pid_t   wpid;
+    int     status;
+
+    while ((wpid = wait(&status)) > 0)
+    {
+        if (wpid == last_pid)
+        {
+            if (WIFEXITED(status))
+                shell->exit_status = WEXITSTATUS(status);
+            else if (WIFSIGNALED(status))
+                shell->exit_status = 128 + WTERMSIG(status);
+        }
+    }
+}
+
+pid_t	fork_child_process(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2], t_shell *shell)
+{
+	pid_t	pid;
+
+	pid = fork();
+	if (pid == -1)
+		return (-1);
+	if (pid == 0)
+	{
+		if (prev_pipe_in != 0)
+		{
+			dup2(prev_pipe_in, STDIN_FILENO);
+			close(prev_pipe_in);
+		}
+		if (cmd->next)
+		{
+			dup2(pipe_fd[WRITE_END], STDOUT_FILENO);
+			close(pipe_fd[WRITE_END]);
+			close(pipe_fd[READ_END]);
+		}
+		apply_redirection(cmd);
+		if (is_builtin(cmd->args[0]))
+			execute_builtin_or_exit(cmd);
+		execute_external_command(cmd, shell);
+	}
+	return (pid);
+}
+
+void	setup_parent_after_fork(t_cmd *cmd, int *prev_pipe_in, int pipe_fd[2])
+{
+	if (*prev_pipe_in != 0)
+		close(*prev_pipe_in);
+	if (cmd->next)
+	{
+		close(pipe_fd[WRITE_END]);
+		*prev_pipe_in = pipe_fd[READ_END];
+	}
+	else
+		*prev_pipe_in = 0;
+}
+
 void	execute_pipeline(t_cmd *cmd, t_shell *shell)
 {
     int pipe_fd[2];
     int prev_pipe_in = 0;
-    pid_t pid;
-    int status;
+    pid_t   pid;
+    pid_t   last_pid;
 
+    last_pid = 0;
     while (cmd)
     {
         if (cmd->next && pipe(pipe_fd) == -1)
@@ -193,51 +263,20 @@ void	execute_pipeline(t_cmd *cmd, t_shell *shell)
             perror("pipe");
             return;
         }
-        pid = fork();
+        pid = fork_child_process(cmd, prev_pipe_in, pipe_fd, shell);
         if (pid == -1)
         {
             perror("fork");
             return;
         }
-        if (pid == 0) // Child process
-        {
-            if (prev_pipe_in != 0) // If there's input from a previous pipe
-            {
-                dup2(prev_pipe_in, STDIN_FILENO);
-                close(prev_pipe_in);
-            }
-            if (cmd->next) // If there's a next command, set up output to pipe
-            {
-                dup2(pipe_fd[WRITE_END], STDOUT_FILENO);
-                close(pipe_fd[WRITE_END]);
-                close(pipe_fd[READ_END]);
-            }
-            apply_redirection(cmd); // Apply redirections
-            if (is_builtin(cmd->args[0]))
-                execute_builtin_or_exit(cmd);
-            execute_external_command(cmd, shell);
-        }
-        // Parent process
-        if (prev_pipe_in != 0)
-            close(prev_pipe_in); // Close the previous pipe's read end
-        if (cmd->next)
-        {
-            close(pipe_fd[WRITE_END]); // Close the write end of the current pipe
-            prev_pipe_in = pipe_fd[READ_END]; // Save the read end for the next command
-        }
-        else
-            prev_pipe_in = 0; // Reset for the last command
+        if (!cmd->next)
+            last_pid = pid;
+        setup_parent_after_fork(cmd, &prev_pipe_in, pipe_fd);
         cmd = cmd->next;
     }
-    while (wait(&status) > 0) // Wait for all child processes
-    {
-        if (WIFEXITED(status)) // Check if the child exited normally
-            shell->exit_status = WEXITSTATUS(status); // Extract the exit code
-        else if (WIFSIGNALED(status)) // Check if the child was terminated by a signal
-            shell->exit_status = 128 + WTERMSIG(status); // Set exit code to 128 + signal number
-    }
+    pipe_exit_status(last_pid, shell);
 }
-
+   
 void	executor(t_cmd *cmd, t_shell *shell)
 {
     if (!cmd)
@@ -246,5 +285,4 @@ void	executor(t_cmd *cmd, t_shell *shell)
         execute_single_command(cmd, shell);
     else
         execute_pipeline(cmd, shell);
-    //shell->env = copy_env(cmd->env);cmd->shell->env
 }
