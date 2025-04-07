@@ -1,6 +1,6 @@
 Left to fix:
 
-Rework export and the +11 issue (Val)
+Rework export and the +11 issue (Lets each write our own export and we compare next time)
 
 Work on echo for multiple -n (Iris)
 
