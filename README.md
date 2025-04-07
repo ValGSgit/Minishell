@@ -1,17 +1,17 @@
 Left to fix:
 
-Rework export and the +11 issue
-Work on echo for multiple -n
+Rework export and the +11 issue (Val)
 
-Val
-Handle echo $"HOME"$USER (empty expansion remove first $)
+Work on echo for multiple -n (Iris)
 
-Write updater for PWD, OLDPWD, SHLVL
+Handle echo $"HOME"$USER (empty expansion remove first $) (Val bc expansions suck)
 
-Handle SIGTERM in the middle of heredoc
+Write updater for PWD, OLDPWD, SHLVL (Either)
 
-SHLVL idea (if ./minishell or bash then SHLVL++)
+Handle SIGTERM in the middle of heredoc (Iris)
 
-Fix conditional jump when syntax error and echo $?
+SHLVL idea (if ./minishell or bash then SHLVL++) (Val/Iris)
 
-Remake syntax check for case ">| echo something"
+Fix conditional jump when syntax error and echo $? (Val)
+Remake syntax check for case "(null) > (null) | echo something" (bash says "something: command not found") (should not be syntax error)
+bash creates file called echo int this case...
