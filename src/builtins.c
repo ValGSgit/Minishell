@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:33:20 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/04 16:55:28 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/03 14:55:55 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,7 @@ void	ft_exit(t_cmd *cmd)
 		if ((!ft_isnumber(cmd->args[1])) || (ft_strcmp(cmd->args[1], LMAX) == 0
 		|| ft_strcmp(cmd->args[1], LMIN) == 0))
 		{
-			write(2, " numeric argument required\n", 28);
+			write(2, " numeric argument required\n", 27);
 			exit(2);
 		}
 		exit_code = ft_atoi(cmd->args[1]);

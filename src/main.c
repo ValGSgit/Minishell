@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/04 17:00:58 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/07 16:20:35 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,13 +30,10 @@ int		handle_input(t_shell *shell, char *input)
 		free(input);
 		return (0);
 	}
-	//debug_shell_state(tokens, shell->cmd, "After lexer");
 	shell->cmd = parser(tokens, shell);
 	if (!shell->cmd)
 		return(free(input),free_tokens(tokens), 0);
-	//debug_shell_state(tokens, shell->cmd, "After parser");
 	expand_nodes(shell->cmd, shell);
-	//debug_shell_state(tokens, shell->cmd, "After expander");
 	if (shell->cmd->args[0] != NULL)
 		executor(shell->cmd, shell);
 	free_cmd(shell->cmd);
@@ -55,7 +52,7 @@ void	minishell_loop(t_shell *shell)
 	while (1)
 	{
 		setup_signals();
-		//input = readline((const char *)update_prompt());
+		// //input = readline((const char *)update_prompt());
 		// if (isatty(fileno(stdin)))
 		// {
 		// //prompt = update_prompt();
