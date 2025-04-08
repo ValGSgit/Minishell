@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
+/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 12:01:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/07 16:11:13 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/08 15:25:59 by codespace        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@
 # include <unistd.h>
 
 /* Defines */
+# define _GNU_SOURCE
 # define LMAX "9223372036854775808"
 # define LMIN "-9223372036854775809"
 # define SUCCESS 0
@@ -177,6 +178,7 @@ void	free_shell(t_shell *shell);
 char	*append_str(char *dest, char *src);
 bool	is_metacharacter(char *token);
 void	add_argument(t_cmd *node, char *arg);
+void update_shlvl(t_shell *shell);
 
 #endif
 // #ifndef MINISHELL_H

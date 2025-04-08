@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   env_utils2.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
+/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 11:58:27 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/07 16:08:28 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/08 17:18:25 by codespace        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,28 +39,6 @@ char	**copy_env(char **envp)
 	env[i] = NULL;
 	return (env);
 }
-
-// char	*get_env_value(char *name, char **env)
-// {
-//     int		i;
-//     char	*key;
-
-//     i = 0;
-//     if (!env || !name)
-//         return (NULL);
-//     while (env[i])
-//     {
-// 		key = ft_substr(env[i], 0, (char *)ft_strchr(env[i], '=') - env[i]);
-// 		if (ft_strncmp(key, name, ft_strlen(key)) == 0)
-//         {
-//             free(key);
-//             return (ft_strchr(env[i], '=') + 1);
-//         }
-//         free(key);
-//         i++;
-//     }
-//     return (NULL);
-// }
 
 char *get_env_value(char *name, char **env)
 {
