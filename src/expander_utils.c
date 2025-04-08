@@ -3,26 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   expander_utils.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
+/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/01 12:02:58 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/07 16:16:59 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/08 17:19:27 by codespace        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-static char	*expand_exit_status(int *i, t_shell *shell)
-{
-	char	*status;
-
-	*i += 1;
-	if (!shell->exit_status)
-		status = ft_strdup("0");
-	else
-		status = ft_itoa(shell->exit_status);
-	return (status);
-}
 
 static char	*handle_empty_var_name(char *var_name)
 {
@@ -30,46 +19,74 @@ static char	*handle_empty_var_name(char *var_name)
 	return (ft_strdup("$"));
 }
 
-static char	*handle_miss(int *i, char *str, int strt_len[2], bool in_dquote)
+static char *handle_quoted_variable(char *str, int *i)
 {
-	char	*value;
-
-	if (in_dquote)
-		value = ft_strdup("");
-	else
-	{
-		value = ft_strdup("");
-		*i += strt_len[1];
-		value = append_str(value, str + strt_len[0] + strt_len[1]);
-	}
-	*i = ft_strlen(str) - 1;
-	return (value);
+    int start;
+    int j;
+    char *content;
+    
+    // Skip $ and opening quote
+    start = *i + 2;
+    j = start;
+    
+    // Find closing quote
+    while (str[j] && str[j] != '"')
+        j++;
+        
+    // Extract content between quotes
+    content = ft_substr(str, start, j - start);
+    
+    // Update position
+    if (str[j] == '"')
+        *i = j;
+    else
+        *i = j - 1;
+        
+    return content;
 }
 
-char	*expand_variable(char *str, int *i, t_shell *shell, bool in_dquote)
+char *expand_variable(char *str, int *i, t_shell *shell, bool in_dquote)
 {
-	char	*var_name;
-	char	*value;
-	int		strt_len[2];
-
-	strt_len[0] = *i + 1;
-	strt_len[1] = 0;
-	if (!str[strt_len[0]])
-		return (ft_strdup("$"));
-	if (str[strt_len[0]] == '?')
-		return (expand_exit_status(i, shell));
-	while (str[strt_len[0] + strt_len[1]] 
-		&& (ft_isalnum(str[strt_len[0] + strt_len[1]])
-		|| str[strt_len[0] + strt_len[1]] == '_'))
-		strt_len[1]++;
-	var_name = ft_substr(str, strt_len[0], strt_len[1]);
-	if (!var_name || !var_name[0])
-		return (handle_empty_var_name(var_name));
-	value = get_env_value(var_name, shell->env);
-	free(var_name);
-	*i += strt_len[1];
-	if (!value)
-		return (handle_miss(i, str, strt_len, in_dquote));
-	return (ft_strdup(value));
+    char *var_name;
+    char *value;
+    int strt_len[2];
+    
+    // Check for $"string" pattern - bash treats this differently
+    if (in_dquote && str[*i + 1] == '"')
+        return (handle_quoted_variable(str, i));
+    
+    strt_len[0] = *i + 1;
+    strt_len[1] = 0;
+    
+    // Handle empty variable
+    if (!str[strt_len[0]])
+        return (ft_strdup("$"));
+    
+    // Handle $? special variable
+    if (str[strt_len[0]] == '?')
+    {
+        (*i)++;
+        return (ft_itoa(shell->exit_status));
+    }
+    // Find variable name length
+    while (str[strt_len[0] + strt_len[1]] && 
+           (ft_isalnum(str[strt_len[0] + strt_len[1]]) || 
+            str[strt_len[0] + strt_len[1]] == '_'))
+        strt_len[1]++;
+    
+    // Extract variable name
+    var_name = ft_substr(str, strt_len[0], strt_len[1]);
+    if (!var_name || !var_name[0])
+        return (handle_empty_var_name(var_name));
+    
+    // Get variable value
+    value = get_env_value(var_name, shell->env);
+    free(var_name);
+    *i += strt_len[1];
+    
+    // Handle case where variable doesn't exist
+    if (!value)
+        return (ft_strdup(""));
+        
+    return (ft_strdup(value));
 }
-
