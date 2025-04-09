@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/03 15:05:25 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/09 10:17:08 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ char	*process_argument(char *arg, t_shell *shell)
 			state.in_dquote = !state.in_dquote;
 		else if (arg[i] == '$' && !state.in_quote)
 		{
-			value = expand_variable(arg, &i, shell, state.in_dquote);
+			value = expand_variable(arg, &i, shell);
 			state.result = append_str(state.result, value);
 			free(value);
 		}

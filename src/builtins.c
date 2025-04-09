@@ -6,82 +6,53 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:33:20 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/03 14:55:55 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/09 10:59:34 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-/* Helper function (put in separate file) */
-int	add_new_env_var(char *arg, char **env)
-{
-	int		count;
-	char	**new_env;
-	int		i;
-
-	count = 0;
-	if (!env)
-		return (1);
-	while (env[count])
-		count++;
-	new_env = malloc(sizeof(char *) * (count + 2));
-	if (!new_env)
-		return (1);
-	i = 0;
-	while (i < count)
-	{
-		new_env[i] = env[i];
-		i++;
-	}
-	new_env[count] = ft_strdup(arg);
-	new_env[count + 1] = 0;
-	env = new_env;
-	//if (env)
-	//	free_env(env);
-	return (0);
-}
-
 static void remove_env_var(t_cmd *cmd, char *arg)
 {
-    int i;
-    
-    i = 0;
-    if (!cmd->env)
-        return;
-    while (cmd->env[i] && cmd->env[i + 1])
-    {
-        if (ft_strncmp(cmd->env[i], arg, ft_strlen(arg)) == 0 && cmd->env[i][ft_strlen(arg)] == '=')
-        {
-            free(cmd->env[i]);
-            while (cmd->env[i])
-            {
-                cmd->env[i] = cmd->env[i + 1];
-                i++;
-            }
-            break;
-        }
-        i++;
-    }
+	int i;
+
+	i = 0;
+	size_t arg_len = ft_strlen(arg);
+	if (!cmd->shell->env)
+		return;
+	while (cmd->shell->env[i])
+	{
+		if (strncmp(cmd->shell->env[i], arg, arg_len) == 0 && cmd->shell->env[i][arg_len] == '=')
+		{
+			free(cmd->shell->env[i]);
+			while (cmd->shell->env[i])
+			{
+				cmd->shell->env[i] = cmd->shell->env[i + 1];
+				i++;
+			}
+			break;
+		}
+		i++;
+	}
 }
 
-void    ft_unset(t_cmd *cmd)
+void ft_unset(t_cmd *cmd)
 {
-    int i;
+	int i;
 
-    if (!cmd->args[1] || !cmd->env)
-        return;
-    i = 0;
-    while (cmd->env[i])
-    {
-        if (ft_strcmp(cmd->args[1], cmd->env[i]) == 0)
-            remove_env_var(cmd, cmd->args[1]);
-        i++;
-    }
+	if (!cmd->args[1] || !cmd->shell->env)
+		return;
+	i = 1;
+	while (cmd->args[i])
+	{
+		remove_env_var(cmd, cmd->args[i]);
+		i++;
+	}
 }
 
-int	ft_isnumber(char *str)
+int ft_isnumber(char *str)
 {
-	int	i;
+	int i;
 
 	i = 0;
 	if (!str)
@@ -97,35 +68,34 @@ int	ft_isnumber(char *str)
 	return (1);
 }
 
-void	ft_exit(t_cmd *cmd)
+void ft_exit(t_cmd *cmd)
 {
-	int	exit_code;
+	int exit_code;
 
 	if (!cmd->args[1])
-	exit(0);
+		exit(0);
 	exit_code = ft_atoi(cmd->args[1]);
 	if (cmd->args[1] && cmd->args[2])
 	{
-		write(1, "exit\n", 5);
+		//write(1, "exit\n", 5);
 		write(2, "exit: too many arguments\n", 24);
 		exit_code = 1;
 		exit(1);
 	}
 	if (cmd->args[1])
 	{
-		if ((!ft_isnumber(cmd->args[1])) || (ft_strcmp(cmd->args[1], LMAX) == 0
-		|| ft_strcmp(cmd->args[1], LMIN) == 0))
+		if ((!ft_isnumber(cmd->args[1])) || (ft_strcmp(cmd->args[1], LMAX) == 0 || ft_strcmp(cmd->args[1], LMIN) == 0))
 		{
-			write(2, " numeric argument required\n", 28);
+			write(2, " numeric argument required\n", 27);
 			exit(2);
 		}
 		exit_code = ft_atoi(cmd->args[1]);
 	}
-	free_env(cmd->env);
+	free_env(cmd->shell->env);
 	exit(exit_code % 256);
 }
 
-int	is_builtin(char *cmd)
+int is_builtin(char *cmd)
 {
 	if (!cmd)
 		return (0);
@@ -146,7 +116,7 @@ int	is_builtin(char *cmd)
 	return (0);
 }
 
-void	execute_builtin(t_cmd *cmd)
+void execute_builtin(t_cmd *cmd)
 {
 	if (ft_strncmp(cmd->args[0], "echo", 5) == 0)
 		ft_echo(cmd);
@@ -164,26 +134,48 @@ void	execute_builtin(t_cmd *cmd)
 		ft_exit(cmd);
 }
 
-void	ft_echo(t_cmd *cmd)
+void ft_echo(t_cmd *cmd)
 {
-	int	i;
-	int	n_flag;
+	int i = 1;
+	int n_flag = 0;
 
-	i = 1;
-	n_flag = 0;
-	if (cmd->args[1] && ft_strcmp(cmd->args[1], "-n") == 0)
-	{
-		n_flag = 1;
-		i++;
-	}
+	// Process all consecutive -n style flags
 	while (cmd->args[i])
 	{
-		if (cmd->args[i])
-			printf("%s", cmd->args[i]);
-		if (cmd->args[i + 1])
+		if (cmd->args[i][0] == '-' && cmd->args[i][1] == 'n')
+		{
+			// Check if it's all 'n' characters after the '-'
+			int j = 2;
+			int all_n = 1;
+			while (cmd->args[i][j])
+			{
+				if (cmd->args[i][j] != 'n')
+				{
+					all_n = 0;
+					break;
+				}
+				j++;
+			}
+			if (all_n)
+			{
+				n_flag = 1;
+				i++;
+			}
+			else
+				break;
+		}
+		else
+			break;
+	}
+	// Print arguments
+	while (cmd->args[i])
+	{
+		printf("%s", cmd->args[i]);
+		if (cmd->args[i + 1]) // If not the last argument
 			printf(" ");
 		i++;
 	}
 	if (!n_flag)
 		printf("\n");
+	cmd->shell->exit_status = 0;
 }
