@@ -6,11 +6,12 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/09 13:07:29 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/09 13:12:21 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/09 13:21:01 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
+
 
 /**
  * Report a syntax error and set the shell exit status to 2
@@ -41,7 +42,7 @@ void	handle_pipeline(t_cmd **current, t_shell *shell)
 	*current = new_cmd;
 }
 
-static int is_redirection(char *tokens)
+static int	is_redirection(char *tokens)
 {
 	return (ft_strcmp(tokens, ">") == 0 || ft_strcmp(tokens, ">>") == 0
 		|| ft_strcmp(tokens, "<") == 0 || ft_strcmp(tokens, "<<") == 0);
@@ -100,8 +101,6 @@ void	handle_redirection(t_cmd *cmd, char **tokens, int *i, t_shell *shell)
 	create_redir_node(cmd, redir_type, filename);
 	(*i) += 2; // Skip redirection type and filename
 }
-
-
 
 /**
  * Check for syntax errors before parsing
@@ -198,7 +197,7 @@ t_cmd	*parser(char **tokens, t_shell *shell)
 				return (NULL);
 			}
 
-			// Special case: pipe followed by redirection (e.g., "echo | > file")
+			// Special case: pipe followed by redirection (e.g.,"echo | > file")
 			if (tokens[i + 1] && is_redirection(tokens[i + 1])
 				&& (ft_strcmp(tokens[i + 1], ">") == 0 || ft_strcmp(tokens[i
 						+ 1], ">>") == 0))
