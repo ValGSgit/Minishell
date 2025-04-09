@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/14 16:46:52 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/09 10:47:40 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/09 12:37:21 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ char	*ft_itoa(int n)
 	len = numlen(n);
 	if (len == 0)
 		len = 1;
-	nbstr = (char *)malloc(sizeof(char) * (len + 1));
+	nbstr = (char *)ft_calloc(sizeof(char), (len + 1));
 	if (!nbstr)
 		return (NULL);
 	nbstr[len] = '\0';

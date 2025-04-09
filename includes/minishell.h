@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 12:01:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/09 10:17:00 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/09 12:28:24 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,7 @@ typedef struct s_expander_state {
     char	quote_char;
     bool	in_quote;
     bool	in_dquote;
+    bool	is_heredoc;
 }	t_expander_state;
 
 typedef struct s_cmd {
