@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/02 10:33:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/09 10:51:30 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/09 12:36:26 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,20 +43,16 @@ void	update_pwd(t_shell *shell)
 
 void	update_shlvl(t_shell *shell)
 {
-	char	*shlvl_value;
+	//char	*shlvl_value;
 	int		level;
 	char	*level_str;
 	char	*new_shlvl;
 
-	shlvl_value = get_env_value("SHLVL", shell->env);
-	level = 1;
-	if (shlvl_value)
-	{
-		level = ft_atoi(shlvl_value);
-		if (level < 0)
-			level = 0;
-		level++;
-	}
+	//shlvl_value = get_env_value("SHLVL", shell->env);
+	level = ft_atoi(get_env_value("SHLVL", shell->env));
+	if (level < 0)
+		level = 0;
+	level++;
 	level_str = ft_itoa(level);
 	if (!level_str)
 		return ;

@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/09 10:59:17 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/09 12:34:36 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,8 @@ int handle_input(t_shell *shell, char *input)
     if (shell->cmd && shell->cmd->args && shell->cmd->args[0] != NULL)
         executor(shell->cmd, shell);   
     free_cmd(shell->cmd);
-    free_tokens(tokens);
+    if (tokens)
+        free_tokens(tokens);
     free(input);
     return 0;
 }
