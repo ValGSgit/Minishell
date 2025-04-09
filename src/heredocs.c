@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 13:18:31 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/09 12:33:09 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/09 12:48:55 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,63 +54,6 @@ static const char *get_random_temp_name(void)
 	temp_name[19] = '\0';
 	return (temp_name);
 }
-
-// static char *process_line(char *arg, t_cmd *cmd, bool expand_vars)
-// {
-// 	char *expanded_line;
-
-// 	expanded_line = process_argument(arg, cmd->shell);
-// 	if (expanded_line && ft_strcmp(expanded_line, arg) != 0)
-// 	{
-// 		free(arg);
-// 		return (expanded_line);
-// 	}
-// 	return (arg);
-// }
-
-/**
- * Read heredoc input and write it to the temporary file.
- */
-// static void read_heredoc_input(const char *delimiter, int fd, t_cmd *shell, bool expand_vars)
-// {
-//     char *line;
-//     char *expanded_line;
-
-//     while (1)
-//     {
-//         line = readline("> ");
-//         if (!line || ft_strcmp(line, delimiter) == 0)
-//         {
-//             free(line);
-//             break;
-//         }
-        
-//         if (expand_vars)
-//         {
-//             // Only expand variables if delimiter wasn't quoted
-//             expanded_line = process_line(line, shell);
-//             if (expanded_line)
-//             {
-//                 write(fd, expanded_line, ft_strlen(expanded_line));
-//                 write(fd, "\n", 1);
-//                 free(expanded_line);
-//             }
-//             else
-//             {
-//                 write(fd, line, ft_strlen(line));
-//                 write(fd, "\n", 1);
-//                 free(line);
-//             }
-//         }
-//         else
-//         {
-//             // If delimiter was quoted, don't expand variables
-//             write(fd, line, ft_strlen(line));
-//             write(fd, "\n", 1);
-//             free(line);
-//         }
-//     }
-// }
 
 static void heredoc_signal_handler(int sig)
 {
