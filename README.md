@@ -3,13 +3,21 @@
 ===============================================================================
 
 Project: Minishell  
-Author: ValGS  
+Authors: ValGS / Iris
 School: 42  
 Branch: Val-Branch  
 Language: C  
 Compilation: gcc with -Wall -Wextra -Werror  
 Libs Used: Readline, Libc, Custom Libft  
 License: Educational Use - 42 School
+-------------------------------------------------------------------------------
+Left to correct:
+
+*Handle heredoc limiter with/without quotes (expansion)
+*Review execution process & child process exiting
+*Handle edge cases for unset and export (When PATH is unset or export removes spaces(?))
+*Rewrite syntax error check
+*Val will handle echo "$" and the things that thought were fixed after fixing other fixes
 
 -------------------------------------------------------------------------------
 1. PROJECT OVERVIEW
