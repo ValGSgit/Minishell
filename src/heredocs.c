@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   heredocs.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 13:18:31 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/08 17:07:57 by codespace        ###   ########.fr       */
+/*   Updated: 2025/04/09 10:39:50 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,6 +126,47 @@ void setup_heredoc_signals(void)
     sigaction(SIGTERM, &sa, NULL);
 }
 
+// void handle_heredoc(t_cmd *cmd, char *eof)
+// {
+//     const char *temp_name;
+//     int fd;
+//     pid_t pid;
+//     int status;
+
+//     temp_name = get_random_temp_name();
+//     fd = open(temp_name, O_CREAT | O_WRONLY | O_TRUNC, 0600);
+//     if (fd == -1)
+//     {
+//         perror("heredoc");
+//         return;
+//     }
+//     // Fork to handle signals properly
+//     pid = fork();
+//     if (pid == 0)
+//     {
+//         // Child process
+//         setup_heredoc_signals();
+//         read_heredoc_input(eof, fd, cmd);
+//         close(fd);
+//         exit(0);
+//     }
+//     else if (pid > 0)
+//     {
+//         // Parent process
+//         close(fd);
+//         waitpid(pid, &status, 0);
+//         // Check if child was terminated by signal
+//         if (WIFSIGNALED(status))
+//             cmd->shell->exit_status = 128 + WTERMSIG(status);
+//     }
+//     else
+//     {
+//         close(fd);
+//         perror("fork");
+//         return;
+//     }
+//     create_redir_node(cmd, REDIR_HEREDOC, (char *)temp_name);
+// }
 void handle_heredoc(t_cmd *cmd, char *eof)
 {
 	const char *temp_name;

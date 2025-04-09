@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   builtins.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:33:20 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/08 17:18:02 by codespace        ###   ########.fr       */
+/*   Updated: 2025/04/09 10:59:34 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ void ft_exit(t_cmd *cmd)
 	exit_code = ft_atoi(cmd->args[1]);
 	if (cmd->args[1] && cmd->args[2])
 	{
-		write(1, "exit\n", 5);
+		//write(1, "exit\n", 5);
 		write(2, "exit: too many arguments\n", 24);
 		exit_code = 1;
 		exit(1);

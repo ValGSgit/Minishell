@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/08 17:17:29 by codespace        ###   ########.fr       */
+/*   Updated: 2025/04/09 10:59:17 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,15 +24,18 @@ int handle_input(t_shell *shell, char *input)
     if (*input)
         add_history(input);
     tokens = lexer(input);
+    //debug_shell_state(tokens, NULL, "Before parsing");
     if (!tokens)
     {
         free(input);
         return 0;
     }
     shell->cmd = parser(tokens, shell);
+    //debug_shell_state(tokens, shell->cmd, "After parsing");
     if (!shell->cmd)
         return (free(input), free_tokens(tokens), 0);
     expand_nodes(shell->cmd, shell);
+    //debug_shell_state(tokens, shell->cmd, "After expansion");
     // Add check to prevent segfault
     if (shell->cmd && shell->cmd->args && shell->cmd->args[0] != NULL)
         executor(shell->cmd, shell);   
@@ -49,29 +52,27 @@ void minishell_loop(t_shell *shell)
 
     shell->cmd = NULL;
     prompt = "Minishell-> ";
-    // while (1)
-    // {
+    while (1)
+    {
         setup_signals();
         input = readline(prompt);
         
         // Handle Ctrl+D (EOF)
-        // if (!input)
-        // {
-        //     // Only print "exit" in interactive mode
-        //     if (shell->is_interactive)
-        //         ft_putstr_fd("exit\n", STDOUT_FILENO);
-                
-        //     // Break the loop to exit the shell
-        //     break;
-        // }
-        
+        if (!input)
+        {
+            // Only print "exit" in interactive mode
+            if (shell->is_interactive)
+               ft_putstr_fd("exit\n", STDOUT_FILENO);
+            // Break the loop to exit the shell
+            break;
+        }
         // Process the input normally
         if (handle_input(shell, input) == 1)
         {
             free(input);
-            // break;
+            break;
         }
-    // }
+    }
 }
 
 void	initialize_shell(t_shell *shell, char **envp, char **argv)
@@ -104,8 +105,7 @@ void	initialize_shell(t_shell *shell, char **envp, char **argv)
 			pwd_var = ft_strjoin("PWD=", cwd);
 			if (pwd_var)
 				update_or_add_env(pwd_var, &shell->env);
-			free(pwd_var);
-			free(cwd);
+			(free(pwd_var), free(cwd));
 		}
 	}
 }
@@ -116,11 +116,9 @@ int main(int argc, char **argv, char **envp)
 
 	(void)argc;
 	initialize_shell(&shell, envp, argv);
-
 	shell.exit_status = 0;
 	shell.is_interactive = isatty(STDIN_FILENO);
 	shell.signal_status = 0;
-
 	minishell_loop(&shell);
 	rl_clear_history();
 	free_env(shell.env);

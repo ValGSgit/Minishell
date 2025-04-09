@@ -3,51 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   export.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 10:35:57 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/08 17:19:45 by codespace        ###   ########.fr       */
+/*   Updated: 2025/04/09 09:14:35 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
-
-/**
- * Check if a variable name is a valid identifier
- */
-// static int	is_valid_identifier(char *arg)
-// {
-//     int		i;
-//     char	*equals_pos;
-//     char	*plus_pos;
-
-//     if (!arg || !*arg)
-//         return (0);
-    
-//     equals_pos = ft_strchr(arg, '=');
-//     plus_pos = ft_strchr(arg, '+');
-    
-//     // Check if it starts with a letter or underscore
-//     if (!ft_isalpha(arg[0]) && arg[0] != '_')
-//         return (0);
-    
-//     i = 1;
-//     // Check until we hit equals sign or plus sign (if it's followed by equals)
-//     while (arg[i] && arg[i] != '=' && 
-//            !(arg[i] == '+' && arg[i+1] && arg[i+1] == '='))
-//     {
-//         if (!ft_isalnum(arg[i]) && arg[i] != '_')
-//             return (0);
-//         i++;
-//     }
-    
-//     // Handle the case where '+' is not followed by '='
-//     if (plus_pos && (plus_pos + 1) && *(plus_pos + 1) != '=' && 
-//         plus_pos < equals_pos)
-//         return (0);
-        
-//     return (1);
-// }
 
 // /**
 //  * Add a new variable to the environment
