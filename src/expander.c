@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/03 15:05:25 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/09 12:38:29 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,34 +31,63 @@ char	*append_str(char *dest, char *src)
 	return (new_str);
 }
 
-char	*process_argument(char *arg, t_shell *shell)
+char *process_argument(char *arg, t_shell *shell)
 {
-	t_expander_state	state;
-	int					i;
-	char				*value;
+    t_expander_state state;
+    int i;
+    char *value;
 
-	ft_memset(&state, 0, sizeof(t_expander_state));
-	state.result = ft_strdup("");
-	if (!state.result || !arg)
-		return (state.result);
-	i = -1;
-	while (arg[++i])
-	{
-		if (arg[i] == '\'' && !state.in_dquote)
-			state.in_quote = !state.in_quote;
-		else if (arg[i] == '"' && !state.in_quote)
-			state.in_dquote = !state.in_dquote;
-		else if (arg[i] == '$' && !state.in_quote)
-		{
-			value = expand_variable(arg, &i, shell, state.in_dquote);
-			state.result = append_str(state.result, value);
-			free(value);
-		}
-		else
-			state.result = append_str(state.result, (char[]){arg[i], '\0'});
-	}
-	return (state.result);
+    ft_memset(&state, 0, sizeof(t_expander_state));
+    state.result = ft_strdup("");
+    if (!state.result || !arg)
+        return (state.result);
+    i = -1;
+    while (arg[++i])
+    {
+        if (arg[i] == '\'' && !state.in_dquote)
+            state.in_quote = !state.in_quote;
+        else if (arg[i] == '"' && !state.in_quote)
+            state.in_dquote = !state.in_dquote;
+        else if (arg[i] == '$' && !state.in_quote)
+        {
+            value = expand_variable(arg, &i, shell);
+            if (!state.is_heredoc || (value && *value))
+                state.result = append_str(state.result, value);     
+            free(value);
+        }
+        else
+            state.result = append_str(state.result, (char[]){arg[i], '\0'});
+    }
+    return (state.result);
 }
+// char	*process_argument(char *arg, t_shell *shell)
+// {
+// 	t_expander_state	state;
+// 	int					i;
+// 	char				*value;
+
+// 	ft_memset(&state, 0, sizeof(t_expander_state));
+// 	state.result = ft_strdup("");
+// 	if (!state.result || !arg)
+// 		return (state.result);
+// 	i = -1;
+// 	while (arg[++i])
+// 	{
+// 		if (arg[i] == '\'' && !state.in_dquote)
+// 			state.in_quote = !state.in_quote;
+// 		else if (arg[i] == '"' && !state.in_quote)
+// 			state.in_dquote = !state.in_dquote;
+// 		else if (arg[i] == '$' && !state.in_quote)
+// 		{
+// 			value = expand_variable(arg, &i, shell);
+// 			state.result = append_str(state.result, value);
+// 			free(value);
+// 		}
+// 		else
+// 			state.result = append_str(state.result, (char[]){arg[i], '\0'});
+// 	}
+// 	return (state.result);
+// }
 
 void	expander(t_cmd *cmd, t_shell *shell)
 {

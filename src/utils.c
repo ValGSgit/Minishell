@@ -42,8 +42,8 @@ t_cmd	*create_cmd_node(void)
 	node = ft_calloc(sizeof(t_cmd), 1);
 	if (!node)
 		return (NULL);
-	node->in_fd = STDIN_FILENO;
-	node->out_fd = STDOUT_FILENO;
+	//node->in_fd = STDIN_FILENO;
+	//node->out_fd = STDOUT_FILENO;
 	node->args = NULL;
 	node->redirs = NULL;
 	node->next = NULL;

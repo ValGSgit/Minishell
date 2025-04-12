@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   env_utils2.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
+/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 11:58:27 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/03 11:59:31 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/08 17:18:25 by codespace        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,28 +40,6 @@ char	**copy_env(char **envp)
 	return (env);
 }
 
-/*char	*get_env_value(char *name, char **env)
-{
-    int		i;
-    char	*key;
-
-    i = 0;
-    if (!env || !name)
-        return (NULL);
-    while (env[i])
-    {
-		key = ft_substr(env[i], 0, (char *)ft_strchr(env[i], '=') - env[i]);
-		if (ft_strncmp(key, name, ft_strlen(key)) == 0)
-        {
-            free(key);
-            return (ft_strchr(env[i], '=') + 1);
-        }
-        free(key);
-        i++;
-    }
-    return (NULL);
-}
-*/
 char *get_env_value(char *name, char **env)
 {
     int i;
@@ -69,11 +47,11 @@ char *get_env_value(char *name, char **env)
 
     if (!name || !env)
         return (NULL);
-    len = strlen(name);
+    len = ft_strlen(name);
     i = 0;
     while (env[i])
     {
-        if (strncmp(env[i], name, len) == 0 && env[i][len] == '=')
+        if (ft_strncmp(env[i], name, len) == 0 && env[i][len] == '=')
             return (env[i] + len + 1); // Return pointer to value part
         i++;
     }

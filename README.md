@@ -1,120 +1,207 @@
-# Minishell
+===============================================================================
+                                 MINISHELL
+===============================================================================
 
-Tests left to pass:
+Project: Minishell  
+Author: ValGS  
+School: 42  
+Branch: Val-Branch  
+Language: C  
+Compilation: gcc with -Wall -Wextra -Werror  
+Libs Used: Readline, Libc, Custom Libft  
+License: Educational Use - 42 School
 
----
+-------------------------------------------------------------------------------
+1. PROJECT OVERVIEW
+-------------------------------------------------------------------------------
 
-### **1. Expander Issues**
-- **Test 7, 8, 15, 16, 17, 18, 19, 21**:
-  - **Problem**: Environment variables (`$PWD`, `$?`, `$USER`, `$HOME`, etc.) are not expanded correctly in some cases.
-  - **Fix**: Improve the `expand_variable` function in expander.c:
-    - Handle `$?` correctly to return the last exit status.
-    - Handle `$` followed by nothing or invalid characters (e.g., `$` or `$123`).
-    - Ensure single quotes prevent expansion, while double quotes allow it.
-    - Handle cases like `$USER` and `$HOME` properly.
+Minishell is a simplified UNIX shell developed in C, following the specifications 
+of the 42 School curriculum. Its main purpose is to mimic basic behaviors of 
+popular shells (like Bash or Zsh), allowing users to execute commands, 
+manipulate the environment, use pipes and redirections, and implement built-in 
+functionality — all while demonstrating a solid understanding of system 
+programming, memory management, and process control.
 
----
+This project pushes developers to dive deep into UNIX internals, including 
+forking, file descriptors, signal handling, command parsing, and environment 
+variable management.
 
-### **2. Redirection Issues**
-- **Test 57, 59, 60, 61, 62, 63, 68, 69, 70, 90**:
-  - **Problem**: Input redirections (`<`) and output redirections (`>`) are not working as expected.
-  - **Fix**:
-    - Ensure `apply_redirection` in executor.c handles file permissions and file existence correctly.
-    - Handle cases where multiple redirections are used in a single command.
-    - Fix issues with filenames containing spaces or special characters (e.g., `"file name with spaces"`).
-    - Ensure redirections work properly in pipelines.
+-------------------------------------------------------------------------------
+2. OBJECTIVES
+-------------------------------------------------------------------------------
 
----
+- Re-implement a basic command-line interpreter (shell)
+- Handle command parsing, argument splitting, and tokenization
+- Support input/output redirections, pipes, and environment variables
+- Implement essential built-in shell commands
+- Properly manage process creation and control with fork/execve/wait
+- Handle signal interruptions (e.g., Ctrl+C, Ctrl+\)
+- Follow strict memory management — avoid leaks or undefined behavior
+- Maintain clean code structure and follow 42 coding norms
 
-### **3. Pipeline Issues**
-- **Test 53, 54, 71, 72, 73, 74, 75**:
-  - **Problem**: Pipelines are not functioning correctly, especially when combined with redirections.
-  - **Fix**:
-    - Ensure `execute_pipeline` in executor.c handles input/output redirections properly for each command in the pipeline.
-    - Fix broken pipe errors when commands in the pipeline fail or don't produce output.
+-------------------------------------------------------------------------------
+3. FEATURES & FUNCTIONALITY
+-------------------------------------------------------------------------------
 
----
+Supported Features:
+-------------------
+- Custom interactive shell prompt
+- Execution of binary files and system commands
+- Built-in commands:
+  - echo
+  - cd
+  - pwd
+  - export
+  - unset
+  - env
+  - exit
+- Input/output redirection:
+  - `<`  : Redirect input
+  - `>`  : Redirect output (truncate)
+  - `>>` : Redirect output (append)
+- Pipelines using `|`
+- Quoting:
+  - Single quotes: prevent expansion
+  - Double quotes: allow expansion
+- Environment variable management (`$VAR`, `$?`)
+- Signal handling (`SIGINT`, `SIGQUIT`)
+- Return status tracking
 
-### **4. Builtin Command Issues**
-- **Test 40, 41, 51**:
-  - **Problem**: Builtin commands like `cd` and `exit` are not handling arguments correctly.
-  - **Fix**:
-    - For `cd`, ensure it handles invalid paths and multiple arguments properly.
-    - For `exit`, handle cases with too many arguments or invalid numeric arguments.
+Optional / Bonus (if implemented):
+----------------------------------
+- Heredocs (`<<`)
+- Wildcards/globbing
+- Command history navigation (via readline)
+- Advanced parsing (nested quotes, subshells, etc.)
 
----
+-------------------------------------------------------------------------------
+4. INSTALLATION
+-------------------------------------------------------------------------------
 
-### **5. Output and Error Handling**
-- **Test 13, 37, 83, 84, 86, 88, 91, 92, 93, 94, 95**:
-  - **Problem**: Output redirections (`>`) are not working as expected, and error messages are inconsistent with Bash.
-  - **Fix**:
-    - Ensure `apply_redirection` handles output redirections correctly, including overwriting and appending to files.
-    - Handle permission errors and invalid file paths gracefully.
-    - Ensure error messages match Bash behavior.
+1. Clone the repository:
+   git clone --branch Val-Branch https://github.com/ValGSgit/Minishell.git
 
----
+2. Navigate into the project:
+   cd Minishell
 
-### **6. Environment Variable Export/Unset**
-- **Test 56**:
-  - **Problem**: Exported variables are not being passed correctly to child processes.
-  - **Fix**:
-    - Ensure `export` updates the environment properly and propagates changes to child processes.
-    - Fix issues with `env` and `unset` commands.
+3. Build the shell:
+   make
 
----
+Optional:
+- make clean   : Remove object files
+- make fclean  : Remove object files + binary
+- make re      : Rebuild everything from scratch
 
-### **7. Quoting and Tokenization**
-- **Test 13, 15, 16, 62**:
-  - **Problem**: Quoting and tokenization are not handled correctly in some cases.
-  - **Fix**:
-    - Improve the `lexer` in lexer.c to handle quotes and special characters properly.
-    - Ensure single quotes prevent expansion, while double quotes allow it.
-    - Handle edge cases like nested quotes or escaped characters.
+-------------------------------------------------------------------------------
+5. USAGE
+-------------------------------------------------------------------------------
 
----
+To run Minishell:
 
-### **8. Exit Code Handling**
-- **Test 40, 41, 76, 78, 80**:
-  - **Problem**: Exit codes are not consistent with Bash behavior.
-  - **Fix**:
-    - Ensure exit codes are set correctly for all commands, including builtins, pipelines, and redirections.
-    - Handle cases where commands fail due to missing files or permissions.
+    ./minishell
 
----
+You will see a prompt like:
 
-### **9. File and Directory Handling**
-- **Test 62, 86**:
-  - **Problem**: Filenames with spaces or special characters are not handled correctly.
-  - **Fix**:
-    - Ensure filenames are parsed and passed correctly to commands.
-    - Handle quoted filenames properly in the lexer and parser.
+    minishell$
 
----
+From here you can type in commands, use pipes, redirections, built-ins, and 
+environment variables.
 
-### **10. Miscellaneous**
-- **Test 37, 85, 88**:
-  - **Problem**: Permission errors are not handled consistently.
-  - **Fix**:
-    - Ensure permission errors are detected and reported correctly for all commands and redirections.
+Examples:
 
----
+    minishell$ ls -la | grep .c > files.txt
+    minishell$ echo "Hello $USER"
+    minishell$ export VAR=test
+    minishell$ echo $VAR
+    minishell$ cd ..
+    minishell$ pwd
+    minishell$ exit
 
-### **Summary of Files to Update**
-1. **`expander.c`**:
-   - Fix environment variable expansion issues.
-2. **`executor.c`**:
-   - Fix redirection and pipeline handling.
-   - Improve error handling and exit code consistency.
-3. **`lexer.c`**:
-   - Improve quoting and tokenization logic.
-4. **`parsing.c`**:
-   - Ensure redirections and arguments are parsed correctly.
-5. **`builtins` (not shown but implied)**:
-   - Fix issues with `cd`, `exit`, `export`, and `unset`.
+-------------------------------------------------------------------------------
+6. CODE STRUCTURE
+-------------------------------------------------------------------------------
 
----
+Project Layout:
 
-### **Next Steps**
-1. Prioritize fixing critical issues like redirections and pipelines.
-2. Write unit tests for edge cases (e.g., filenames with spaces, multiple redirections).
-3. Compare Minishell behavior with Bash for each test case to ensure consistency.
+Minishell/
+├── includes/           -> Header files
+│   └── minishell.h
+├── src/                -> Main source files
+│   ├── main.c
+│   ├── builtins/
+│   ├── parser/
+│   ├── executor/
+│   ├── signals/
+│   └── utils/
+├── ShellLibft/         -> Custom Libft library
+├── Makefile            -> Build system
+└── README.txt          -> Project documentation
+
+-------------------------------------------------------------------------------
+7. IMPLEMENTATION DETAILS
+-------------------------------------------------------------------------------
+
+Parsing:
+--------
+- Tokenizer separates input by whitespace, respecting quote rules
+- Environment variable expansion occurs after parsing tokens
+- Redirections and pipes are identified and managed with structures
+
+Execution:
+----------
+- Commands are either identified as built-ins or binaries
+- Uses fork/execve to launch processes
+- Pipes are created using pipe() and managed with dup2()
+- Redirections handled by reopening file descriptors
+
+Signals:
+--------
+- Custom handlers for SIGINT (Ctrl+C) and SIGQUIT (Ctrl+\)
+- Prevents shell from exiting or printing default behavior
+- Clean line refresh with readline after signal interrupts
+
+Memory Management:
+------------------
+- Custom garbage collector or manual free per context
+- All memory is properly managed to avoid leaks
+- Leak checks performed with valgrind
+
+Readline Integration:
+---------------------
+- Used for input and command history
+- rl_on_new_line, rl_redisplay used for proper signal redraws
+
+-------------------------------------------------------------------------------
+8. LIMITATIONS
+-------------------------------------------------------------------------------
+
+- No support for job control (`&`, `fg`, `bg`)
+- No advanced shell scripting features
+- No wildcard expansion (unless implemented in bonus)
+- Syntax error detection is limited to basic cases
+
+-------------------------------------------------------------------------------
+9. TESTING
+-------------------------------------------------------------------------------
+
+Manual testing is the primary method:
+- Use test scripts with complex pipelines and redirections
+- Compare behavior to `/bin/bash`
+- Use valgrind for memory leaks:
+  
+  valgrind --leak-check=full ./minishell
+
+-------------------------------------------------------------------------------
+10. CONTRIBUTORS
+-------------------------------------------------------------------------------
+
+- ValGS (github.com/ValGSgit)
+
+-------------------------------------------------------------------------------
+11. LICENSE
+-------------------------------------------------------------------------------
+
+This project is part of the 42 School curriculum and intended for educational 
+use only. Not licensed for commercial distribution.
+
+-------------------------------------------------------------------------------
