@@ -44,6 +44,39 @@ void	add_to_env(char ***env, char *new_var)
     *env = new_env;
 }
 
+// Helper function for sorting environment variables
+static void	swap_strings(char **a, char **b)
+{
+	char *temp;
+	
+	temp = *a;
+	*a = *b;
+	*b = temp;
+}
+
+// Perform bubble sort on environment variables
+static void	sort_env(char **env_copy, int env_count)
+{
+	int i;
+	int j;
+	int swapped;
+	
+	for (i = 0; i < env_count - 1; i++)
+	{
+		swapped = 0;
+		for (j = 0; j < env_count - i - 1; j++)
+		{
+			if (ft_strcmp(env_copy[j], env_copy[j + 1]) > 0)
+			{
+				swap_strings(&env_copy[j], &env_copy[j + 1]);
+				swapped = 1;
+			}
+		}
+		if (swapped == 0)
+			break;
+	}
+}
+
 // /**
 //  * Print environment variables in the "declare -x" format
 //  */
@@ -52,37 +85,70 @@ static void	print_sorted_env(char **env)
     int		i;
     int		j;
     char	*equals_pos;
+    int     env_count;
+    char    **env_copy;
     
     if (!env)
         return;
-        
+    
+    // Count environment variables
+    env_count = 0;
+    while (env[env_count])
+        env_count++;
+    
+    // Create a copy for sorting
+    env_copy = malloc((env_count + 1) * sizeof(char *));
+    if (!env_copy)
+        return;
+    
     i = 0;
-    while (env[i])
+    while (i < env_count)
     {
-        printf("declare -x ");
-        equals_pos = ft_strchr(env[i], '=');
+        env_copy[i] = ft_strdup(env[i]);
+        i++;
+    }
+    env_copy[i] = NULL;
+    
+    // Sort the environment copy
+    sort_env(env_copy, env_count);
+    
+    // Print the sorted environment
+    i = 0;
+    while (env_copy[i])
+    {
+        ft_putstr_fd("declare -x ", 1);
+        equals_pos = ft_strchr(env_copy[i], '=');
         if (equals_pos)
         {
             // Print up to equals sign
             j = 0;
-            while (env[i][j] != '=')
+            while (env_copy[i][j] != '=')
             {
-                printf("%c", env[i][j]);
+                ft_putchar_fd(env_copy[i][j], 1);
                 j++;
             }
             // Print equals sign and quoted value
-            printf("=\"");
-            printf("%s", equals_pos + 1);
-            printf("\"");
+            ft_putstr_fd("=\"", 1);
+            ft_putstr_fd(equals_pos + 1, 1);
+            ft_putstr_fd("\"", 1);
         }
         else
         {
             // No equals sign, just print the name
-            printf("%s", env[i]);
+            ft_putstr_fd(env_copy[i], 1);
         }
-        printf("\n");
+        ft_putchar_fd('\n', 1);
         i++;
     }
+    
+    // Free the copy
+    i = 0;
+    while (env_copy[i])
+    {
+        free(env_copy[i]);
+        i++;
+    }
+    free(env_copy);
 }
 
 static int is_valid_identifier(char *str)

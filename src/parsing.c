@@ -124,12 +124,7 @@ int	check_syntax_errors(char **tokens, t_shell *shell)
 		// Check for consecutive pipes
 		if (ft_strcmp(tokens[i], "|") == 0)
 		{
-			if (!tokens[i + 1])
-			{
-				handle_syntax_error("|", shell);
-				return (1);
-			}
-			if (ft_strcmp(tokens[i + 1], "|") == 0)
+			if (!tokens[i + 1] || ft_strcmp(tokens[i + 1], "|") == 0)
 			{
 				handle_syntax_error("|", shell);
 				return (1);
@@ -144,18 +139,44 @@ int	check_syntax_errors(char **tokens, t_shell *shell)
 				handle_syntax_error("newline", shell);
 				return (1);
 			}
-			// Invalid redirection combinations
-			if ((ft_strcmp(tokens[i], ">") == 0 && tokens[i + 1]
-					&& ft_strcmp(tokens[i + 1], "<") == 0)
-				|| (ft_strcmp(tokens[i], "<") == 0 && tokens[i + 1]
-					&& ft_strcmp(tokens[i + 1], ">") == 0)
-				|| (is_redirection(tokens[i + 1])))
+			// Check if next token is also a redirection or pipe
+			if (is_metacharacter(tokens[i + 1]))
 			{
 				handle_syntax_error(tokens[i + 1], shell);
 				return (1);
 			}
+
+			// Check for invalid redirection sequences like "> > file"
+			if (tokens[i + 2] && is_redirection(tokens[i + 2]))
+			{
+				// Allow specific valid cases like "> file > file2"
+				if (ft_strcmp(tokens[i + 1], tokens[i + 2]) != 0 && !is_metacharacter(tokens[i + 1]))
+				{
+					i += 1; // Skip the valid redirection and continue checking
+					continue;
+				}
+			}
+		}
+		// Check for unclosed quotes
+		if (tokens[i][0] == '"' || tokens[i][0] == '\'')
+		{
+			char quote = tokens[i][0];
+			int j = 1;
+			while (tokens[i][j] && tokens[i][j] != quote)
+				j++;
+			if (!tokens[i][j])
+			{
+				handle_syntax_error("unclosed quote", shell);
+				return (1);
+			}
 		}
 		i++;
+	}
+	// Check for pipe at the end
+	if (ft_strcmp(tokens[i - 1], "|") == 0)
+	{
+		handle_syntax_error("|", shell);
+		return (1);
 	}
 	return (0);
 }

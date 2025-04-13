@@ -26,26 +26,39 @@ void	restore_redirections(t_cmd *cmd)
     }
 }
 
+// Helper function to get the base command name (for error messages)
+char	*get_cmd_basename(char *path)
+{
+    char *basename;
+    
+    if (!path)
+        return (NULL);
+    basename = ft_strrchr(path, '/');
+    if (basename)
+        return (basename + 1);
+    return (path);
+}
+
 int	check_file_permissions(const char *filename)
 {
     struct stat sb;
 
     if (access(filename, F_OK) != 0)
     {
-        perror(filename);
+        ft_putstr_fd((char *)filename, 2);
+        ft_putstr_fd(": No such file or directory\n", 2);
         return (127); // File not found
     }
     if (stat(filename, &sb) == 0 && S_ISDIR(sb.st_mode))
     {
-        write(2, filename, ft_strlen(filename));
-        write(2, ": Is a directory\n", 16);
+        ft_putstr_fd((char *)filename, 2);
+        ft_putstr_fd(": Is a directory\n", 2);
         return (126); // Is a directory
     }
     if (access(filename, R_OK) != 0)
     {
-        //write(2, filename, ft_strlen(filename));
-        //write(2, " Permission denied\n", 20);
-        perror("error code fixes:");
+        ft_putstr_fd((char *)filename, 2);
+        ft_putstr_fd(": Permission denied\n", 2);
         return (126); // Permission denied
     }
     return (0); // Permissions are valid
@@ -58,8 +71,11 @@ void	handle_redirection_in(t_redir *redir)
     fd = open(redir->file, O_RDONLY);
     if (fd == -1)
     {
-        perror(redir->file);
-        exit(1); // Exit with error code 1 for missing files
+        ft_putstr_fd(redir->file, 2);
+        ft_putstr_fd(": ", 2);
+        ft_putstr_fd(strerror(errno), 2);
+        ft_putstr_fd("\n", 2);
+        exit(1); // Exit with error code 1 for file errors
     }
     dup2(fd, STDIN_FILENO);
     close(fd);
@@ -68,24 +84,20 @@ void	handle_redirection_in(t_redir *redir)
 void	handle_redirection_out(t_redir *redir, int append)
 {
     int fd;
-   // int writable;
 
     if (append)
         fd = open(redir->file, O_WRONLY | O_APPEND | O_CREAT, 0644);
     else
         fd = open(redir->file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
    
-    /*writable = access(redir->file, W_OK);
-    if (writable != 0)
+    if (fd == -1)
     {
-        write(2, " Permission denied\n", 20);
+        ft_putstr_fd(redir->file, 2);
+        ft_putstr_fd(": ", 2);
+        ft_putstr_fd(strerror(errno), 2);
+        ft_putstr_fd("\n", 2);
         exit(1);
-    }*/
-   if (fd == -1)
-   {
-        perror("this is typing");
-        exit(1);
-   }
+    }
     dup2(fd, STDOUT_FILENO);
     close(fd);
 }
@@ -111,42 +123,85 @@ void	apply_redirection(t_cmd *cmd)
 
 void	execute_builtin_or_exit(t_cmd *cmd)
 {
+    int prev_exit_status;
+    
+    // Save exit status in case the builtin changes it
+    prev_exit_status = cmd->shell->exit_status;
+    
+    // Execute the builtin
     execute_builtin(cmd);
-    restore_redirections(cmd);
-    exit(0);
+    
+    // Exit with the builtin's exit status
+    (void)prev_exit_status;
+    
+    exit(cmd->shell->exit_status);
 }
 
-void	execute_external_command(t_cmd *cmd, t_shell *shell)
+void execute_external_command(t_cmd *cmd, t_shell *shell)
 {
     struct stat sb;
+    
+    // Handle empty command case
+    if (!cmd->args[0] || !*cmd->args[0])
+        exit(0);
+    
+    // Check if PATH has been unset
+    if (shell->path_unset && ft_strchr(cmd->args[0], '/') == NULL)
+    {
+        ft_putstr_fd(cmd->args[0], 2);
+        ft_putstr_fd(": No such file or directory\n", 2);
+        exit(127);
+    }
 
+    // Check file existence
     if (access(cmd->args[0], F_OK) != 0)
     {
-        if (cmd->args[0][0] != '.')
+        if (ft_strchr(cmd->args[0], '/') != NULL)
         {
-            write(2, " command not found\n", 19);
+            // Path was specified but file doesn't exist
+
+            ft_putstr_fd(cmd->args[0], 2);
+            ft_putstr_fd(": No such file or directory\n", 2);
             exit(127);
         }
-        perror(cmd->args[0]);
-        exit(127); // command not found
+        else
+        {
+            // Simple command that wasn't found in PATH
+
+            ft_putstr_fd(cmd->args[0], 2);
+            ft_putstr_fd(": command not found\n", 2);
+            exit(127);
+        }
     }
+
+    // Check if it's a directory
     if (stat(cmd->args[0], &sb) == 0 && S_ISDIR(sb.st_mode))
     {
-        write(2, cmd->args[0], ft_strlen(cmd->args[0]));
-        write(2, ": Is a directory\n", 16);
-        exit(126); // Is a directory
-    }    
+        ft_putstr_fd(cmd->args[0], 2);
+        ft_putstr_fd(": Is a directory\n", 2);
+        exit(126);
+    }
+    
+    // Check execute permission
     if (access(cmd->args[0], X_OK) != 0)
     {
-        perror(cmd->args[0]);
-        exit(126); // permission denied
-    } 
+        ft_putstr_fd(cmd->args[0], 2);
+        ft_putstr_fd(": Permission denied\n", 2);
+        exit(126);
+    }
+    
+    // Execute command
     execve(cmd->args[0], cmd->args, shell->env);
-    perror(cmd->args[0]);
-    exit(127);
+    
+    // Should not reach here unless execve fail
+    ft_putstr_fd(cmd->args[0], 2);
+    ft_putstr_fd(": ", 2);
+    ft_putstr_fd(strerror(errno), 2);
+    ft_putstr_fd("\n", 2);
+    exit(126);
 }
 
-void	execute_single_command(t_cmd *cmd, t_shell *shell)
+void execute_single_command(t_cmd *cmd, t_shell *shell)
 {
     pid_t pid;
     int status;
@@ -169,9 +224,13 @@ void	execute_single_command(t_cmd *cmd, t_shell *shell)
     }
     waitpid(pid, &status, 0);
     if (WIFEXITED(status))
-        shell->exit_status = WEXITSTATUS(status); 
+        shell->exit_status = WEXITSTATUS(status);
     else if (WIFSIGNALED(status))
+    {
         shell->exit_status = 128 + WTERMSIG(status);
+        if (WTERMSIG(status) == SIGINT)
+            write(STDERR_FILENO, "\n", 1);
+    }
     restore_redirections(cmd);
 }
 
@@ -202,37 +261,45 @@ void pipe_exit_status(pid_t last_pid, t_shell *shell)
             if (WIFEXITED(status))
                 shell->exit_status = WEXITSTATUS(status);
             else if (WIFSIGNALED(status))
+            {
                 shell->exit_status = 128 + WTERMSIG(status);
+                if (WTERMSIG(status) == SIGINT)
+                    write(STDERR_FILENO, "\n", 1);
+            }
         }
     }
 }
 
-pid_t	fork_child_process(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2], t_shell *shell)
+pid_t fork_child_process(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2], t_shell *shell)
 {
-	pid_t	pid;
+    pid_t pid;
 
-	pid = fork();
-	if (pid == -1)
-		return (-1);
-	if (pid == 0)
-	{
-		if (prev_pipe_in != 0)
-		{
-			dup2(prev_pipe_in, STDIN_FILENO);
-			close(prev_pipe_in);
-		}
-		if (cmd->next)
-		{
-			dup2(pipe_fd[WRITE_END], STDOUT_FILENO);
-			close(pipe_fd[WRITE_END]);
-			close(pipe_fd[READ_END]);
-		}
-		apply_redirection(cmd);
-		if (is_builtin(cmd->args[0]))
-			execute_builtin_or_exit(cmd);
-		execute_external_command(cmd, shell);
-	}
-	return (pid);
+    pid = fork();
+    if (pid == -1)
+    {
+        perror("fork");
+        return (-1);
+    }
+    if (pid == 0)
+    {
+        // Child process
+        if (prev_pipe_in != 0)
+        {
+            dup2(prev_pipe_in, STDIN_FILENO);
+            close(prev_pipe_in);
+        }
+        if (cmd->next)
+        {
+            dup2(pipe_fd[WRITE_END], STDOUT_FILENO);
+            close(pipe_fd[WRITE_END]);
+            close(pipe_fd[READ_END]);
+        }
+        apply_redirection(cmd);
+        if (is_builtin(cmd->args[0]))
+            execute_builtin_or_exit(cmd);
+        execute_external_command(cmd, shell);
+    }
+    return (pid);
 }
 
 void	setup_parent_after_fork(t_cmd *cmd, int *prev_pipe_in, int pipe_fd[2])
@@ -253,34 +320,82 @@ void	execute_pipeline(t_cmd *cmd, t_shell *shell)
     int pipe_fd[2];
     int prev_pipe_in = 0;
     pid_t   pid;
-    pid_t   last_pid;
-
-    last_pid = 0;
+    pid_t   last_pid = 0;
+    t_cmd   *cmd_head = cmd;
+    int     cmd_count = 0;
+    pid_t   *pids;
+    int     status;
+    
+    // Count commands in pipeline
+    while (cmd)
+    {
+        cmd_count++;
+        cmd = cmd->next;
+    }
+    
+    // Allocate memory for pid array
+    pids = malloc(sizeof(pid_t) * cmd_count);
+    if (!pids)
+        return;
+    
+    // Reset cmd and create all processes first
+    cmd = cmd_head;
+    cmd_count = 0;
+    
     while (cmd)
     {
         if (cmd->next && pipe(pipe_fd) == -1)
         {
-            perror("pipe");
+            perror("minishell: pipe");
+            free(pids);
             return;
         }
+        
         pid = fork_child_process(cmd, prev_pipe_in, pipe_fd, shell);
         if (pid == -1)
         {
-            perror("fork");
+            perror("minishell: fork");
+            free(pids);
             return;
         }
+        
+        pids[cmd_count++] = pid;
         if (!cmd->next)
             last_pid = pid;
+            
         setup_parent_after_fork(cmd, &prev_pipe_in, pipe_fd);
         cmd = cmd->next;
     }
-    pipe_exit_status(last_pid, shell);
+    
+    // Wait for all processes and properly track exit status
+    for (int i = 0; i < cmd_count; i++)
+    {
+        waitpid(pids[i], &status, 0);
+        if (pids[i] == last_pid)
+        {
+            if (WIFEXITED(status))
+                shell->exit_status = WEXITSTATUS(status);
+            else if (WIFSIGNALED(status))
+            {
+                shell->exit_status = 128 + WTERMSIG(status);
+                if (WTERMSIG(status) == SIGINT)
+                    write(STDERR_FILENO, "\n", 1);
+            }
+        }
+    }
+    
+    free(pids);
 }
    
 void	executor(t_cmd *cmd, t_shell *shell)
 {
-    if (!cmd)
+    if (!cmd || !cmd->args || !cmd->args[0])
+    {
+        // Handle empty command case
+        shell->exit_status = 0;
         return;
+    }
+    
     if (!cmd->next)
         execute_single_command(cmd, shell);
     else
