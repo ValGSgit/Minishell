@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/09 12:57:45 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/13 16:43:39 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,8 @@ int handle_input(t_shell *shell, char *input)
     expand_nodes(shell->cmd, shell);
     //debug_shell_state(tokens, shell->cmd, "After expansion");
     // Add check to prevent segfault
-    if (shell->cmd && shell->cmd->args && shell->cmd->args[0] != NULL)
-        executor(shell->cmd, shell);   
+    //if (shell->cmd && shell->cmd->args && shell->cmd->args[0] != NULL)
+    executor(shell->cmd, shell);   
     free_cmd(shell->cmd);
     if (tokens)
         free_tokens(tokens);

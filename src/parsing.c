@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/09 13:07:29 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/09 13:21:01 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/13 16:37:59 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,192 +47,305 @@ static int	is_redirection(char *tokens)
 	return (ft_strcmp(tokens, ">") == 0 || ft_strcmp(tokens, ">>") == 0
 		|| ft_strcmp(tokens, "<") == 0 || ft_strcmp(tokens, "<<") == 0);
 }
+
+int	check_redirect_filename(char **tokens, int *i, t_shell *shell, t_cmd *cmd)
+{
+    if (!tokens[*i + 1])
+    {
+        handle_syntax_error("newline", shell);
+        cmd->syntax_error = 1;
+        return (0);
+    }
+    if (is_metacharacter(tokens[*i + 1]))
+    {
+        handle_syntax_error(tokens[*i + 1], shell);
+        cmd->syntax_error = 1;
+        return (0);
+    }
+    return (1);
+}
 /**
  * Handle file redirection
  */
-void	handle_redirection(t_cmd *cmd, char **tokens, int *i, t_shell *shell)
+int	same_length(char *tok1, char *tok2)
 {
-	int		redir_type;
-	char	*filename;
+	int len1;
+	int len2;
 
-	// Determine redirection type
-	if (ft_strcmp(tokens[*i], ">") == 0)
-		redir_type = REDIR_OUT;
-	else if (ft_strcmp(tokens[*i], ">>") == 0)
-		redir_type = REDIR_APPEND;
-	else if (ft_strcmp(tokens[*i], "<") == 0)
-		redir_type = REDIR_IN;
-	else if (ft_strcmp(tokens[*i], "<<") == 0)
-	{
-		// Handle heredoc separately
-		if (!tokens[*i + 1])
-		{
-			handle_syntax_error("newline", shell);
-			cmd->syntax_error = 1;
-			return ;
-		}
-		handle_heredoc(cmd, tokens[*i + 1]);
-		(*i) += 2; // Skip heredoc delimiter
-		return ;
-	}
-	else
-	{
-		// Invalid redirection type
-		handle_syntax_error(tokens[*i], shell);
-		cmd->syntax_error = 1;
-		return ;
-	}
-	// Check if filename is provided
+	len1 = ft_strlen(tok1);
+	len2 = ft_strlen(tok2);
+	if (len1 == len2)
+		return (1);
+	return (0);
+}
+ 
+void	handle_heredoc_redirect(t_cmd *cmd, char **tokens, int *i, t_shell *shell)
+{
 	if (!tokens[*i + 1])
-	{
+    {
 		handle_syntax_error("newline", shell);
-		cmd->syntax_error = 1;
-		return ;
-	}
-	// Check if next token is a redirection or pipe
-	if (is_metacharacter(tokens[*i + 1]))
-	{
+        cmd->syntax_error = 1;
+        return;
+    }
+    if (is_metacharacter(tokens[*i + 1]))
+    {
 		handle_syntax_error(tokens[*i + 1], shell);
-		cmd->syntax_error = 1;
-		return ;
-	}
-	// Get filename and create redirection
-	filename = tokens[*i + 1];
-	create_redir_node(cmd, redir_type, filename);
-	(*i) += 2; // Skip redirection type and filename
+        cmd->syntax_error = 1;
+        return;
+    }
+	handle_heredoc(cmd, tokens[*i + 1]);
+    (*i) += 2;
 }
 
-/**
- * Check for syntax errors before parsing
- */
+void	handle_redirection(t_cmd *cmd, char **tokens, int *i, t_shell *shell)
+{
+    int		redir_type;
+    char	*filename;
+
+    if (ft_strcmp(tokens[*i], ">>") == 0 && same_length(tokens[*i], ">>"))
+        redir_type = REDIR_APPEND;
+    else if (ft_strcmp(tokens[*i], "<<") == 0 && same_length(tokens[*i], "<<"))
+    {
+        handle_heredoc_redirect(cmd, tokens, i, shell);
+        return;
+    }
+    else if (ft_strcmp(tokens[*i], ">") == 0 && same_length(tokens[*i], ">")) 
+        redir_type = REDIR_OUT;
+    else if (ft_strcmp(tokens[*i], "<") == 0 && same_length(tokens[*i], "<"))
+        redir_type = REDIR_IN;
+    else
+    {
+        handle_syntax_error(tokens[*i], shell);
+        cmd->syntax_error = 1;
+        return;
+    }
+    if (!check_redirect_filename(tokens, i, shell, cmd))
+        return;
+    filename = tokens[*i + 1];
+    create_redir_node(cmd, redir_type, filename);
+    (*i) += 2;
+}
+
+
+int	check_pipe_errors(char **tokens, t_shell *shell, int i)
+{
+    if (ft_strcmp(tokens[i], "|") == 0)
+    {
+        if (!tokens[i + 1] || ft_strcmp(tokens[i + 1], "|") == 0)
+        {
+            handle_syntax_error("|", shell);
+            return (1);
+        }
+    }
+    return (0);
+}
+
+int	check_redir_errors(char **tokens, t_shell *shell, int *i)
+{
+    if (is_redirection(tokens[*i]))
+    {
+        if (!tokens[*i + 1])
+        {
+            handle_syntax_error("newline", shell);
+            return (1);
+        }
+        if (is_metacharacter(tokens[*i + 1]))
+        {
+            handle_syntax_error(tokens[*i + 1], shell);
+            return (1);
+        }
+    }
+    return (0);
+}
+
+int	check_quotes(char *token, t_shell *shell)
+{
+    char	quote;
+    int		j;
+
+    if (token[0] == '"' || token[0] == '\'')
+    {
+        quote = token[0];
+        j = 1;
+        while (token[j] && token[j] != quote)
+            j++;
+        if (!token[j])
+        {
+            handle_syntax_error("unclosed quote", shell);
+            return (1);
+        }
+    }
+    return (0);
+}
+
 int	check_syntax_errors(char **tokens, t_shell *shell)
 {
-	int	i;
+    int	i;
 
-	// No tokens, no errors
-	if (!tokens || !tokens[0])
-		return (0);
-	// Check for pipe at the beginning
-	if (ft_strcmp(tokens[0], "|") == 0)
+    if (!tokens || !tokens[0])
+        return (0);
+    if (ft_strcmp(tokens[0], "|") == 0)
+    {
+        handle_syntax_error("|", shell);
+        return (1);
+    }
+    i = 0;
+    while (tokens[i])
+    {
+        if (check_pipe_errors(tokens, shell, i))
+            return (1);
+        if (check_redir_errors(tokens, shell, &i))
+            return (1);
+        if (check_quotes(tokens[i], shell))
+            return (1);
+        i++;
+    }
+    if (i > 0 && ft_strcmp(tokens[i - 1], "|") == 0)
+    {
+		handle_syntax_error("|", shell);
+        return (1);
+    }
+    return (0);
+}
+
+
+void	handle_pipe_token(t_cmd **current, char **tokens, int *i, t_shell *shell)
+{
+	if (!(*current)->args && !(*current)->redirs)
 	{
 		handle_syntax_error("|", shell);
-		return (1);
+		(*current)->syntax_error = 1;
+		return;
 	}
-	i = 0;
-	while (tokens[i])
+	if (tokens[*i + 1] && is_redirection(tokens[*i + 1])
+		&& (ft_strcmp(tokens[*i + 1], ">") == 0 
+		|| ft_strcmp(tokens[*i + 1], ">>") == 0))
 	{
-		// Check for consecutive pipes
-		if (ft_strcmp(tokens[i], "|") == 0)
-		{
-			if (!tokens[i + 1])
-			{
-				handle_syntax_error("|", shell);
-				return (1);
-			}
-			if (ft_strcmp(tokens[i + 1], "|") == 0)
-			{
-				handle_syntax_error("|", shell);
-				return (1);
-			}
-		}
-		// Check for redirection syntax errors
-		if (is_redirection(tokens[i]))
-		{
-			// Missing filename
-			if (!tokens[i + 1])
-			{
-				handle_syntax_error("newline", shell);
-				return (1);
-			}
-			// Invalid redirection combinations
-			if ((ft_strcmp(tokens[i], ">") == 0 && tokens[i + 1]
-					&& ft_strcmp(tokens[i + 1], "<") == 0)
-				|| (ft_strcmp(tokens[i], "<") == 0 && tokens[i + 1]
-					&& ft_strcmp(tokens[i + 1], ">") == 0)
-				|| (is_redirection(tokens[i + 1])))
-			{
-				handle_syntax_error(tokens[i + 1], shell);
-				return (1);
-			}
-		}
-		i++;
+		handle_pipeline(current, shell);
+		(*i)++;
+		return;
 	}
-	return (0);
+	handle_pipeline(current, shell);
+	(*i)++;
+}
+
+void	handle_parser_token(t_cmd **current, char **tokens, int *i, t_shell *shell)
+{
+    if (ft_strcmp(tokens[*i], "|") == 0)
+    {
+        handle_pipe_token(current, tokens, i, shell);
+    }
+    else if (is_redirection(tokens[*i]))
+    {
+        handle_redirection(*current, tokens, i, shell);
+    }
+    else
+    {
+        add_argument(*current, tokens[*i]);
+        (*i)++;
+    }
+}
+
+
+t_cmd	*parser(char **tokens, t_shell *shell)
+{
+    t_cmd	*head;
+    t_cmd	*current;
+    int		i;
+
+    if (!tokens || !tokens[0] || check_syntax_errors(tokens, shell))
+        return (NULL);
+    head = create_cmd_node();
+    if (!head)
+        return (NULL);
+    current = head;
+    current->shell = shell;
+    i = 0;
+    while (tokens[i] && !current->syntax_error)
+    {
+        handle_parser_token(&current, tokens, &i, shell);
+        if (current->syntax_error)
+        {
+            free_cmd(head);
+            return (NULL);
+        }
+    }
+    return (head);
 }
 
 /**
  * Main parser function to convert tokens into command structure
- */
-t_cmd	*parser(char **tokens, t_shell *shell)
-{
-	t_cmd *head;
-	t_cmd *current;
-	int i;
+//  */
+// t_cmd	*parser(char **tokens, t_shell *shell)
+// {
+// 	t_cmd *head;
+// 	t_cmd *current;
+// 	int i;
 
-	if (!tokens || !tokens[0])
-		return (NULL);
+// 	if (!tokens || !tokens[0])
+// 		return (NULL);
 
-	// Check for syntax errors before parsing
-	if (check_syntax_errors(tokens, shell))
-		return (NULL);
+// 	// Check for syntax errors before parsing
+// 	if (check_syntax_errors(tokens, shell))
+// 		return (NULL);
 
-	head = create_cmd_node();
-	if (!head)
-		return (NULL);
+// 	head = create_cmd_node();
+// 	if (!head)
+// 		return (NULL);
 
-	current = head;
-	current->shell = shell;
+// 	current = head;
+// 	current->shell = shell;
 
-	i = 0;
-	while (tokens[i])
-	{
-		// Handle pipes
-		if (ft_strcmp(tokens[i], "|") == 0)
-		{
-			// Check that current command has content
-			if (!current->args && !current->redirs)
-			{
-				handle_syntax_error("|", shell);
-				free_cmd(head);
-				return (NULL);
-			}
+// 	i = 0;
+// 	while (tokens[i])
+// 	{
+// 		// Handle pipes
+// 		if (ft_strcmp(tokens[i], "|") == 0)
+// 		{
+// 			// Check that current command has content
+// 			if (!current->args && !current->redirs)
+// 			{
+// 				handle_syntax_error("|", shell);
+// 				free_cmd(head);
+// 				return (NULL);
+// 			}
 
-			// Special case: pipe followed by redirection (e.g.,"echo | > file")
-			if (tokens[i + 1] && is_redirection(tokens[i + 1])
-				&& (ft_strcmp(tokens[i + 1], ">") == 0 || ft_strcmp(tokens[i
-						+ 1], ">>") == 0))
-			{
-				handle_pipeline(&current, shell);
-				i++;
-				continue ;
-			}
+// 			// Special case: pipe followed by redirection (e.g.,"echo | > file")
+// 			if (tokens[i + 1] && is_redirection(tokens[i + 1])
+// 				&& (ft_strcmp(tokens[i + 1], ">") == 0 || ft_strcmp(tokens[i
+// 						+ 1], ">>") == 0))
+// 			{
+// 				handle_pipeline(&current, shell);
+// 				i++;
+// 				continue ;
+// 			}
 
-			handle_pipeline(&current, shell);
-			if (current->syntax_error)
-			{
-				free_cmd(head);
-				return (NULL);
-			}
-			i++;
-			continue ;
-		}
+// 			handle_pipeline(&current, shell);
+// 			if (current->syntax_error)
+// 			{
+// 				free_cmd(head);
+// 				return (NULL);
+// 			}
+// 			i++;
+// 			continue ;
+// 		}
 
-		// Handle redirections
-		if (is_redirection(tokens[i]))
-		{
-			handle_redirection(current, tokens, &i, shell);
-			if (current->syntax_error)
-			{
-				free_cmd(head);
-				return (NULL);
-			}
-			continue ; // i was incremented in handle_redirection
-		}
+// 		// Handle redirections
+// 		if (is_redirection(tokens[i]))
+// 		{
+// 			handle_redirection(current, tokens, &i, shell);
+// 			if (current->syntax_error)
+// 			{
+// 				free_cmd(head);
+// 				return (NULL);
+// 			}
+// 			continue ; // i was incremented in handle_redirection
+// 		}
 
-		// Handle normal arguments
-		add_argument(current, tokens[i]);
-		i++;
-	}
+// 		// Handle normal arguments
+// 		add_argument(current, tokens[i]);
+// 		i++;
+// 	}
 
-	return (head);
-}
+// 	return (head);
+// }

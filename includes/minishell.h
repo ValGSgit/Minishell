@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 12:01:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/09 12:28:24 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/13 15:04:20 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,7 @@ typedef struct s_cmd {
 }	t_cmd;
 
 typedef struct s_shell {
+    bool       path_unset;
     char	**env;
     int		exit_status;
     bool	is_interactive;
@@ -114,6 +115,7 @@ int		handle_quotes(char **input, bool *in_quote, char *quote_char);
 t_cmd	*parser(char **tokens, t_shell *shell);
 
 /* Expander */
+char **split_expanded_variable(char *value);
 char	*process_argument(char *arg, t_shell *shell);
 char	*expand_variable(char *arg, int *i, t_shell *shell);
 void	expand_nodes(t_cmd *cmd, t_shell *shell);
