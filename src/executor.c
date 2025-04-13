@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:34:42 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/03 13:26:47 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/13 17:57:03 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,7 +146,7 @@ void execute_external_command(t_cmd *cmd, t_shell *shell)
         exit(0);
     
     // Check if PATH has been unset
-    if (shell->path_unset && ft_strchr(cmd->args[0], '/') == NULL)
+    if (cmd->args[0] && shell->path_unset && ft_strchr(cmd->args[0], '/') == NULL)
     {
         ft_putstr_fd(cmd->args[0], 2);
         ft_putstr_fd(": No such file or directory\n", 2);
@@ -207,17 +207,32 @@ void execute_single_command(t_cmd *cmd, t_shell *shell)
     int status;
     int is_built;
 
-    is_built = is_builtin(cmd->args[0]);
+    is_built = 0;
+    if (cmd->args != NULL && cmd->args[0] != NULL)
+        is_built = is_builtin(cmd->args[0]);
     if (is_built && !cmd->next && !cmd->redirs)
     {
         execute_builtin(cmd);
         restore_redirections(cmd);
         return;
     }
-    pid = fork();
+    if (!cmd->args && cmd->redirs)
+    {
+        pid = fork();
+        if (pid == 0)
+        {
+            apply_redirection(cmd);
+            exit(0);
+        }
+        waitpid(pid, &status, 0);
+        return;
+    }
+    else
+        pid = fork();
     if (pid == 0)
     {
-        apply_redirection(cmd);
+        if (cmd->redirs)
+            apply_redirection(cmd);
         if (is_built)
             execute_builtin_or_exit(cmd);
         execute_external_command(cmd, shell);
@@ -231,7 +246,7 @@ void execute_single_command(t_cmd *cmd, t_shell *shell)
         if (WTERMSIG(status) == SIGINT)
             write(STDERR_FILENO, "\n", 1);
     }
-    restore_redirections(cmd);
+    //restore_redirections(cmd);
 }
 
 void	setup_pipeline(t_cmd *cmd, int *pipe_fd, int *prev_pipe_in)
@@ -383,18 +398,17 @@ void	execute_pipeline(t_cmd *cmd, t_shell *shell)
             }
         }
     }
-    
     free(pids);
 }
    
 void	executor(t_cmd *cmd, t_shell *shell)
 {
-    if (!cmd || !cmd->args || !cmd->args[0])
-    {
-        // Handle empty command case
-        shell->exit_status = 0;
-        return;
-    }
+    // if (!cmd || !cmd->args || !cmd->args[0])
+    // {
+    //     // Handle empty command case
+    //     shell->exit_status = 0;
+    //     return;
+    // }
     
     if (!cmd->next)
         execute_single_command(cmd, shell);

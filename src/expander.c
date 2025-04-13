@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/13 15:03:18 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/13 17:57:40 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,22 +167,43 @@ static char **apply_word_splitting(char **args, t_shell *shell)
     return (new_args);
 }
 
+static  char *resolve_path_in_current_dir(char *cmd)
+{
+    char	*path;
+    char	*current_dir;
+
+    current_dir = getcwd(NULL, 0);
+    if (!current_dir)
+        return (NULL);
+    path = ft_strjoin(current_dir, "/");
+    free(current_dir);
+    if (!path)
+        return (NULL);
+    path = ft_strjoin(path, cmd);
+    free(cmd);
+    return (path);
+}
+
 void	expander(t_cmd *cmd, t_shell *shell)
 {
 	char	*expanded;
 
 	if (!cmd || !cmd->args)
 		return ;
-	// Fix path resolution logic - only apply path resolution to commands without paths
-	// that are not builtins
-	if (cmd->args[0] && 
-		ft_strchr(cmd->args[0], '/') == NULL && 
-		!is_builtin(cmd->args[0]))
-	{
-		expanded = resolve_path(cmd->args[0], shell->env);
-		free(cmd->args[0]);
-		cmd->args[0] = expanded;
-	}
+    // Fix path resolution logic - apply path resolution to commands without paths
+    // that are not builtins, and check the current directory if PATH is unset
+    if (cmd->args[0] && 
+        ft_strchr(cmd->args[0], '/') == NULL && 
+        !is_builtin(cmd->args[0]))
+    {
+        if (shell->env && get_env_value("PATH", shell->env))
+            expanded = resolve_path(cmd->args[0], shell->env);
+        else
+            expanded = resolve_path_in_current_dir(cmd->args[0]);
+        //if (cmd->args[0])
+        //    free(cmd->args[0]);
+        cmd->args[0] = expanded;
+    }
 	
 	// Apply word splitting to all arguments
 	cmd->args = apply_word_splitting(cmd->args, shell);

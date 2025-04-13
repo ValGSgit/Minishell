@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 12:01:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/13 15:04:20 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/13 17:47:57 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,7 @@ typedef struct s_cmd {
     bool			syntax_error;
     struct s_cmd	*next;
     struct s_shell	*shell;
+    int             exit_status;
 }	t_cmd;
 
 typedef struct s_shell {
