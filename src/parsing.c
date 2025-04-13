@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/09 13:07:29 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/09 13:21:01 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/13 15:08:47 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,7 @@ void	handle_redirection(t_cmd *cmd, char **tokens, int *i, t_shell *shell)
 	else if (ft_strcmp(tokens[*i], "<<") == 0)
 	{
 		// Handle heredoc separately
+		redir_type = REDIR_HEREDOC;
 		if (!tokens[*i + 1])
 		{
 			handle_syntax_error("newline", shell);
