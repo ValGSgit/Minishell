@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:56:16 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/03 14:50:43 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/14 10:24:33 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,8 +84,8 @@ static int	finalize_tokens(t_lexer lx, char *input, char **tokens)
 /* Main lexer function */
 char	**lexer(char *input)
 {
-	char **tokens;
-	t_lexer lx;
+	char	**tokens;
+	t_lexer	lx;
 
 	tokens = ft_calloc(MAX_TOKENS, sizeof(char *));
 	if (!tokens || !input)

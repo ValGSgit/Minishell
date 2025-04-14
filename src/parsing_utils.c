@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 12:00:04 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/03 12:03:25 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/14 13:09:44 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,4 +80,22 @@ void	add_argument(t_cmd *node, char *arg)
 		return ;
 	}
 	add_argument_to_array(&(node->args), arg);
+}
+
+/**
+ * Create a new command node in the pipeline
+ */
+void	handle_pipeline(t_cmd **current, t_shell *shell)
+{
+	t_cmd	*new_cmd;
+
+	new_cmd = create_cmd_node();
+	if (!new_cmd)
+	{
+		(*current)->syntax_error = 1;
+		return ;
+	}
+	new_cmd->shell = shell;
+	(*current)->next = new_cmd;
+	*current = new_cmd;
 }

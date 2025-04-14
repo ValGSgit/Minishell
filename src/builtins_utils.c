@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/02 10:33:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/09 12:36:26 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/14 12:45:09 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,7 +154,7 @@ void	ft_cd(t_cmd *cmd)
 
 void	ft_pwd(t_cmd *cmd)
 {
-	char	cwd[PATH_MAX];
+	char	cwd[1024];
 
 	// pwd should ignore arguments
 	if (getcwd(cwd, 1024) != NULL)

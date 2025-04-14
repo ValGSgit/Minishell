@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 12:01:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/13 15:04:20 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/14 11:41:31 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,7 @@ typedef struct s_cmd {
     bool			syntax_error;
     struct s_cmd	*next;
     struct s_shell	*shell;
+    int             exit_status;
 }	t_cmd;
 
 typedef struct s_shell {
@@ -112,9 +113,35 @@ char	**lexer(char *input);
 int		handle_quotes(char **input, bool *in_quote, char *quote_char);
 
 /* Parser */
+void	handle_heredoc_redirect(t_cmd *cmd, char **tokens, int *i, t_shell *shell);
+int	same_length(char *tok1, char *tok2);
+void	handle_parser_token(t_cmd **current, char **tokens, int *i, t_shell *shell);
+void	handle_pipe_token(t_cmd **current, char **tokens, int *i, t_shell *shell);
+void	handle_redirection(t_cmd *cmd, char **tokens, int *i, t_shell *shell);
+int	is_redirection(char *tokens);
+void	handle_syntax_error(char *token, t_shell *shell);
+int	check_syntax_errors(char **tokens, t_shell *shell);
+int	check_pipe_errors(char **tokens, t_shell *shell, int i);
+int	check_redirect_filename(char **tokens, int *i, t_shell *shell, t_cmd *cmd);
+int	check_quotes(char *token, t_shell *shell);
+int	check_redir_errors(char **tokens, t_shell *shell, int *i);
 t_cmd	*parser(char **tokens, t_shell *shell);
 
+/* Heredocs */
+bool	check_delimiter_quotes(char *eof);
+void	setup_heredoc_signals(void);
+char	*handle_expanded_line(char *arg, char *expanded_line);
+void	read_heredoc_input(const char *delimiter, int fd, t_cmd *cmd, bool expand_vars);
+void	heredoc_child_process(t_cmd *cmd, char *clean_eof, int fd, bool expand_vars);
+int	heredoc_parent_process(t_cmd *cmd, int fd, char *clean_eof);
+char	*remove_quotes(char *lim);
+char	*process_line(char *arg, t_cmd *cmd, bool expand_vars);
+char	*clean_empty_expansions(char *arg);
+const char	*get_random_temp_name(void);
+
 /* Expander */
+char	**apply_word_splitting(char **args, t_shell *shell);
+void	handle_pipeline(t_cmd **current, t_shell *shell);
 char **split_expanded_variable(char *value);
 char	*process_argument(char *arg, t_shell *shell);
 char	*expand_variable(char *arg, int *i, t_shell *shell);
