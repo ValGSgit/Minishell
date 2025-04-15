@@ -49,11 +49,15 @@ void	minishell_loop(t_shell *shell)
 	char	*prompt;
 
 	shell->cmd = NULL;
-	prompt = "Minishell-> ";
+    prompt = ft_strdup("Minishell-> ");
 	while (1)
 	{
 		setup_signals();
-		input = readline(prompt);
+		//prompt = update_prompt();
+		//if (!prompt)
+        //    prompt = ft_strdup("Minishell-> ");
+        input = readline(prompt);
+		//free(prompt);
 		if (!input)
 		{
 			if (shell->is_interactive)

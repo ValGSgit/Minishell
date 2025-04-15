@@ -227,6 +227,12 @@ void ft_echo(t_cmd *cmd)
     int i = 1;
     int n_flag = 0;
 
+    if (!cmd->args[1])
+    {
+        ft_putchar_fd('\n', STDOUT_FILENO);
+        cmd->shell->exit_status = 0;
+        return;
+    }
     // Process all flags at the beginning
     while (cmd->args[i] && cmd->args[i][0] == '-')
     {

@@ -23,6 +23,17 @@ bool	is_quoted(char *token)
 		|| (token[0] == '"' && token[ft_strlen(token) - 1] == '"'));
 }
 
+/* Checks if the token contains a metacharacter */
+bool	contains_metacharacter(char *token)
+{
+	if (!token)
+		return (false);
+	
+	// Check for unquoted metacharacters in the token
+	return (ft_strchr(token, '|') || ft_strchr(token, '<') || 
+			ft_strchr(token, '>'));
+}
+
 /* Checks if the token is a metacharacter (|, <, >, >>, <<) */
 bool	is_metacharacter(char *token)
 {

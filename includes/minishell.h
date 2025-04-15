@@ -203,6 +203,7 @@ void	free_tokens(char **tokens);
 void	free_env(char **env);
 void	print_error(char *msg, char *arg);
 bool	is_quoted(char *token);
+bool	contains_metacharacter(char *token);
 void	free_shell(t_shell *shell);
 char	*append_str(char *dest, char *src);
 bool	is_metacharacter(char *token);

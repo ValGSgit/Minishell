@@ -42,7 +42,7 @@ void	handle_heredoc_redirect(t_cmd *cmd, char **tokens, int *i,
 		cmd->syntax_error = 1;
 		return ;
 	}
-	if (is_metacharacter(tokens[*i + 1]))
+	if (is_metacharacter(tokens[*i + 1]) || contains_metacharacter(tokens[*i + 1]))
 	{
 		handle_syntax_error(tokens[*i + 1], shell);
 		cmd->syntax_error = 1;
