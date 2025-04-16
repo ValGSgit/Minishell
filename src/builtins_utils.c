@@ -95,6 +95,13 @@ void	ft_cd(t_cmd *cmd)
 		cmd->shell->exit_status = 1;
 		return ;
 	}
+	if (cmd->args[1] && cmd->args[2])
+	{
+		ft_putstr_fd("minishell: cd: too many arguments\n", 2);
+		free(old_pwd);
+		cmd->shell->exit_status = 1;
+		return ;
+	}
 	// Get target path
 	if (!cmd->args[1] || ft_strcmp(cmd->args[1], "~") == 0)
 		path = get_env_value("HOME", cmd->shell->env);

@@ -43,9 +43,9 @@ void	free_cmd(t_cmd *cmd)
 		if (cmd->args)
 		{
 			i = 0;
-			while (cmd->args[i++])
-				free(cmd->args[i]);
-			free(cmd->args);
+			// while (cmd->args[i++])
+			// 	free(cmd->args[i]);
+			// free(cmd->args);
 		}
 		if (cmd->in_file)
 			free(cmd->in_file);

@@ -45,7 +45,7 @@ static char *handle_special_characters(char *str, int *i)
             char result[3] = {'$', str[start], '\0'};
             return (ft_strdup(result));
         }
-        return (ft_strdup("$"));
+        return (ft_strdup(""));
     }
     return (NULL);
 }

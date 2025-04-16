@@ -65,18 +65,18 @@ char	*clean_empty_expansions(char *arg)
 	return (arg);
 }
 
-char	*process_line(char *arg, t_cmd *cmd, bool expand_vars)
-{
-	char	*expanded_line;
+// char	*process_line(char *arg, t_cmd *cmd, bool expand_vars)
+// {
+// 	char	*expanded_line;
 
-	if (!expand_vars)
-		return (arg);
-	expanded_line = process_argument(arg, cmd->shell);
-	if (!expanded_line)
-		return (arg);
-	arg = handle_expanded_line(arg, expanded_line);
-	return (clean_empty_expansions(arg));
-}
+// 	if (!expand_vars)
+// 		return (arg);
+// 	expanded_line = process_argument(arg, cmd->shell);
+// 	if (!expanded_line)
+// 		return (arg);
+// 	arg = handle_expanded_line(arg, expanded_line);
+// 	return (clean_empty_expansions(arg));
+// }
 
 char	*remove_quotes(char *lim)
 {

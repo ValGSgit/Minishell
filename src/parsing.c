@@ -58,7 +58,7 @@ t_cmd	*parser(char **tokens, t_shell *shell)
 	t_cmd	*current;
 	int		i;
 
-	if (!tokens || !tokens[0] || check_syntax_errors(tokens, shell))
+	if (!tokens || !tokens[0])// || check_syntax_errors(tokens, shell))
 		return (NULL);
 	head = create_cmd_node();
 	if (!head)
@@ -66,6 +66,7 @@ t_cmd	*parser(char **tokens, t_shell *shell)
 	current = head;
 	current->shell = shell;
 	i = 0;
+	//check_syntax_errors(tokens, shell);
 	while (tokens[i] && !current->syntax_error)
 	{
 		handle_parser_token(&current, tokens, &i, shell);

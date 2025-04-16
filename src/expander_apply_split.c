@@ -120,7 +120,7 @@ static char	**build_args_after_splitting(char **args, int max_count,
 		process_arg_for_splitting(args[i], expanded, &count, new_args);
 		i++;
 	}
-	new_args[count] = NULL;
+	//new_args[count] = NULL;
 	free(args);
 	return (new_args);
 }

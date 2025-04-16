@@ -29,7 +29,10 @@ void	read_heredoc_input(const char *delimiter, int fd, t_cmd *cmd, bool expand_v
 			free(line);
 			break ;
 		}
-		processed_line = process_line(line, cmd, expand_vars);
+		if (expand_vars)
+			processed_line = process_argument(line, cmd->shell);
+		else
+			processed_line = ft_strdup(line);
 		if (processed_line)
 		{
 			write(fd, processed_line, ft_strlen(processed_line));

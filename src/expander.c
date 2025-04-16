@@ -55,7 +55,7 @@ char	*process_argument(char *arg, t_shell *shell)
 		else if (arg[i] == '$' && !state.in_quote)
 		{
 			value = expand_variable(arg, &i, shell);
-			if (!state.is_heredoc || (value && *value))
+			if ((value && *value))
 				state.result = append_str(state.result, value);
 			free(value);
 		}

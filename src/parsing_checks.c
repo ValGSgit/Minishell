@@ -30,25 +30,6 @@ int	check_redir_errors(char **tokens, t_shell *shell, int *i)
 	return (0);
 }
 
-int	check_quotes(char *token, t_shell *shell)
-{
-	char	quote;
-	int		j;
-
-	if (token[0] == '"' || token[0] == '\'')
-	{
-		quote = token[0];
-		j = 1;
-		while (token[j] && token[j] != quote)
-			j++;
-		if (!token[j])
-		{
-			handle_syntax_error("unclosed quote", shell);
-			return (1);
-		}
-	}
-	return (0);
-}
 
 int	check_redirect_filename(char **tokens, int *i, t_shell *shell, t_cmd *cmd)
 {
@@ -95,8 +76,7 @@ int	check_syntax_errors(char **tokens, t_shell *shell)
 	while (tokens[i])
 	{
 		if (check_pipe_errors(tokens, shell, i)
-			|| check_redir_errors(tokens, shell, &i)
-			|| check_quotes(tokens[i], shell))
+			|| check_redir_errors(tokens, shell, &i))
 			return (1);
 		i++;
 	}
