@@ -1,4 +1,3 @@
-I'll create a comprehensive list of failed tests by examining the actual test files to understand what each failing test is doing. Here's the list of all failed tests with their file lines and commands:
 
 ### PARSING HELL Section
 1. **Test #3**: (`10_parsing_hell.sh:10`) - `>> '$USER'` followed by `cat $USER` (STD_ERR issue)
