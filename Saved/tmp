@@ -1,0 +1,327 @@
+cat << $USER
+why
+not
+$USER
+
+export T=">>"
+$T lol
+
+cat << "$USER"
+why
+not
+$USER
+
+cat << "$US"E"R"
+because
+we
+love
+bash
+$USER
+
+>> $HOME
+
+
+export T="l"
+$Ts -a
+
+
+export T="echo segfault | grep segfault"
+$T
+
+
+export T=-nnnnnnnn"nnnnnnn "
+echo $T
+
+
+'''''''''''''''' echo ok
+
+
+echo "$"'$'"$""$"'$'
+
+
+echo segfault <"<<<"<<amazing
+.
+amazing
+
+$notexists echo "haha"
+
+
+> $notexists echo "haha"
+
+
+exit ""
+
+exit "       -9223372036854775808          " (returns 0 and error is wrong)
+
+export (smh wrong)
+
+
+---------------
+wrong outputs
+/bin/env | grep "_="
+
+/bin/env | grep "SHLVL"
+----------------
+
+
+ls | cat asd
+
+ls | cat << stop | grep "asd"
+is this good
+stop
+
+
+ls | cat << stop | ls -la | cat << stop1
+12
+32232
+23
+stop
+awdaw
+daswd
+stop1
+
+ls | cat << stop | ls -la | cat << stop1 | ls | cat << stop2 | ls -la | cat << stop3
+$USER
+ad
+as $HOME
+stop
+awd
+wf$PWDdqwdwqd
+stop1
+das
+das
+stop2
+dsq
+wd
+wf$PWDdqwdwqd
+stop3
+
+ls | cat << stop | ls -la | cat << stop1 | ls | cat << stop2 | ls -la > out | cat << 'stop3'
+$USER
+ad
+stop
+dsa
+stop1
+sad
+stop2
+as $HOME
+stop3
+/bin/rm -f out
+
+ls | cat << stop | ls -la | cat << stop1 | ls | cat << stop2 | ls -la >> out | cat << stop3
+fe
+wf
+fwe
+f
+stop
+dw
+stop1
+dwasd
+stop2
+cat Makefile | ls > out
+cat out
+/bin/rm -f out
+
+ls | cat << stop | ls -la > out0| cat << stop1 | ls | cat << stop2 | ls -la >> out | cat << stop3
+fe
+wf
+fwe
+f
+stop
+dw
+stop1
+dw
+stop2
+e
+wf
+stop3
+/bin/rm -f out
+/bin/rm -f out0
+
+--------------------------
+
+ls > out >> out1 >out3 | cat out1
+ls > out >> out1 >out3 | cat out1
+/bin/rm -f out
+/bin/rm -f out1
+/bin/rm -f out3
+
+cat < Makefile > out >> out1 | wc -l out1 > out2
+cat < Makefile > out >> out1 | wc -l out1 > out2
+/bin/rm -f out
+/bin/rm -f out1
+/bin/rm -f out2
+
+|ls | ls
+
+ls|cat Makefile|ls
+
+ls|cat Makefile|<wc -l
+
+ls|cat Makefile|> out
+cat out
+/bin/rm -f out
+
+ls|cat Makefile|>> out
+cat out
+/bin/rm -f out
+
+
+ls|cat Makefile|cat<<asd>out
+$USER
+asd
+/bin/rm -f out
+
+ls|cat Makefile|cat<<'asd'>out
+$USER
+asd
+/bin/rm -f out
+
+ls|cat Makefile|cat<<"asd">out
+$USER
+asd
+/bin/rm -f out
+
+pwd
+ls|cat Makefile|>> out|cd ..
+/bin/rm -f out
+pwd
+
+pwd
+cd .. |ls|cat Makefile|>> out
+pwd
+/bin/rm -f out
+
+ls -l | awk '$1 ~ /^d/ {print $9}'
+
+aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb | aaa | bbb
+
+
+cat << lim
+ "lim"
+HELLO
+42
+ lim
+testing your minishell
+limm
+lim
+
+<<lim cat
+ "lim"
+HELLO
+42
+ lim
+testing your minishell
+limm
+lim
+
+cat << lim
+test
+lim
+
+ cat << EOF
+"EOF"
+!! HELLO
+@42 !!
+ EOF\t\b\n
+testing your minishell :)
+limm
+EOF
+
+cat << hello
+$USER
+$NOVAR
+$HOME
+hello
+
+cat << 'lim'
+$USER
+$NOVAR
+$HOME
+lim
+
+cat << lim''
+$USER
+$NOVAR
+$HOME
+lim
+
+cat << "lim"
+$USER
+$NOVAR
+$HOME
+lim
+
+cat << 'lim'
+$USER
+$NOVAR
+$HOME
+lim
+
+
+/bin/echo "$""$"
+
+/bin/echo "$"$
+
+export tmp_test="/bin/echo 42"
+$tmp_test
+$tmp_test 42
+export tmp_test="/bin/echo"
+$tmp_test 42 42 (wrong output and error)
+
+
+env | grep $USER
+
+export USER=
+env | grep USER
+
+export USER="@?/"
+env | grep USER
+
+
+touch tmp_x_file1
+tmp_x_file1
+echo $?
+./tmp_x_file1
+echo $?
+export PATH=$HOME
+echo $PATH
+tmp_x_file1
+echo $?
+./tmp_x_file1
+echo $?
+unset PATH
+tmp_x_file1
+echo $?
+./tmp_x_file1
+echo $?
+echo 42
+/bin/rm -f tmp_x_file1
+
+
+-------------------
+Dumb cases
+
+ls | cat << stop | ls -la | cat << stop1 | ls | cat << stop2 | ls -la > > out | cat << stop3
+fe
+wf
+fwe
+f
+stop
+dw
+stop1
+dwasd
+stop2
+cat Makefile | ls > out
+cat out
+/bin/rm -f out
+
+/bin/cat Makefile > out >>out1 >out2 | /bin/cat << stop > out3 | /bin/ls > > | /bin/cat << file
+will make you cry
+stop
+/bin/rm -rf out
+/bin/rm -rf out1
+/bin/rm -rf out2
+/bin/rm -rf out3
+cd ..
+pwd

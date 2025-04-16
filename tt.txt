@@ -1,0 +1,114 @@
+export T="l"
+$Ts -a
+
+
+
+export T="echo segfault | grep segfault"
+$T
+
+
+export T=-nnnnnnnn"nnnnnnn "
+echo $T
+
+'''''''''''''''' echo ok
+
+echo "$"'$'"$""$"'$'
+
+
+echo segfault <"<<<"<<amazing
+.
+amazing
+
+$notexists echo "haha"
+
+> $notexists echo "haha"
+
+exit ""
+
+
+exit "       -9223372036854775808          "
+
+
+echo test |  <<lala
+
+
+touch ""
+
+/bin/echo "$"
+
+/bin/echo "$""$"
+
+/bin/echo "$"$
+
+export tmp_test="/bin/echo 42"
+$tmp_test
+$tmp_test 42
+export tmp_test="/bin/echo"
+$tmp_test 42 42
+
+
+"		"
+
+"			"
+
+echo "$"
+
+
+
+echo "$""$"
+
+echo "$"$
+
+env | grep $USER
+
+export USER=
+env | grep USER
+
+export USER="@?/"
+env | grep USER
+
+
+
+touch tmp_x_file1
+tmp_x_file1
+echo $?
+./tmp_x_file1
+echo $?
+export PATH=$HOME
+echo $PATH
+tmp_x_file1
+echo $?
+./tmp_x_file1
+echo $?
+unset PATH
+tmp_x_file1
+echo $?
+./tmp_x_file1
+echo $?
+echo 42
+/bin/rm -f tmp_x_file1
+
+
+ls | cat << stop | ls -la | cat << stop1 | ls | cat << stop2 | ls -la > > out | cat << stop3
+fe
+wf
+fwe
+f
+stop
+dw
+stop1
+dwasd
+stop2
+cat Makefile | ls > out
+cat out
+/bin/rm -f out
+
+/bin/cat Makefile > out >>out1 >out2 | /bin/cat << stop > out3 | /bin/ls > > | /bin/cat << file
+will make you cry
+stop
+/bin/rm -rf out
+/bin/rm -rf out1
+/bin/rm -rf out2
+/bin/rm -rf out3
+cd ..
+pwd
