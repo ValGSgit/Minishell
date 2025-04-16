@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:04 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/03 15:05:20 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/14 11:16:23 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,19 +43,15 @@ void	free_cmd(t_cmd *cmd)
 		if (cmd->args)
 		{
 			i = 0;
-			while (cmd->args[i])
-			{
-				free(cmd->args[i]);
-				i++;
-			}
-			free(cmd->args);
+			// while (cmd->args[i++])
+			// 	free(cmd->args[i]);
+			// free(cmd->args);
 		}
 		if (cmd->in_file)
 			free(cmd->in_file);
 		if (cmd->out_file)
 			free(cmd->out_file);
 		free_redir(cmd->redirs);
-		// free_env(cmd->env);
 		free(cmd);
 		cmd = temp;
 	}

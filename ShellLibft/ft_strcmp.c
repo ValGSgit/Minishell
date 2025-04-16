@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 16:02:14 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/03/24 10:01:16 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/02 14:13:03 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ int	ft_strcmp(const char *s1, const char *s2)
 	int	i;
 
 	i = 0;
-	while (s1[i] || s2[i])
+	while (s1[i] && s2[i])
 	{
 		if (s1[i] != s2[i])
 			return (s1[i] - s2[i]);

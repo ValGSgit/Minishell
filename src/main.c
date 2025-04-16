@@ -6,22 +6,23 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/07 16:20:35 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/14 12:56:32 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-int		g_signal_received = 0;
+// debug_shell_state(tokens, NULL, "Before parsing");
+// debug_shell_state(tokens, shell->cmd, "After parsing");
+// debug_shell_state(tokens, shell->cmd, "After expansion");
+// if (shell->cmd && shell->cmd->args && shell->cmd->args[0] != NULL)
 
-
-// Version with debugging functions
-int		handle_input(t_shell *shell, char *input)
+int	handle_input(t_shell *shell, char *input)
 {
 	char	**tokens;
-	
-	if (ft_strncmp(input, "exit", ft_strlen(input) + 5) == 0)
-		return (1);
+
+	if (!input)
+		return (0);
 	if (*input)
 		add_history(input);
 	tokens = lexer(input);
@@ -32,12 +33,12 @@ int		handle_input(t_shell *shell, char *input)
 	}
 	shell->cmd = parser(tokens, shell);
 	if (!shell->cmd)
-		return(free(input),free_tokens(tokens), 0);
+		return (free(input), free_tokens(tokens), 0);
 	expand_nodes(shell->cmd, shell);
-	if (shell->cmd->args[0] != NULL)
-		executor(shell->cmd, shell);
+	executor(shell->cmd, shell);
 	free_cmd(shell->cmd);
-	free_tokens(tokens);
+	if (tokens)
+		free_tokens(tokens);
 	free(input);
 	return (0);
 }
@@ -46,27 +47,23 @@ void	minishell_loop(t_shell *shell)
 {
 	char	*input;
 	char	*prompt;
-	
+
 	shell->cmd = NULL;
-	prompt = "Minishell-> ";
+    prompt = ft_strdup("Minishell-> ");
 	while (1)
 	{
 		setup_signals();
-		// //input = readline((const char *)update_prompt());
-		// if (isatty(fileno(stdin)))
-		// {
-		// //prompt = update_prompt();
-		// 	input = readline(prompt);
-		// //free(prompt);
-		// }
-		// else
-		// {
-		// 	char *line;
-		// 	line = get_next_line(fileno(stdin));
-		// 	if (line)
-		// 		input = ft_strtrim(line, "\n");
-		// }
-		input = readline(prompt);
+		//prompt = update_prompt();
+		//if (!prompt)
+        //    prompt = ft_strdup("Minishell-> ");
+        input = readline(prompt);
+		//free(prompt);
+		if (!input)
+		{
+			if (shell->is_interactive)
+				ft_putstr_fd("exit\n", STDOUT_FILENO);
+			break ;
+		}
 		if (handle_input(shell, input) == 1)
 		{
 			free(input);
@@ -75,23 +72,52 @@ void	minishell_loop(t_shell *shell)
 	}
 }
 
+void	initialize_shell(t_shell *shell, char **argv)
+{
+	char	*prog_name;
+	char	*cwd;
+	char	*pwd_var;
+
+	prog_name = ft_strrchr(argv[0], '/');
+	if (prog_name)
+		prog_name++;
+	else
+		prog_name = argv[0];
+	if (ft_strcmp(prog_name, "minishell") == 0 || ft_strcmp(prog_name,
+			"./minishell") == 0 || ft_strcmp(prog_name, "bash") == 0)
+		update_shlvl(shell);
+	if (!get_env_value("PWD", shell->env))
+	{
+		cwd = getcwd(NULL, 0);
+		if (cwd)
+		{
+			pwd_var = ft_strjoin("PWD=", cwd);
+			if (pwd_var)
+				update_or_add_env(pwd_var, &shell->env);
+			(free(pwd_var), free(cwd));
+		}
+	}
+}
 
 int	main(int argc, char **argv, char **envp)
 {
 	t_shell	shell;
 
 	(void)argc;
-	(void)argv;
 	if (*envp)
 		shell.env = copy_env(envp);
 	if (!shell.env)
-		return (write(2, "environment copy failed\n", 25), EXIT_FAILURE);
+	{
+		write(2, "environment copy failed\n", 25);
+		exit(EXIT_FAILURE);
+	}
+	initialize_shell(&shell, argv);
+	//shell.path_unset = false;
 	shell.exit_status = 0;
 	shell.is_interactive = isatty(STDIN_FILENO);
 	shell.signal_status = 0;
 	minishell_loop(&shell);
 	rl_clear_history();
 	free_env(shell.env);
-	//free_cmd(shell.cmd);
 	return (shell.exit_status);
 }
