@@ -1,114 +1,233 @@
-export T="l"
-$Ts -a
+Below, I’ll guide you through building a system in C to process input from readline() like bash, handling lexing, expansion, splitting after expansion, and parsing into command nodes ("CMD nodes"). Each function will be under 25 lines to meet the constraint. We’ll break this into modular components with clear data structures and functions.OverviewTo mimic bash’s input processing, we need:Lexing: Split input into tokens (words and operators), respecting quotes and escapes.Parsing: Build a command structure (CMD nodes) from tokens.Expansion: Expand variables in word tokens, respecting quoting rules.Splitting: Split unquoted expanded words into multiple tokens.CMD Nodes: Represent commands as a tree for execution.We’ll define data structures for tokens and commands, then implement functions for each step.Data StructuresTokensTokens are either words (with quoting info) or operators.enum quote_type { QUOTE_NONE, QUOTE_SINGLE, QUOTE_DOUBLE };
 
+enum token_type { TOKEN_WORD, TOKEN_OPERATOR, TOKEN_END };
 
+enum operator_type { OP_SEMICOLON, OP_PIPE };
 
-export T="echo segfault | grep segfault"
-$T
+struct token {
+    enum token_type type;
+    union {
+        struct {
+            char *text;
+            enum quote_type quote;
+        } word;
+        enum operator_type op;
+    };
+};
 
+struct token_list {
+    struct token *tokens;
+    size_t count;
+    size_t capacity;
+};Command Nodes (CMD Nodes)CMD nodes represent a tree of commands: simple commands, pipelines, or lists.enum cmd_type { CMD_SIMPLE, CMD_PIPELINE, CMD_LIST };
 
-export T=-nnnnnnnn"nnnnnnn "
-echo $T
+struct cmd {
+    enum cmd_type type;
+    union {
+        struct {
+            struct token **words; // array of word tokens
+            size_t word_count;
+        } simple;
+        struct {
+            struct cmd **cmds;    // array of commands
+            size_t cmd_count;
+        } pipeline;
+        struct {
+            struct cmd **cmds;    // array of commands
+            size_t cmd_count;
+        } list;
+    };
+};Helper FunctionsThese manage dynamic arrays and memory.void init_token_list(struct token_list *list) {
+    list->count = 0;
+    list->capacity = 4;
+    list->tokens = malloc(list->capacity * sizeof(struct token));
+}
 
-'''''''''''''''' echo ok
+void add_token(struct token_list *list, struct token tok) {
+    if (list->count >= list->capacity) {
+        list->capacity *= 2;
+        list->tokens = realloc(list->tokens, list->capacity * sizeof(struct token));
+    }
+    list->tokens[list->count++] = tok;
+}
 
-echo "$"'$'"$""$"'$'
+void add_word(struct cmd *cmd, struct token *tok) {
+    if (cmd->simple.word_count >= cmd->simple.word_count + 1) {
+        cmd->simple.words = realloc(cmd->simple.words, (cmd->simple.word_count + 1) * sizeof(struct token *));
+    }
+    cmd->simple.words[cmd->simple.word_count++] = tok;
+}
 
+void add_cmd(struct cmd *parent, struct cmd *child) {
+    size_t *count = parent->type == CMD_PIPELINE ? &parent->pipeline.cmd_count : &parent->list.cmd_count;
+    struct cmd ***cmds = parent->type == CMD_PIPELINE ? &parent->pipeline.cmds : &parent->list.cmds;
+    if (*count >= *count + 1) {
+        *cmds = realloc(*cmds, (*count + 1) * sizeof(struct cmd *));
+    }
+    (*cmds)[(*count)++] = child;
+}LexerThe lexer splits input into tokens, handling quotes and escapes.Main Lexer Functionstruct token_list *lex(const char *input) {
+    struct token_list *list = malloc(sizeof(struct token_list));
+    init_token_list(list);
+    size_t pos = 0;
+    while (input[pos] != '\0') {
+        struct token tok = get_next_token(input, &pos);
+        if (tok.type == TOKEN_END) break;
+        add_token(list, tok);
+    }
+    return list;
+}Get Next Tokenstruct token get_next_token(const char *input, size_t *pos) {
+    while (isspace(input[*pos])) (*pos)++;
+    if (input[*pos] == '\0') return (struct token){ .type = TOKEN_END };
+    enum operator_type op;
+    size_t op_len = match_operator(input + *pos, &op);
+    if (op_len > 0) {
+        *pos += op_len;
+        return (struct token){ .type = TOKEN_OPERATOR, .op = op };
+    }
+    if (input[*pos] == '\'') return make_single_quoted(input, pos);
+    if (input[*pos] == '"') return make_double_quoted(input, pos);
+    return make_unquoted(input, pos);
+}Operator Matchingsize_t match_operator(const char *s, enum operator_type *op) {
+    if (s[0] == ';') { *op = OP_SEMICOLON; return 1; }
+    if (s[0] == '|') { *op = OP_PIPE; return 1; }
+    return 0;
+}Collect Quoted and Unquoted Wordsstruct token make_single_quoted(const char *input, size_t *pos) {
+    (*pos)++;
+    size_t start = *pos;
+    while (input[*pos] != '\'' && input[*pos] != '\0') (*pos)++;
+    size_t len = *pos - start;
+    char *text = strndup(input + start, len);
+    if (input[*pos] == '\'') (*pos)++;
+    return (struct token){ .type = TOKEN_WORD, .word = { .text = text, .quote = QUOTE_SINGLE } };
+}
 
-echo segfault <"<<<"<<amazing
-.
-amazing
+struct token make_double_quoted(const char *input, size_t *pos) {
+    (*pos)++;
+    size_t start = *pos;
+    while (input[*pos] != '"' && input[*pos] != '\0') (*pos)++;
+    size_t len = *pos - start;
+    char *text = strndup(input + start, len);
+    if (input[*pos] == '"') (*pos)++;
+    return (struct token){ .type = TOKEN_WORD, .word = { .text = text, .quote = QUOTE_DOUBLE } };
+}
 
-$notexists echo "haha"
+struct token make_unquoted(const char *input, size_t *pos) {
+    size_t start = *pos;
+    while (input[*pos] && !isspace(input[*pos]) && !match_operator(input + *pos, &(enum operator_type){0})) {
+        if (input[*pos] == '\\') (*pos)++;
+        if (input[*pos]) (*pos)++;
+    }
+    size_t len = *pos - start;
+    char *text = malloc(len + 1);
+    size_t i = 0;
+    for (size_t j = start; j < *pos; j++) text[i++] = input[j] == '\\' && j + 1 < *pos ? input[++j] : input[j];
+    text[i] = '\0';
+    return (struct token){ .type = TOKEN_WORD, .word = { .text = text, .quote = QUOTE_NONE } };
+}ParserThe parser builds a command tree from tokens.Main Parser Functionstruct cmd *parse(struct token_list *tokens) {
+    size_t index = 0;
+    return parse_list(tokens, &index);
+}Parse List (Commands Separated by ;)struct cmd *parse_list(struct token_list *tokens, size_t *index) {
+    struct cmd *list = malloc(sizeof(struct cmd));
+    list->type = CMD_LIST;
+    list->list.cmds = NULL;
+    list->list.cmd_count = 0;
+    while (*index < tokens->count) {
+        struct cmd *pipe = parse_pipeline(tokens, index);
+        if (!pipe) break;
+        add_cmd(list, pipe);
+        if (*index < tokens->count && tokens->tokens[*index].op == OP_SEMICOLON) (*index)++;
+        else break;
+    }
+    return list;
+}Parse Pipeline (Commands Separated by |)struct cmd *parse_pipeline(struct token_list *tokens, size_t *index) {
+    struct cmd *pipe = malloc(sizeof(struct cmd));
+    pipe->type = CMD_PIPELINE;
+    pipe->pipeline.cmds = NULL;
+    pipe->pipeline.cmd_count = 0;
+    struct cmd *simple = parse_simple(tokens, index);
+    if (!simple) { free(pipe); return NULL; }
+    add_cmd(pipe, simple);
+    while (*index < tokens->count && tokens->tokens[*index].op == OP_PIPE) {
+        (*index)++;
+        simple = parse_simple(tokens, index);
+        if (simple) add_cmd(pipe, simple);
+    }
+    return pipe;
+}Parse Simple Commandstruct cmd *parse_simple(struct token_list *tokens, size_t *index) {
+    struct cmd *simple = malloc(sizeof(struct cmd));
+    simple->type = CMD_SIMPLE;
+    simple->simple.words = NULL;
+    simple->simple.word_count = 0;
+    while (*index < tokens->count && tokens->tokens[*index].type == TOKEN_WORD) {
+        add_word(simple, &tokens->tokens[*index]);
+        (*index)++;
+    }
+    return simple->simple.word_count > 0 ? simple : (free(simple), NULL);
+}Expansion and SplittingExpansion processes word tokens, expanding variables and splitting unquoted results.Expand Wordchar **expand_word(struct token *word, size_t *count) {
+    if (word->word.quote == QUOTE_SINGLE) {
+        *count = 1;
+        char **result = malloc(sizeof(char *));
+        result[0] = strdup(word->word.text);
+        return result;
+    }
+    char *expanded = expand_string(word->word.text);
+    if (word->word.quote == QUOTE_DOUBLE) {
+        *count = 1;
+        char **result = malloc(sizeof(char *));
+        result[0] = expanded;
+        return result;
+    }
+    return split_whitespace(expanded, count);
+}Expand String (Variable Expansion)char *expand_string(const char *text) {
+    char *result = malloc(strlen(text) + 1);
+    size_t i = 0, j = 0;
+    while (text[i]) {
+        if (text[i] == '\\' && text[i + 1]) { result[j++] = text[++i]; i++; continue; }
+        if (text[i] == '$' && text[i + 1]) {
+            char *var = get_variable(text, &i);
+            strcpy(result + j, var ? var : "");
+            j += strlen(var ? var : "");
+            free(var);
+        } else result[j++] = text[i++];
+    }
+    result[j] = '\0';
+    return result;
+}Get Variable (Simple $VAR Expansion)char *get_variable(const char *text, size_t *i) {
+    (*i)++;
+    size_t start = *i;
+    while (text[*i] && (isalnum(text[*i]) || text[*i] == '_')) (*i)++;
+    size_t len = *i - start;
+    char *name = strndup(text + start, len);
+    char *value = getenv(name);
+    free(name);
+    return value ? strdup(value) : strdup("");
+}Split Whitespacechar **split_whitespace(char *text, size_t *count) {
+    char **words = NULL;
+    *count = 0;
+    size_t i = 0;
+    while (text[i]) {
+        while (isspace(text[i])) i++;
+        if (!text[i]) break;
+        size_t start = i;
+        while (text[i] && !isspace(text[i])) i++;
+        words = realloc(words, (*count + 1) * sizeof(char *));
+        words[(*count)++] = strndup(text + start, i - start);
+    }
+    free(text);
+    return words;
+}Main Processing FunctionThis ties everything together with readline().struct cmd *process_input(const char *input) {
+    struct token_list *tokens = lex(input);
+    struct cmd *cmd_tree = parse(tokens);
+    // Expansion and splitting occur during execution of cmd_tree
+    return cmd_tree;
+}
 
-> $notexists echo "haha"
-
-exit ""
-
-
-exit "       -9223372036854775808          "
-
-
-echo test |  <<lala
-
-
-touch ""
-
-/bin/echo "$"
-
-/bin/echo "$""$"
-
-/bin/echo "$"$
-
-export tmp_test="/bin/echo 42"
-$tmp_test
-$tmp_test 42
-export tmp_test="/bin/echo"
-$tmp_test 42 42
-
-
-"		"
-
-"			"
-
-echo "$"
-
-
-
-echo "$""$"
-
-echo "$"$
-
-env | grep $USER
-
-export USER=
-env | grep USER
-
-export USER="@?/"
-env | grep USER
-
-
-
-touch tmp_x_file1
-tmp_x_file1
-echo $?
-./tmp_x_file1
-echo $?
-export PATH=$HOME
-echo $PATH
-tmp_x_file1
-echo $?
-./tmp_x_file1
-echo $?
-unset PATH
-tmp_x_file1
-echo $?
-./tmp_x_file1
-echo $?
-echo 42
-/bin/rm -f tmp_x_file1
-
-
-ls | cat << stop | ls -la | cat << stop1 | ls | cat << stop2 | ls -la > > out | cat << stop3
-fe
-wf
-fwe
-f
-stop
-dw
-stop1
-dwasd
-stop2
-cat Makefile | ls > out
-cat out
-/bin/rm -f out
-
-/bin/cat Makefile > out >>out1 >out2 | /bin/cat << stop > out3 | /bin/ls > > | /bin/cat << file
-will make you cry
-stop
-/bin/rm -rf out
-/bin/rm -rf out1
-/bin/rm -rf out2
-/bin/rm -rf out3
-cd ..
-pwd
+int main() {
+    char *input = readline("> ");
+    if (input) {
+        struct cmd *cmd = process_input(input);
+        // Traverse cmd_tree and expand words as needed
+        free(input);
+    }
+    return 0;
+}How It WorksLexing: lex() splits input into tokens. For example, echo "hello $WORLD" becomes:WORD("echo", QUOTE_NONE)WORD("hello $WORLD", QUOTE_DOUBLE)Parsing: parse() builds a struct cmd tree. The example becomes a CMD_SIMPLE with two word tokens.Expansion: expand_word() processes each word token:"echo" (unquoted) → ["echo"]"hello $WORLD" (double-quoted) → ["hello value"] (if $WORLD=value)Splitting: Unquoted expansions split on whitespace; quoted ones don’t.CMD Nodes: The struct cmd tree represents the parsed commands, ready for execution.NotesSimplifications: Only ; and | operators, basic $VAR expansion, no redirections or command substitution.Memory: Caller must free allocated memory (tokens, cmd tree, expanded strings).Line Limit: Each function is <25 lines, verified by breaking tasks into helpers.This system processes input like bash up to CMD nodes, ready for an execution phase you can extend!
