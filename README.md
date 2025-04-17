@@ -1,4 +1,8 @@
 
+
+![carac](https://github.com/user-attachments/assets/dab4de4f-c91b-4dc6-8ad4-a2813066112a)
+
+
 ### PARSING HELL Section
 1. **Test #3**: (`10_parsing_hell.sh:10`) - `>> '$USER'` followed by `cat $USER` (STD_ERR issue)
    - Creating a file named '$USER' (with quotes) but trying to cat it without quotes
