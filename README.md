@@ -1,13 +1,13 @@
-===============================================================================
+
                                  MINISHELL
-===============================================================================
+
 
 Project: Minishell  
 Author: ValGS  
 School: 42  
 Branch: Val-Branch  
 Language: C  
-Compilation: gcc with -Wall -Wextra -Werror  
+Compilation: cc with -Wall -Wextra -Werror  
 Libs Used: Readline, Libc, Custom Libft  
 License: Educational Use - 42 School
 
