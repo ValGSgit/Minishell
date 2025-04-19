@@ -6,134 +6,92 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/09 12:57:45 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/14 12:56:32 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-int		g_signal_received = 0;
+// debug_shell_state(tokens, NULL, "Before parsing");
+// debug_shell_state(tokens, shell->cmd, "After parsing");
+// debug_shell_state(tokens, shell->cmd, "After expansion");
+// if (shell->cmd && shell->cmd->args && shell->cmd->args[0] != NULL)
 
 
-/* static void debug_command(t_cmd *cmd)
+
+int	handle_input(t_shell *shell, char *input)
 {
-    if (!cmd) {
-        printf("Error: Command node is NULL.\n");
-        return;
-    }
+	char	**tokens;
 
-    printf("Debugging command:\n");
-
-    // If there are arguments, print them
-    if (cmd->args && cmd->args[0]) {
-        printf("Args: ");
-        for (int i = 0; cmd->args[i] != NULL; i++) {
-            printf("%s ", cmd->args[i]);
-        }
-        printf("\n");
-    }
-
-    // If no arguments, indicate that we are showing only redirections
-    if (!cmd->args || !cmd->args[0]) {
-        printf("No command args, only redirections.\n");
-    }
-
-    // Print the redirections (if any)
-    if (cmd->redirs) {
-        printf("Redirections:\n");
-        t_redir *redir = cmd->redirs;
-        while (redir) {
-            printf("  Type: %d, File: %s\n", redir->type, redir->file);
-            redir = redir->next;
-        }
-    }
-
-    printf("End of command debug.\n");
-} */
-
-int handle_input(t_shell *shell, char *input)
-{
-    char **tokens;
-    
-    if (!input)
-        return (0);
-    if (*input)
-        add_history(input);
-    tokens = lexer(input);
-   // debug_shell_state(tokens, NULL, "Before parsing");
-    if (!tokens)
-    {
-        free(input);
-        return 0;
-    }
-    shell->cmd = parser(tokens, shell);
-   // debug_shell_state(tokens, shell->cmd, "After parsing");
-    if (!shell->cmd)
-        return (free(input), free_tokens(tokens), 0);
-    expand_nodes(shell->cmd, shell);
-   // debug_shell_state(tokens, shell->cmd, "After expansion");
-    // Add check to prevent segfault
-    //debug_command(shell->cmd);
-    if (shell->cmd)
-        executor(shell->cmd, shell);   
-    free_cmd(shell->cmd);
-    if (tokens)
-        free_tokens(tokens);
-    free(input);
-    return 0;
+	if (!input)
+		return (0);
+	if (*input)
+		add_history(input);
+	tokens = lexer(input);
+	if (!tokens)
+	{
+		free(input);
+		return (0);
+	}
+	shell->cmd = parser(tokens, shell);
+	if (!shell->cmd)
+		return (free(input), free_tokens(tokens), 0);
+	expand_nodes(shell->cmd, shell);
+	//debug_shell_state(tokens, shell->cmd, "After expansion");
+	if (shell->cmd->args || shell->cmd->redirs)
+	{
+		//debug_shell_state(tokens, shell->cmd, "After expansion");
+		executor(shell->cmd, shell);
+	}
+	free_cmd(shell->cmd);
+	if (tokens)
+		free_tokens(tokens);
+	free(input);
+	return (0);
 }
 
-void minishell_loop(t_shell *shell)
+void	minishell_loop(t_shell *shell)
 {
-    char    *input;
-    char    *prompt;
+	char	*input;
+	char	*prompt;
 
-    shell->cmd = NULL;
-    prompt = "Minishell-> ";
-    while (1)
-   {
-        setup_signals();
+	shell->cmd = NULL;
+    prompt = ft_strdup("Minishell-> ");
+	while (1)
+	{
+		setup_signals();
+		//prompt = update_prompt();
+		//if (!prompt)
+        //    prompt = ft_strdup("Minishell-> ");
         input = readline(prompt);
-        
-        // Handle Ctrl+D (EOF)
-        if (!input)
-        {
-            // Only print "exit" in interactive mode
-            if (shell->is_interactive)
-               ft_putstr_fd("exit\n", STDOUT_FILENO);
-            // Break the loop to exit the shell
-          break;
-        }
-        // Process the input normally
-        if (handle_input(shell, input) == 1)
-        {
-            free(input);
-            break;
-        }
-    }
+		//free(prompt);
+		if (!input)
+		{
+			if (shell->is_interactive)
+				ft_putstr_fd("exit\n", STDOUT_FILENO);
+			break ;
+		}
+		if (handle_input(shell, input) == 1)
+		{
+			free(input);
+			break ;
+		}
+	}
 }
 
-void	initialize_shell(t_shell *shell, char **envp, char **argv)
+void	initialize_shell(t_shell *shell, char **argv)
 {
 	char	*prog_name;
 	char	*cwd;
 	char	*pwd_var;
 
-	if (*envp)
-		shell->env = copy_env(envp);
-	if (!shell->env)
-	{
-		write(2, "environment copy failed\n", 25);
-		exit(EXIT_FAILURE);
-	}
 	prog_name = ft_strrchr(argv[0], '/');
 	if (prog_name)
 		prog_name++;
 	else
 		prog_name = argv[0];
-	if (ft_strcmp(prog_name, "minishell") == 0 || 
-		ft_strcmp(prog_name, "./minishell") == 0 || 
-		ft_strcmp(prog_name, "bash") == 0)
+	if (ft_strcmp(prog_name, "minishell") == 0 || ft_strcmp(prog_name,
+			"./minishell") == 0 || ft_strcmp(prog_name, "bash") == 0)
 		update_shlvl(shell);
 	if (!get_env_value("PWD", shell->env))
 	{
@@ -148,12 +106,20 @@ void	initialize_shell(t_shell *shell, char **envp, char **argv)
 	}
 }
 
-int main(int argc, char **argv, char **envp)
+int	main(int argc, char **argv, char **envp)
 {
-	t_shell shell;
+	t_shell	shell;
 
 	(void)argc;
-	initialize_shell(&shell, envp, argv);
+	if (*envp)
+		shell.env = copy_env(envp);
+	if (!shell.env)
+	{
+		write(2, "environment copy failed\n", 25);
+		exit(EXIT_FAILURE);
+	}
+	initialize_shell(&shell, argv);
+	shell.path_unset = false;
 	shell.exit_status = 0;
 	shell.is_interactive = isatty(STDIN_FILENO);
 	shell.signal_status = 0;

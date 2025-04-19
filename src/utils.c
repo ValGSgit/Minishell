@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 15:03:09 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/03 13:23:56 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/14 11:16:34 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,8 @@ t_cmd	*create_cmd_node(void)
 	node = ft_calloc(sizeof(t_cmd), 1);
 	if (!node)
 		return (NULL);
-	//node->in_fd = STDIN_FILENO;
-	//node->out_fd = STDOUT_FILENO;
+	node->in_fd = STDIN_FILENO;
+	node->out_fd = STDOUT_FILENO;
 	node->args = NULL;
 	node->redirs = NULL;
 	node->next = NULL;
@@ -72,4 +72,15 @@ char	*update_prompt(void)
 	}
 	free(prompt);
 	return (result);
+}
+
+/**
+ * Report a syntax error and set the shell exit status to 2
+ */
+void	handle_syntax_error(char *token, t_shell *shell)
+{
+	ft_putstr_fd("minishell: syntax error near unexpected token `", 2);
+	ft_putstr_fd(token, 2);
+	ft_putstr_fd("'\n", 2);
+	shell->exit_status = 2;
 }

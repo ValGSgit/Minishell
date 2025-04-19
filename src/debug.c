@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:33:20 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/01 12:09:41 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/13 16:42:40 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,9 +47,9 @@ void	print_parsed_commands(t_cmd *cmd)
     current = cmd;
     while (current)
     {
-        printf("  Command: %s\n", current->args[0]);
         if (current->args)
         {
+            printf("  Command: %s\n", current->args[0]);
             printf("    Arguments:\n");
             i = 1;
             while (current->args[i])
