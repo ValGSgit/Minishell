@@ -48,7 +48,18 @@ void	handle_heredoc_redirect(t_cmd *cmd, char **tokens, int *i,
 		cmd->syntax_error = 1;
 		return ;
 	}
+	
+	// Pass the heredoc delimiter as is, quotes will be handled by handle_heredoc
 	handle_heredoc(cmd, tokens[*i + 1]);
+	
+	// Check if the shell was interrupted by a signal during heredoc
+	if (shell->signal_status)
+	{
+		cmd->syntax_error = 1;
+		shell->signal_status = 0;  // Reset for future commands
+		return;
+	}
+	
 	(*i) += 2;
 }
 

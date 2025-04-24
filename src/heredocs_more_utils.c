@@ -23,22 +23,33 @@ void	read_heredoc_input(const char *delimiter, int fd, t_cmd *cmd, bool expand_v
 	while (1)
 	{
 		line = readline("> ");
-		if (ft_strlen(line) == ft_strlen(delimiter) && ft_strcmp(line,
-				delimiter) == 0)
+		if (!line) // Handle EOF (Ctrl+D) in heredocs
+		{
+			ft_putstr_fd("warning: here-document delimited by end-of-file (wanted `", 2);
+			ft_putstr_fd((char *)delimiter, 2);
+			ft_putstr_fd("')\n", 2);
+			break;
+		}
+		
+		if (ft_strcmp(line, delimiter) == 0)
 		{
 			free(line);
-			break ;
+			break;
 		}
+		
 		if (expand_vars)
+		{
 			processed_line = process_argument(line, cmd->shell);
+			free(line); // Free original line when processed
+		}
 		else
-			processed_line = ft_strdup(line);
+			processed_line = line;
+			
 		if (processed_line)
 		{
 			write(fd, processed_line, ft_strlen(processed_line));
 			write(fd, "\n", 1);
-			if (processed_line != line)
-				free(processed_line);
+			free(processed_line);
 		}
 	}
 }
@@ -52,22 +63,31 @@ void	heredoc_child_process(t_cmd *cmd, char *clean_eof, int fd, bool expand_vars
 	exit(0);
 }
 
-int	heredoc_parent_process(t_cmd *cmd, int fd, char *clean_eof)
+int	heredoc_parent_process(pid_t pid, t_cmd *cmd, int fd, char *clean_eof)
 {
 	int status;
 
 	close(fd);
 	free(clean_eof);
-	waitpid(-1, &status, 0);
+	waitpid(pid, &status, 0);
+	
+	// Handle signal termination
 	if (WIFSIGNALED(status))
 	{
 		cmd->shell->exit_status = 128 + WTERMSIG(status);
 		if (WTERMSIG(status) == SIGINT)
 		{
 			cmd->shell->signal_status = 1;
+			cmd->shell->exit_status = 130;
 			return (1);
 		}
 	}
+	// Handle normal exit
+	else if (WIFEXITED(status)) 
+	{
+		cmd->shell->exit_status = WEXITSTATUS(status);
+	}
+
 	return (0);
 }
 
@@ -83,6 +103,27 @@ char	*handle_expanded_line(char *arg, char *expanded_line)
 
 bool	check_delimiter_quotes(char *eof)
 {
-	return (!((eof[0] == '\'' && eof[ft_strlen(eof) - 1] == '\'')
-			|| (eof[0] == '\"' && eof[ft_strlen(eof) - 1] == '\"')));
+	int		i;
+	bool	has_quotes;
+	
+	if (!eof || !*eof)
+		return (true);
+	
+	// Check for empty quoted strings like '' or ""
+	if ((eof[0] == '\'' && eof[1] == '\'' && !eof[2]) || 
+		(eof[0] == '"' && eof[1] == '"' && !eof[2]))
+		return (false);
+
+	// Check for quotes anywhere in the delimiter
+	i = 0;
+	has_quotes = false;
+	while (eof[i])
+	{
+		if (eof[i] == '\'' || eof[i] == '"')
+			has_quotes = true;
+		i++;
+	}
+
+	// If there are quotes, don't expand variables
+	return (!has_quotes);
 }

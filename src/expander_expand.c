@@ -30,6 +30,13 @@ static char *handle_special_cases(char *str, int *i, t_shell *shell)
         (*i)++;
         return (ft_strdup(""));
     }
+    // Handle empty quoted strings after $
+    if ((str[start] == '"' && str[start+1] == '"') || 
+        (str[start] == '\'' && str[start+1] == '\''))
+    {
+        *i += 2;  // Skip both quote chars
+        return (ft_strdup(""));
+    }
     return (NULL);
 }
 
@@ -39,13 +46,33 @@ static char *handle_special_characters(char *str, int *i)
 
     if (!ft_isalpha(str[start]) && str[start] != '_')
     {
-        if (str[start] != '"' && str[start] != '\'')
+        // If next char is double or single quote, extract just the quoted content
+        if (str[start] == '"' || str[start] == '\'')
         {
-            (*i)++;
-            char result[3] = {'$', str[start], '\0'};
-            return (ft_strdup(result));
+            char quote_type = str[start];
+            int quote_start = start + 1; // Start after the opening quote
+            int end = quote_start;
+            
+            // Find the closing quote
+            while (str[end] && str[end] != quote_type)
+                end++;
+                
+            // If we found the closing quote
+            if (str[end] == quote_type)
+            {
+                // Skip over the entire construct in the input
+                *i = end + 1;
+                
+                // Extract just the content between quotes
+                return (ft_substr(str, quote_start, end - quote_start));
+            }
+            return (ft_strdup("$"));
         }
-        return (ft_strdup(""));
+        
+        // For other special characters, return $ followed by the character
+        (*i)++;
+        char result[3] = {'$', str[start], '\0'};
+        return (ft_strdup(result));
     }
     return (NULL);
 }
@@ -67,11 +94,11 @@ static char *lookup_variable_value(char *var_name, t_shell *shell)
 
     if (!var_name || !*var_name)
     {
-        free(var_name);
+        xfree(var_name);
         return (ft_strdup("$"));
     }
     value = get_env_value(var_name, shell->env);
-    free(var_name);
+    xfree(var_name);
     if (!value)
         return (ft_strdup(""));
     return (ft_strdup(value));

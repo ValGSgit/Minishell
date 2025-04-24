@@ -87,9 +87,9 @@ char	**lexer(char *input)
 	char	**tokens;
 	t_lexer	lx;
 
-	tokens = ft_calloc(MAX_TOKENS, sizeof(char *));
+	tokens = xmalloc(MAX_TOKENS * sizeof(char *));
 	if (!tokens || !input)
-		return (free(tokens), NULL);
+		return (xfree(tokens), NULL);
 	lx = (t_lexer){0};
 	lx.start = input;
 	if (process_input(&input, &lx, tokens) < 0)

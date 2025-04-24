@@ -33,7 +33,7 @@ static void remove_env_var(t_cmd *cmd, char *arg)
 			(cmd->shell->env[i][arg_len] == '=' || cmd->shell->env[i][arg_len] == '\0')))
 		{
 			// Free the memory for this environment variable
-			free(cmd->shell->env[i]);
+			xfree(cmd->shell->env[i]);
 			
 			// Shift all remaining environment variables down
 			j = i;
@@ -154,7 +154,10 @@ void ft_exit(t_cmd *cmd)
 
 	// No args: exit with previous exit status
 	if (!cmd->args[1])
+	{
+		clean_memory();
 		exit(cmd->shell->exit_status);
+	}
 		
 	// Convert argument to number using strtol to detect numeric errors
 	errno = 0;
@@ -166,11 +169,12 @@ void ft_exit(t_cmd *cmd)
 		ft_putstr_fd("minishell: exit: ", 2);
 		ft_putstr_fd(cmd->args[1], 2);
 		ft_putstr_fd(": numeric argument required\n", 2);
+		clean_memory();
 		exit(2);
 	}
 	
 	// When we get here, we have a valid number
-	exit_code = (int)num;
+	exit_code = (unsigned char)num; // Use unsigned char to handle proper truncation
 	
 	// Check for too many arguments
 	if (cmd->args[2])
@@ -180,7 +184,8 @@ void ft_exit(t_cmd *cmd)
 		return; // Don't exit, just set error status
 	}
 	
-	exit(exit_code & 255); // Use bitwise & for proper exit code truncation
+	clean_memory();
+	exit(exit_code); // Let the OS handle the truncation to 8 bits
 }
 
 int is_builtin(char *cmd)

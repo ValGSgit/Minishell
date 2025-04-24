@@ -58,12 +58,18 @@ static int	count_args_after_splitting(char **args, t_shell *shell)
 		else if ((word_tokens = split_expanded_variable(expanded)))
 		{
 			j = 0;
-			while (word_tokens[j] && count++)
-				free(word_tokens[j++]);
+			while (word_tokens[j])
+			{
+				count++;
+				j++;
+			}
+			// Free both the array and its contents since they're not being kept
+			free_tokens(word_tokens);
 		}
 		else
 			count++;
-		free(expanded);
+		if (expanded)
+			xfree(expanded);
 		i++;
 	}
 	return (count);
@@ -94,8 +100,9 @@ static void	process_arg_for_splitting(char *arg, char *expanded, int *count,
 	j = 0;
 	while (word_tokens[j])
 		new_args[(*count)++] = word_tokens[j++];
-	free(word_tokens);
-	free(expanded);
+	// Free the word_tokens array but not its contents which were copied to new_args
+	xfree(word_tokens);
+	xfree(expanded);
 }
 
 /**
@@ -109,7 +116,7 @@ static char	**build_args_after_splitting(char **args, int max_count,
 	char	**new_args;
 	char	*expanded;
 
-	new_args = ft_calloc(max_count + 1, sizeof(char *));
+	new_args = xmalloc((max_count + 1) * sizeof(char *));
 	if (!new_args)
 		return (args);
 	count = 0;
@@ -120,8 +127,9 @@ static char	**build_args_after_splitting(char **args, int max_count,
 		process_arg_for_splitting(args[i], expanded, &count, new_args);
 		i++;
 	}
-	//new_args[count] = NULL;
-	free(args);
+	// Ensure the array is properly NULL-terminated
+	new_args[count] = NULL;
+	xfree(args);
 	return (new_args);
 }
 

@@ -12,9 +12,9 @@
 
 #include "../includes/minishell.h"
 
-// /**
-//  * Add a new variable to the environment
-//  */
+/**
+ * Add a new variable to the environment
+ */
 void	add_to_env(char ***env, char *new_var)
 {
 	int		i;
@@ -25,7 +25,7 @@ void	add_to_env(char ***env, char *new_var)
 	i = 0;
 	while ((*env)[i])
 		i++;
-	new_env = malloc((i + 2) * sizeof(char *));
+	new_env = xmalloc((i + 2) * sizeof(char *));
 	if (!new_env)
 		return ;
 	i = 0;
@@ -36,7 +36,7 @@ void	add_to_env(char ***env, char *new_var)
 	}
 	new_env[i] = new_var;
 	new_env[i + 1] = NULL;
-	free(*env);
+	xfree(*env);
 	*env = new_env;
 }
 
@@ -73,16 +73,14 @@ static void	sort_env(char **env_copy, int env_count)
 	}
 }
 
-// /**
-//  * Print environment variables in the "declare -x" format
-//  */
+// Print environment variables in the "declare -x" format
 static void	print_sorted_env(char **env)
 {
 	int		i;
-	int		j;
-	char	*equals_pos;
 	int		env_count;
 	char	**env_copy;
+	char	*equals_pos;
+	int		j;
 
 	if (!env)
 		return ;
@@ -91,7 +89,7 @@ static void	print_sorted_env(char **env)
 	while (env[env_count])
 		env_count++;
 	// Create a copy for sorting
-	env_copy = malloc((env_count + 1) * sizeof(char *));
+	env_copy = xmalloc((env_count + 1) * sizeof(char *));
 	if (!env_copy)
 		return ;
 	i = 0;
@@ -120,7 +118,15 @@ static void	print_sorted_env(char **env)
 			}
 			// Print equals sign and quoted value
 			ft_putstr_fd("=\"", 1);
-			ft_putstr_fd(equals_pos + 1, 1);
+			j++;
+			while (env_copy[i][j])
+			{
+				if (env_copy[i][j] == '\"' || env_copy[i][j] == '$' || 
+					env_copy[i][j] == '\\' || env_copy[i][j] == '`')
+					ft_putchar_fd('\\', 1);
+				ft_putchar_fd(env_copy[i][j], 1);
+				j++;
+			}
 			ft_putstr_fd("\"", 1);
 		}
 		else
@@ -135,10 +141,10 @@ static void	print_sorted_env(char **env)
 	i = 0;
 	while (env_copy[i])
 	{
-		free(env_copy[i]);
+		xfree(env_copy[i]);
 		i++;
 	}
-	free(env_copy);
+	xfree(env_copy);
 }
 
 static int	is_valid_identifier(char *str)
@@ -210,30 +216,30 @@ static char	*handle_append_syntax(char *arg, char **env)
 		new_value = ft_strjoin(existing_value, value_to_append);
 		if (!new_value)
 		{
-			free(key);
+			xfree(key);
 			return (NULL);
 		}
 		// Create final VAR=value string
 		new_var = ft_strjoin(key, "=");
 		if (!new_var)
 		{
-			free(key);
-			free(new_value);
+			xfree(key);
+			xfree(new_value);
 			return (NULL);
 		}
 		// Join key=value
 		temp = new_var;
 		new_var = ft_strjoin(new_var, new_value);
-		free(temp);
-		free(new_value);
+		xfree(temp);
+		xfree(new_value);
 	}
 	else
 	{
 		// No existing value, just create without the +
-		new_var = malloc(ft_strlen(arg));
+		new_var = xmalloc(ft_strlen(arg));
 		if (!new_var)
 		{
-			free(key);
+			xfree(key);
 			return (NULL);
 		}
 		// Copy everything except the '+'
@@ -247,7 +253,7 @@ static char	*handle_append_syntax(char *arg, char **env)
 		}
 		new_var[k] = '\0';
 	}
-	free(key);
+	xfree(key);
 	return (new_var);
 }
 
@@ -266,7 +272,7 @@ void	update_or_add_env(char *arg, char ***env)
 		if (new_var)
 		{
 			update_or_add_env(new_var, env);
-			free(new_var);
+			xfree(new_var);
 			return ;
 		}
 	}
@@ -282,19 +288,19 @@ void	update_or_add_env(char *arg, char ***env)
 		current_name = extract_var_name((*env)[i]);
 		if (current_name && ft_strcmp(current_name, var_name) == 0)
 		{
-			free((*env)[i]);
+			xfree((*env)[i]);
 			(*env)[i] = ft_strdup(arg);
 			found = 1;
-			free(current_name);
+			xfree(current_name);
 			break ;
 		}
-		free(current_name);
+		xfree(current_name);
 		i++;
 	}
 	// Add new variable if not found
 	if (!found)
 		add_to_env(env, ft_strdup(arg));
-	free(var_name);
+	xfree(var_name);
 }
 
 void	ft_export(t_cmd *cmd)

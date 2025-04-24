@@ -54,7 +54,7 @@ void	add_argument_to_array(char ***args, char *arg)
 	len = 0;
 	while ((*args) && (*args)[len])
 		len++;
-	new_args = ft_calloc(len + 2, sizeof(char *));
+	new_args = malloc((len + 2)  * sizeof(char *));
 	if (!new_args)
 		return ;
 	i = 0;
@@ -66,9 +66,11 @@ void	add_argument_to_array(char ***args, char *arg)
 	new_args[i] = ft_strdup(arg);
 	if (!new_args[i])
 	{
-		free_tokens(new_args);
+		// Free only the new array structure, not its contents
+		free(new_args);
 		return ;
 	}
+	new_args[i + 1] = NULL; // Ensure array is properly NULL-terminated
 	free(*args);
 	*args = new_args;
 }
@@ -77,20 +79,25 @@ void	add_argument(t_cmd *node, char *arg)
 {
 	if (!node || !arg)
 		return ;
+		
 	if (!node->args)
 	{
 		node->args = ft_calloc(2, sizeof(char *));
 		if (!node->args)
 			return ;
+			
 		node->args[0] = ft_strdup(arg);
 		if (!node->args[0])
 		{
-			free_tokens(node->args);
+			free(node->args);
 			node->args = NULL;
+			return;
 		}
-		return ;
 	}
-	add_argument_to_array(&(node->args), arg);
+	else
+	{
+		add_argument_to_array(&(node->args), arg);
+	}
 }
 
 /**

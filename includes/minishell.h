@@ -2,21 +2,19 @@
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+        
-	+:+     */
-/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+      
-	+#+        */
-/*                                                +#+#+#+#+#+  
-	+#+           */
-/*   Created: 2025/01/31 12:01:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/14 11:41:31 by vagarcia         ###   ########.fr       */
+/*                                                    +:+ +:+         +:+     */
+/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/24 16:15:02 by vagarcia          #+#    #+#             */
+/*   Updated: 2025/04/24 16:15:02 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
-# include "../ShellLibft/libft.h"
+# include "../Libft/libft.h"
+# include "malloc_tracker.h"
 # include <dirent.h>
 # include <errno.h>
 # include <fcntl.h>
@@ -92,7 +90,7 @@ typedef struct s_cmd
 	char **args;
 	t_redir *redirs;
 	char **env;
-	// int				exit_status;
+	//int				exit_status;
 	bool syntax_error;
 	struct s_cmd *next;
 	struct s_shell *shell;
@@ -147,7 +145,7 @@ void	read_heredoc_input(const char *delimiter, int fd, t_cmd *cmd,
 		bool expand_vars);
 void	heredoc_child_process(t_cmd *cmd, char *clean_eof, int fd,
 		bool expand_vars);
-int	heredoc_parent_process(t_cmd *cmd, int fd, char *clean_eof);
+int	heredoc_parent_process(pid_t pid, t_cmd *cmd, int fd, char *clean_eof);
 char	*remove_quotes(char *lim);
 char	*process_line(char *arg, t_cmd *cmd, bool expand_vars);
 char	*clean_empty_expansions(char *arg);
@@ -165,6 +163,33 @@ char	*resolve_path(char *cmd, char **env);
 
 /* Executor */
 void	executor(t_cmd *cmd, t_shell *shell);
+void	only_redir_fork(t_cmd *cmd);
+void	execute_builtin_or_exit(t_cmd *cmd);
+int		handle_only_redirection(t_cmd *cmd);
+void	waitpid_for_single_command(pid_t pid, t_shell *shell);
+void	execve_error(t_cmd *cmd);
+void	external_cmd_checks(t_cmd *cmd);
+void	execute_external_command(t_cmd *cmd, t_shell *shell);
+void	execute_single_command(t_cmd *cmd, t_shell *shell);
+char	*get_clean_cmd_name(const char *path);
+
+/* Pipes */
+void	execute_pipeline(t_cmd *cmd, t_shell *shell);
+pid_t	fork_child_process(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2], t_shell *shell);
+void	setup_parent_after_fork(t_cmd *cmd, int *prev_pipe_in, int pipe_fd[2]);
+void	wait_for_pipeline(pid_t *pids, int count, pid_t last_pid, t_shell *shell);
+void	rearrange_pipes(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2]);
+int		fork_pipeline_commands(t_cmd *cmd, t_shell *shell, pid_t *pids,	pid_t *last_pid);
+void	handle_fork_error(pid_t *pids);
+pid_t	*allocate_pid_array(int count);
+int	count_pipeline_cmds(t_cmd *cmd);
+/* Redirections */
+t_cmd	*create_cmd_node(void);
+void	create_redir_node(t_cmd *cmd, int type, char *file);
+void	apply_redirection(t_cmd *cmd);
+void	handle_heredoc(t_cmd *cmd, char *eof);
+void	handle_redirection_out(t_redir *redir, int append, t_cmd *cmd);
+void	handle_redirection_in(t_redir *redir, t_cmd *cmd);
 
 /* Builtins */
 void	execute_builtin(t_cmd *cmd);
@@ -176,21 +201,6 @@ void	ft_export(t_cmd *cmd);
 void	ft_unset(t_cmd *cmd);
 void	ft_env(t_cmd *cmd);
 void	ft_exit(t_cmd *cmd);
-
-/* Redirections */
-t_cmd	*create_cmd_node(void);
-void	create_redir_node(t_cmd *cmd, int type, char *file);
-void	restore_redirections(t_cmd *cmd);
-void	apply_redirection(t_cmd *cmd);
-void	handle_heredoc(t_cmd *cmd, char *eof);
-
-/* Pipes */
-void	execute_command(t_cmd *cmd, t_shell *shell);
-void	handle_pipes(t_cmd *cmd);
-void	pipe_exit_status(pid_t last_pid, t_shell *shell);
-pid_t	fork_child_process(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2],
-		t_shell *shell);
-void	setup_parent_after_fork(t_cmd *cmd, int *prev_pipe_in, int pipe_fd[2]);
 
 /* Signals */
 void	setup_signals(void);
@@ -224,5 +234,12 @@ char	*append_str(char *dest, char *src);
 bool	is_metacharacter(char *token);
 void	add_argument(t_cmd *node, char *arg);
 void	update_shlvl(t_shell *shell);
+
+/* Memory Management */
+void	*xmalloc(size_t size);
+void	xfree(void *ptr);
+void	clean_memory(void);
+void	xfree_manual(void *ptr);
+void	safe_free(void *ptr);
 
 #endif

@@ -42,7 +42,7 @@ char	*resolve_path(char *cmd, char **env)
 	{
 		temp = ft_strjoin(paths[i], "/");
 		full_path = ft_strjoin(temp, cmd);
-		free(temp);
+		xfree(temp);
 		if (access(full_path, F_OK) == 0)  // First check if file exists
 		{
 			if (access(full_path, X_OK) == 0)  // Then check if executable
@@ -50,11 +50,11 @@ char	*resolve_path(char *cmd, char **env)
 				free_env(paths);
 				return (full_path);
 			}
-			free(full_path); // File exists but not executable
+			xfree(full_path); // File exists but not executable
 		}
 		else
 		{
-			free(full_path); // File doesn't exist
+			xfree(full_path); // File doesn't exist
 		}
 	}
 	free_env(paths);

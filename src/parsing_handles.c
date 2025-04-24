@@ -44,6 +44,7 @@ void	handle_redirection(t_cmd *cmd, char **tokens, int *i, t_shell *shell)
 void	handle_pipe_token(t_cmd **current, char **tokens, int *i,
 		t_shell *shell)
 {
+	(void)tokens;
 	if (!(*current)->args && !(*current)->redirs)
 	{
 		handle_syntax_error("|", shell);

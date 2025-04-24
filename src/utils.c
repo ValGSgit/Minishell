@@ -17,7 +17,7 @@ void	create_redir_node(t_cmd *cmd, int type, char *file)
 	t_redir	*node;
 	t_redir	*tmp;
 
-	node = malloc(sizeof(t_redir));
+	node = xmalloc(sizeof(t_redir));
 	if (!node)
 		return ;
 	node->type = type;
@@ -39,7 +39,7 @@ t_cmd	*create_cmd_node(void)
 {
 	t_cmd	*node;
 
-	node = ft_calloc(sizeof(t_cmd), 1);
+	node = xmalloc(sizeof(t_cmd));
 	if (!node)
 		return (NULL);
 	node->in_fd = STDIN_FILENO;
@@ -47,6 +47,10 @@ t_cmd	*create_cmd_node(void)
 	node->args = NULL;
 	node->redirs = NULL;
 	node->next = NULL;
+	node->in_file = NULL;
+	node->out_file = NULL;
+	node->env = NULL;
+	node->syntax_error = false;
 	return (node);
 }
 
@@ -67,10 +71,10 @@ char	*update_prompt(void)
 	result = ft_strdup(prompt);
 	if (!result)
 	{
-		free(prompt);
+		xfree(prompt);
 		return (NULL);
 	}
-	free(prompt);
+	xfree(prompt);
 	return (result);
 }
 

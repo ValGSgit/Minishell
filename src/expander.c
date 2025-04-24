@@ -23,11 +23,15 @@ char	*append_str(char *dest, char *src)
 		else
 			return (ft_strdup(""));
 	}
-	if (src && *src)
-		new_str = ft_strjoin(dest, src);
-	else
-		new_str = ft_strjoin(dest, "");
-	free(dest);
+	
+	if (!src)
+		src = "";
+		
+	new_str = ft_strjoin(dest, src);
+	if (!new_str)
+		return (dest); // Don't free dest if strjoin fails
+		
+	xfree(dest);
 	return (new_str);
 }
 
@@ -57,7 +61,7 @@ char	*process_argument(char *arg, t_shell *shell)
 			value = expand_variable(arg, &i, shell);
 			if ((value && *value))
 				state.result = append_str(state.result, value);
-			free(value);
+			xfree(value);
 		}
 		else
 			state.result = append_str(state.result, (char[]){arg[i], '\0'});
@@ -74,11 +78,11 @@ static char	*resolve_path_in_current_dir(char *cmd)
 	if (!current_dir)
 		return (NULL);
 	path = ft_strjoin(current_dir, "/");
-	free(current_dir);
+	xfree(current_dir);
 	if (!path)
 		return (NULL);
 	path = ft_strjoin(path, cmd);
-	free(cmd);
+	xfree(cmd);
 	return (path);
 }
 
@@ -88,6 +92,23 @@ void	expander(t_cmd *cmd, t_shell *shell)
 
 	if (!cmd || !cmd->args)
 		return ;
+	if (cmd->args[0] && ft_strcmp(cmd->args[0], ".") == 0 && !cmd->args[1])
+	{
+		ft_putstr_fd("Minishell: .: filename argument required\n", 2);
+		ft_putstr_fd(".: usage: . filename [arguments]\n", 2);
+		shell->exit_status = 2;
+		cmd->args = NULL; // so it doesnt go into execution
+		cmd->syntax_error = 1;
+		return ;
+	}
+	if (cmd->args[0] && ft_strcmp(cmd->args[0], "..") == 0 && !cmd->args[1])
+	{
+		ft_putstr_fd("..: command not found\n", 2);
+		shell->exit_status = 127;
+		cmd->args = NULL; // so it doesnt go into execution
+		cmd->syntax_error = 1;
+		return ;
+	}
 	if (cmd->args[0] && ft_strchr(cmd->args[0], '/') == NULL
 		&& !is_builtin(cmd->args[0]))
 	{
@@ -142,20 +163,19 @@ void	expand_nodes(t_cmd *cmd, t_shell *shell)
 	while (node)
 	{
 		expander(node, shell);
-       // expander(node, shell);
 		node->shell = shell;
-		//if (node->args)
-        //    node->args = ft_clean_args(node->args);
+        
         if (node->args && node->args[0] && ft_strchr(node->args[0], '/') == NULL
             && !is_builtin(node->args[0]))
         {
             if (shell->env && get_env_value("PATH", shell->env))
-		    	reresolved = resolve_path(cmd->args[0], shell->env);
+		    	reresolved = resolve_path(node->args[0], shell->env);
 		    else
-		    	reresolved = resolve_path_in_current_dir(cmd->args[0]);
-            if (cmd->args[0])
-                free(cmd->args[0]);
-		    cmd->args[0] = reresolved;
+		    	reresolved = resolve_path_in_current_dir(node->args[0]);
+                
+            if (node->args[0])
+                xfree(node->args[0]);
+		    node->args[0] = reresolved;
         }
         node = node->next;
 	}

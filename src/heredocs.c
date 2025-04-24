@@ -17,12 +17,13 @@ static void	heredoc_signal_handler(int sig)
 {
 	if (sig == SIGINT)
 	{
+		// Just a newline without extra message for cleaner output
 		write(STDERR_FILENO, "\n", 1);
-		exit(130);
+		exit(130);  // Correctly exit with status 130 for SIGINT
 	}
 	else if (sig == SIGTERM)
 	{
-		exit(143);
+		exit(143);  // Standard for SIGTERM
 	}
 }
 
@@ -59,7 +60,7 @@ static void	handle_heredoc_fork(t_cmd *cmd, char *clean_eof, int fd, bool expand
 		heredoc_child_process(cmd, clean_eof, fd, expand_vars);
 	else if (pid > 0)
 	{
-		if (heredoc_parent_process(cmd, fd, clean_eof))
+		if (heredoc_parent_process(pid, cmd, fd, clean_eof))
 			return ;
 	}
 	else

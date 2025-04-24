@@ -40,7 +40,7 @@ static char **allocate_tokens(int word_count)
 
     if (word_count <= 1)
         return (NULL);
-    tokens = ft_calloc(word_count + 1, sizeof(char *));
+    tokens = xmalloc((word_count + 1) * sizeof(char *));
     if (!tokens)
         return (NULL);
     return (tokens);
@@ -65,8 +65,8 @@ static int add_word_to_tokens(char **tokens, char *value, int *i, int *word_coun
         if (!tokens[*word_count])
         {
             while (*word_count > 0)
-                free(tokens[--(*word_count)]);
-            free(tokens);
+                xfree(tokens[--(*word_count)]);
+            xfree(tokens);
             return (0);
         }
         (*word_count)++;
@@ -95,5 +95,5 @@ char **split_expanded_variable(char *value)
             return (NULL);
     }
     tokens[word_count] = NULL;
-    return (tokens);
+    return tokens; // Make sure we return the tokens array
 }

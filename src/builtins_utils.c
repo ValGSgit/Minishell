@@ -30,7 +30,7 @@ void	update_pwd(t_shell *shell)
 			if (oldpwd_var)
 			{
 				update_or_add_env(oldpwd_var, &shell->env);
-				free(oldpwd_var);
+				xfree(oldpwd_var);
 			}
 		}
 		return;
@@ -43,7 +43,7 @@ void	update_pwd(t_shell *shell)
 		if (oldpwd_var)
 		{
 			update_or_add_env(oldpwd_var, &shell->env);
-			free(oldpwd_var);
+			xfree(oldpwd_var);
 		}
 	}
 	
@@ -51,19 +51,17 @@ void	update_pwd(t_shell *shell)
 	if (new_pwd)
 	{
 		update_or_add_env(new_pwd, &shell->env);
-		free(new_pwd);
+		xfree(new_pwd);
 	}
-	free(cwd);
+	xfree(cwd);
 }
 
 void	update_shlvl(t_shell *shell)
 {
-	//char	*shlvl_value;
 	int		level;
 	char	*level_str;
 	char	*new_shlvl;
 
-	//shlvl_value = get_env_value("SHLVL", shell->env);
 	level = ft_atoi(get_env_value("SHLVL", shell->env));
 	if (level < 0)
 		level = 0;
@@ -72,13 +70,14 @@ void	update_shlvl(t_shell *shell)
 	if (!level_str)
 		return ;
 	new_shlvl = ft_strjoin("SHLVL=", level_str);
-	free(level_str);
+	xfree(level_str);
 	if (new_shlvl)
 	{
 		update_or_add_env(new_shlvl, &shell->env);
-		free(new_shlvl);
+		xfree(new_shlvl);
 	}
 }
+
 void	ft_cd(t_cmd *cmd)
 {
 	char	*path;
@@ -98,7 +97,7 @@ void	ft_cd(t_cmd *cmd)
 	if (cmd->args[1] && cmd->args[2])
 	{
 		ft_putstr_fd("minishell: cd: too many arguments\n", 2);
-		free(old_pwd);
+		xfree(old_pwd);
 		cmd->shell->exit_status = 1;
 		return ;
 	}
@@ -115,7 +114,7 @@ void	ft_cd(t_cmd *cmd)
 			ft_putstr_fd("minishell: cd: OLDPWD not set\n", 2);
 		else
 			ft_putstr_fd("minishell: cd: HOME not set\n", 2);
-		free(old_pwd);
+		xfree(old_pwd);
 		cmd->shell->exit_status = 1;
 		return ;
 	}
@@ -128,7 +127,7 @@ void	ft_cd(t_cmd *cmd)
 		path_dup = ft_strdup(path);
 		if (!path_dup)
 		{
-			free(old_pwd);
+			xfree(old_pwd);
 			cmd->shell->exit_status = 1;
 			return;
 		}
@@ -147,15 +146,15 @@ void	ft_cd(t_cmd *cmd)
 		ft_putstr_fd(": ", 2);
 		ft_putstr_fd(strerror(errno), 2);
 		ft_putstr_fd("\n", 2);
-		free(old_pwd);
-		free(path_dup);
+		xfree(old_pwd);
+		xfree(path_dup);
 		cmd->shell->exit_status = 1;
 		return ;
 	}
 	
 	update_pwd(cmd->shell);
-	free(old_pwd);
-	free(path_dup);
+	xfree(old_pwd);
+	xfree(path_dup);
 	cmd->shell->exit_status = 0;
 }
 
