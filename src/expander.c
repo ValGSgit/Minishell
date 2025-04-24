@@ -68,17 +68,18 @@ char	*process_argument(char *arg, t_shell *shell)
 static char	*resolve_path_in_current_dir(char *cmd)
 {
 	char	*path;
+	char 	*temp;
 	char	*current_dir;
 
 	current_dir = getcwd(NULL, 0);
 	if (!current_dir)
 		return (NULL);
-	path = ft_strjoin(current_dir, "/");
+	temp = ft_strjoin(current_dir, "/");
 	free(current_dir);
-	if (!path)
+	if (!temp)
 		return (NULL);
-	path = ft_strjoin(path, cmd);
-	free(cmd);
+	path = ft_strjoin(temp, cmd);
+	free(temp); // fixed unset PATH leak
 	return (path);
 }
 
@@ -114,8 +115,16 @@ void	expander(t_cmd *cmd, t_shell *shell)
 			expanded = resolve_path_in_current_dir(cmd->args[0]);
 		// if (cmd->args[0])
 		//    free(cmd->args[0]);
+		free(cmd->args[0]); //fixed? arg[0] leak was strdup 2 times
 		cmd->args[0] = expanded;
 	}
+/*  	int j = 0;
+	while(cmd->args[j])
+	{
+		free(cmd->args[j]);
+		j++;
+	}
+	free(cmd->args);  */
 	cmd->args = apply_word_splitting(cmd->args, shell);
 }
 

@@ -58,8 +58,13 @@ static int	count_args_after_splitting(char **args, t_shell *shell)
 		else if ((word_tokens = split_expanded_variable(expanded)))
 		{
 			j = 0;
-			while (word_tokens[j] && count++)
-				free(word_tokens[j++]);
+			while (word_tokens[j])
+			{
+				count++;
+				free(word_tokens[j]);
+				j++;
+			}
+			free(word_tokens); // fixed expansion leak
 		}
 		else
 			count++;
@@ -120,8 +125,13 @@ static char	**build_args_after_splitting(char **args, int max_count,
 		process_arg_for_splitting(args[i], expanded, &count, new_args);
 		i++;
 	}
-	//new_args[count] = NULL;
-	free(args);
+	i = 0;
+    while (args && args[i])
+    {
+        free(args[i]);  // Free each dynamically allocated string in 'args'
+        i++;
+    }
+    free(args); //fixed exit leak
 	return (new_args);
 }
 

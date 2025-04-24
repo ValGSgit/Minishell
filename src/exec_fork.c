@@ -84,6 +84,8 @@ pid_t fork_child_process(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2], t_shell *
 	if (pid == 0)
 	{
 		rearrange_pipes(cmd, prev_pipe_in, pipe_fd);
+		if (!cmd->args || !cmd->args[0] || cmd->args[0][0] == '\0')
+			exit(0);
 		if (cmd->redirs)
 			apply_redirection(cmd);
 		if (is_builtin(cmd->args[0]))

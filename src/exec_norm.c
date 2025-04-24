@@ -30,6 +30,8 @@ void execute_single_command(t_cmd *cmd, t_shell *shell)
 			apply_redirection(cmd);
 		if (is_builtin(cmd->args[0]))
 			execute_builtin_or_exit(cmd);
+		if ((!cmd->args || !cmd->args[0] || cmd->args[0][0] == '\0') && !cmd->args[1]) // fixed empty expansion
+			exit(0);
 		execute_external_command(cmd, shell);
 	}
 	waitpid_for_single_command(pid, shell);
@@ -41,6 +43,23 @@ void execute_external_command(t_cmd *cmd, t_shell *shell)
 	char *exec_path;
 	
 	exec_path = NULL;
+	if ((!cmd->args || !cmd->args[0] || cmd->args[0][0] == '\0') && cmd->args[1])
+	{
+		char *tmp = ft_strdup(cmd->args[1]);
+		//printf("DUP args[1] [%s] -> %p\n", cmd->args[1], tmp);
+	
+		//printf("FREE args[0] [%s] -> %p\n", cmd->args[0], cmd->args[0]);
+		free(cmd->args[0]);
+	
+		//printf("FREE args[1] [%s] -> %p\n", cmd->args[1], cmd->args[1]);
+		free(cmd->args[1]);
+	
+		cmd->args[0] = tmp;
+		cmd->args[1] = NULL;
+	}
+	
+	//printf("cmd->args[1] = %p | [%s]\n", cmd->args[1], cmd->args[1]);
+
 	if (cmd->args && cmd->args[0])
 	{
 		if (cmd->args[0] && shell->path_unset && ft_strchr(cmd->args[0], '/') == NULL)
@@ -49,6 +68,7 @@ void execute_external_command(t_cmd *cmd, t_shell *shell)
 			ft_putstr_fd(": No such file or directory\n", 2);
 			exit(127);
 		}
+		
 		external_cmd_checks(cmd);
 		if (stat(cmd->args[0], &sb) == 0 && S_ISDIR(sb.st_mode)) //dir check
 		{
@@ -58,6 +78,7 @@ void execute_external_command(t_cmd *cmd, t_shell *shell)
 		}
 		if (access(cmd->args[0], X_OK) != 0)
 		{
+			//printf("here or exeve");
 			ft_putstr_fd(cmd->args[0], 2);
 			ft_putstr_fd(": Permission denied\n", 2);
 			exit(126);
