@@ -33,7 +33,7 @@ static void remove_env_var(t_cmd *cmd, char *arg)
 			(cmd->shell->env[i][arg_len] == '=' || cmd->shell->env[i][arg_len] == '\0')))
 		{
 			// Free the memory for this environment variable
-			xfree(cmd->shell->env[i]);
+			free(cmd->shell->env[i]);
 			
 			// Shift all remaining environment variables down
 			j = i;

@@ -28,12 +28,12 @@ int	handle_input(t_shell *shell, char *input)
 	tokens = lexer(input);
 	if (!tokens)
 	{
-		xfree(input);
+		free(input);
 		return (0);
 	}
 	shell->cmd = parser(tokens, shell);
 	if (!shell->cmd)
-		return (xfree(input), free_tokens(tokens), 0);
+		return (free(input), free_tokens(tokens), 0);
 	expand_nodes(shell->cmd, shell);
 	//debug_shell_state(tokens, shell->cmd, "After expansion");
 	if (shell->cmd->args || shell->cmd->redirs)
@@ -44,7 +44,7 @@ int	handle_input(t_shell *shell, char *input)
 	free_cmd(shell->cmd);
 	if (tokens)
 		free_tokens(tokens);
-	xfree(input);
+	free(input);
 	return (0);
 }
 
@@ -67,13 +67,13 @@ void	minishell_loop(t_shell *shell)
 		{
 			if (shell->is_interactive)
 				ft_putstr_fd("exit\n", STDOUT_FILENO);
-			xfree(prompt); // Free prompt before breaking the loop
+			free(prompt); // Free prompt before breaking the loop
 			break ;
 		}
 		if (handle_input(shell, input) == 1)
 		{
-			xfree(input);
-			xfree(prompt); // Free prompt before breaking the loop
+			free(input);
+			free(prompt); // Free prompt before breaking the loop
 			break ;
 		}
 	}
@@ -101,7 +101,7 @@ void	initialize_shell(t_shell *shell, char **argv)
 			pwd_var = ft_strjoin("PWD=", cwd);
 			if (pwd_var)
 				update_or_add_env(pwd_var, &shell->env);
-			(xfree(pwd_var), xfree(cwd));
+			(free(pwd_var), free(cwd));
 		}
 	}
 }

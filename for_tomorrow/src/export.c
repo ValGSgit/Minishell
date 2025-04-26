@@ -25,7 +25,7 @@ void	add_to_env(char ***env, char *new_var)
 	i = 0;
 	while ((*env)[i])
 		i++;
-	new_env = xmalloc((i + 2) * sizeof(char *));
+	new_env = malloc((i + 2) * sizeof(char *));
 	if (!new_env)
 		return ;
 	i = 0;
@@ -36,7 +36,7 @@ void	add_to_env(char ***env, char *new_var)
 	}
 	new_env[i] = new_var;
 	new_env[i + 1] = NULL;
-	xfree(*env);
+	free(*env);
 	*env = new_env;
 }
 
@@ -89,7 +89,7 @@ static void	print_sorted_env(char **env)
 	while (env[env_count])
 		env_count++;
 	// Create a copy for sorting
-	env_copy = xmalloc((env_count + 1) * sizeof(char *));
+	env_copy = malloc((env_count + 1) * sizeof(char *));
 	if (!env_copy)
 		return ;
 	i = 0;
@@ -141,10 +141,10 @@ static void	print_sorted_env(char **env)
 	i = 0;
 	while (env_copy[i])
 	{
-		xfree(env_copy[i]);
+		free(env_copy[i]);
 		i++;
 	}
-	xfree(env_copy);
+	free(env_copy);
 }
 
 static int	is_valid_identifier(char *str)
@@ -216,30 +216,30 @@ static char	*handle_append_syntax(char *arg, char **env)
 		new_value = ft_strjoin(existing_value, value_to_append);
 		if (!new_value)
 		{
-			xfree(key);
+			free(key);
 			return (NULL);
 		}
 		// Create final VAR=value string
 		new_var = ft_strjoin(key, "=");
 		if (!new_var)
 		{
-			xfree(key);
-			xfree(new_value);
+			free(key);
+			free(new_value);
 			return (NULL);
 		}
 		// Join key=value
 		temp = new_var;
 		new_var = ft_strjoin(new_var, new_value);
-		xfree(temp);
-		xfree(new_value);
+		free(temp);
+		free(new_value);
 	}
 	else
 	{
 		// No existing value, just create without the +
-		new_var = xmalloc(ft_strlen(arg));
+		new_var = malloc(ft_strlen(arg));
 		if (!new_var)
 		{
-			xfree(key);
+			free(key);
 			return (NULL);
 		}
 		// Copy everything except the '+'
@@ -253,7 +253,7 @@ static char	*handle_append_syntax(char *arg, char **env)
 		}
 		new_var[k] = '\0';
 	}
-	xfree(key);
+	free(key);
 	return (new_var);
 }
 
@@ -272,7 +272,7 @@ void	update_or_add_env(char *arg, char ***env)
 		if (new_var)
 		{
 			update_or_add_env(new_var, env);
-			xfree(new_var);
+			free(new_var);
 			return ;
 		}
 	}
@@ -288,19 +288,19 @@ void	update_or_add_env(char *arg, char ***env)
 		current_name = extract_var_name((*env)[i]);
 		if (current_name && ft_strcmp(current_name, var_name) == 0)
 		{
-			xfree((*env)[i]);
+			free((*env)[i]);
 			(*env)[i] = ft_strdup(arg);
 			found = 1;
-			xfree(current_name);
+			free(current_name);
 			break ;
 		}
-		xfree(current_name);
+		free(current_name);
 		i++;
 	}
 	// Add new variable if not found
 	if (!found)
 		add_to_env(env, ft_strdup(arg));
-	xfree(var_name);
+	free(var_name);
 }
 
 void	ft_export(t_cmd *cmd)

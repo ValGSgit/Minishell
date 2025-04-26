@@ -31,7 +31,7 @@ void	*xmalloc(size_t size)
 /**
  * Frees memory and removes it from tracking
  */
-void	xfree(void *ptr)
+void	free(void *ptr)
 {
 	if (!ptr)
 		return ;
@@ -51,7 +51,7 @@ void	clean_memory(void)
  * Frees memory but marks it as manually freed so clean_all_memory
  * won't try to free it again
  */
-void	xfree_manual(void *ptr)
+void	free_manual(void *ptr)
 {
 	if (!ptr)
 		return ;
@@ -70,6 +70,6 @@ void	safe_free(void *ptr)
 	
 	/* Check if the pointer is tracked */
 	if (find_memblock(ptr))
-		xfree(ptr);
+		free(ptr);
 	/* Otherwise, it's likely been freed already or wasn't tracked */
 }

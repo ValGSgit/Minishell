@@ -40,7 +40,7 @@ static char **allocate_tokens(int word_count)
 
     if (word_count <= 1)
         return (NULL);
-    tokens = xmalloc((word_count + 1) * sizeof(char *));
+    tokens = malloc((word_count + 1) * sizeof(char *));
     if (!tokens)
         return (NULL);
     return (tokens);
@@ -65,8 +65,8 @@ static int add_word_to_tokens(char **tokens, char *value, int *i, int *word_coun
         if (!tokens[*word_count])
         {
             while (*word_count > 0)
-                xfree(tokens[--(*word_count)]);
-            xfree(tokens);
+                free(tokens[--(*word_count)]);
+            free(tokens);
             return (0);
         }
         (*word_count)++;

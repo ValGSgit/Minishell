@@ -31,7 +31,7 @@ char	*append_str(char *dest, char *src)
 	if (!new_str)
 		return (dest); // Don't free dest if strjoin fails
 		
-	xfree(dest);
+	free(dest);
 	return (new_str);
 }
 
@@ -61,7 +61,7 @@ char	*process_argument(char *arg, t_shell *shell)
 			value = expand_variable(arg, &i, shell);
 			if ((value && *value))
 				state.result = append_str(state.result, value);
-			xfree(value);
+			free(value);
 		}
 		else
 			state.result = append_str(state.result, (char[]){arg[i], '\0'});
@@ -78,11 +78,11 @@ static char	*resolve_path_in_current_dir(char *cmd)
 	if (!current_dir)
 		return (NULL);
 	path = ft_strjoin(current_dir, "/");
-	xfree(current_dir);
+	free(current_dir);
 	if (!path)
 		return (NULL);
 	path = ft_strjoin(path, cmd);
-	xfree(cmd);
+	free(cmd);
 	return (path);
 }
 
@@ -97,18 +97,22 @@ void	expander(t_cmd *cmd, t_shell *shell)
 		ft_putstr_fd("Minishell: .: filename argument required\n", 2);
 		ft_putstr_fd(".: usage: . filename [arguments]\n", 2);
 		shell->exit_status = 2;
+		free(cmd->args[0]);
+		free(cmd->args);
 		cmd->args = NULL; // so it doesnt go into execution
 		cmd->syntax_error = 1;
 		return ;
 	}
-	if (cmd->args[0] && ft_strcmp(cmd->args[0], "..") == 0 && !cmd->args[1])
+	 if (cmd->args[0] && ft_strcmp(cmd->args[0], "..") == 0 && !cmd->args[1])
 	{
 		ft_putstr_fd("..: command not found\n", 2);
 		shell->exit_status = 127;
+		free(cmd->args[0]);
+		free(cmd->args);
 		cmd->args = NULL; // so it doesnt go into execution
 		cmd->syntax_error = 1;
 		return ;
-	}
+	} 
 	if (cmd->args[0] && ft_strchr(cmd->args[0], '/') == NULL
 		&& !is_builtin(cmd->args[0]))
 	{
@@ -118,6 +122,7 @@ void	expander(t_cmd *cmd, t_shell *shell)
 			expanded = resolve_path_in_current_dir(cmd->args[0]);
 		// if (cmd->args[0])
 		//    free(cmd->args[0]);
+		free(cmd->args[0]);
 		cmd->args[0] = expanded;
 	}
 	cmd->args = apply_word_splitting(cmd->args, shell);
@@ -174,7 +179,7 @@ void	expand_nodes(t_cmd *cmd, t_shell *shell)
 		    	reresolved = resolve_path_in_current_dir(node->args[0]);
                 
             if (node->args[0])
-                xfree(node->args[0]);
+                free(node->args[0]);
 		    node->args[0] = reresolved;
         }
         node = node->next;

@@ -21,8 +21,8 @@ void	free_redir(t_redir *redir)
 	{
 		temp = redir->next;
 		if (redir->file)
-			xfree(redir->file);
-		xfree(redir);
+			free(redir->file);
+		free(redir);
 		redir = temp;
 	}
 }
@@ -44,15 +44,14 @@ void	free_cmd(t_cmd *cmd)
 		{
 			i = 0;
 			while (cmd->args[i])
-				xfree(cmd->args[i++]);
-			xfree(cmd->args);
+				free(cmd->args[i++]);
+			free(cmd->args);
 		}
-		if (cmd->in_file)
-			xfree(cmd->in_file);
-		if (cmd->out_file)
-			xfree(cmd->out_file);
-		free_redir(cmd->redirs);
-		xfree(cmd);
+		if (cmd->redirs)
+		{
+			free_redir(cmd->redirs);
+		}
+		free(cmd);
 		cmd = temp;
 	}
 }
@@ -67,10 +66,10 @@ void	free_tokens(char **tokens)
 	i = 0;
 	while (tokens[i])
 	{
-		xfree(tokens[i]);
+		free(tokens[i]);
 		i++;
 	}
-	xfree(tokens);
+	free(tokens);
 }
 
 /* Free the environment variables array */
@@ -83,10 +82,10 @@ void	free_env(char **env)
 	i = 0;
 	while (env[i])
 	{
-		xfree(env[i]);
+		free(env[i]);
 		i++;
 	}
-	xfree(env);
+	free(env);
 }
 
 /* Free the entire shell structure */
@@ -98,5 +97,5 @@ void	free_shell(t_shell *shell)
 		free_env(shell->env);
 	if (shell->cmd)
 		free_cmd(shell->cmd);
-	xfree(shell);
+	free(shell);
 }

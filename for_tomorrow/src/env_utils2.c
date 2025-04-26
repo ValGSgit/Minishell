@@ -22,7 +22,7 @@ char	**copy_env(char **envp)
 		return (NULL);
 	while (envp[i])
 		i++;
-	env = xmalloc(sizeof(char *) * (i + 1));
+	env = malloc(sizeof(char *) * (i + 1));
 	if (!env)
 		return (NULL);
 	i = 0;

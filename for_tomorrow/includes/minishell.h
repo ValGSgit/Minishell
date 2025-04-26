@@ -90,7 +90,7 @@ typedef struct s_cmd
 	char *out_file;
 	char **args;
 	t_redir *redirs;
-	char **env;
+	//char **env;
 	//int				exit_status;
 	bool syntax_error;
 	struct s_cmd *next;
@@ -238,9 +238,9 @@ void	update_shlvl(t_shell *shell);
 
 /* Memory Management */
 void	*xmalloc(size_t size);
-void	xfree(void *ptr);
+void	free(void *ptr);
 void	clean_memory(void);
-void	xfree_manual(void *ptr);
+void	free_manual(void *ptr);
 void	safe_free(void *ptr);
 
 #endif

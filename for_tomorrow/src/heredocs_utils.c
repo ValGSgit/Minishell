@@ -42,7 +42,7 @@ char	*clean_empty_expansions(char *arg)
 	int		i;
 	int		j;
 	
-	result = xmalloc(ft_strlen(arg) + 1);
+	result = malloc(ft_strlen(arg) + 1);
 	if (!result)
 	return (arg);
 	i = 0;
@@ -58,10 +58,10 @@ char	*clean_empty_expansions(char *arg)
 	result[j] = '\0';
 	if (j < (int)ft_strlen(arg))
 	{
-		xfree(arg);
+		free(arg);
 		return (result);
 	}
-	xfree(result);
+	free(result);
 	return (arg);
 }
 
@@ -84,7 +84,7 @@ char	*remove_quotes(char *lim)
 	int		i;
 	int		j;
 
-	new_lim = xmalloc(sizeof(char) * (ft_strlen(lim) + 1));
+	new_lim = malloc(sizeof(char) * (ft_strlen(lim) + 1));
 	if (!new_lim)
 		return (NULL);
 	i = 0;
@@ -96,7 +96,7 @@ char	*remove_quotes(char *lim)
 		i++;
 	}
 	new_lim[j] = '\0';
-	xfree(lim);
+	free(lim);
 	return (new_lim);
 }
 
@@ -111,9 +111,9 @@ void	cleanup_heredocs(t_shell *shell)
 		if (redir->type == REDIR_HEREDOC && redir->file
 			&& unlink(redir->file) == -1)
 			perror("unlink");
-		xfree(redir->file);
+		free(redir->file);
 		next = redir->next;
-		xfree(redir);
+		free(redir);
 		redir = next;
 	}
 	shell->cmd->redirs = NULL;

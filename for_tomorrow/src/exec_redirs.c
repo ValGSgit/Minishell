@@ -9,6 +9,7 @@ void	apply_redirection(t_cmd *cmd)
 		ft_putstr_fd("Minishell: ", 2);
 		ft_putstr_fd(cmd->redirs->prefile, 2);
 		ft_putstr_fd(": ambiguous redirect\n", 2);
+		exit(1);
 		return;
 	} 
 	while (cmd->redirs)

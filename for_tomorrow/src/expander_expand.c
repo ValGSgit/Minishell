@@ -94,11 +94,11 @@ static char *lookup_variable_value(char *var_name, t_shell *shell)
 
     if (!var_name || !*var_name)
     {
-        xfree(var_name);
+        free(var_name);
         return (ft_strdup("$"));
     }
     value = get_env_value(var_name, shell->env);
-    xfree(var_name);
+    free(var_name);
     if (!value)
         return (ft_strdup(""));
     return (ft_strdup(value));
