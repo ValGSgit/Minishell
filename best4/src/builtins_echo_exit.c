@@ -84,6 +84,48 @@ static void	handle_exit_error(char *arg)
 	exit(2);
 }
 
+static long handle_overflow(int sign, char **endptr, const char *str)
+{
+    errno = ERANGE;
+    if (endptr)
+        *endptr = (char *)str;
+    if (sign == -1)
+        return LONG_MIN;
+    else
+        return LONG_MAX;
+}
+
+static long ft_atli(const char *str, char **endptr)
+{
+    long result = 0;
+    int sign = 1;
+    unsigned long cutoff;
+    while (*str == ' ' || (*str >= '\t' && *str <= '\r'))
+        str++;
+    if (*str == '-')
+    {
+        sign = -1;
+        str++;
+    }
+    else if (*str == '+')
+        str++;
+    if (sign == -1)
+        cutoff = -(unsigned long)LONG_MIN;
+    else
+        cutoff = LONG_MAX;
+    while (*str >= '0' && *str <= '9')
+    {
+        int digit = *str - '0';
+        if (result > cutoff / 10 || (result == cutoff / 10 && digit > cutoff % 10))
+            return handle_overflow(sign, endptr, str);
+        result = result * 10 + digit;
+        str++;
+    }
+    if (endptr)
+        *endptr = (char *)str;
+    return result * sign;
+}
+
 void	ft_exit(t_cmd *cmd)
 {
 	int			exit_code;
@@ -97,7 +139,7 @@ void	ft_exit(t_cmd *cmd)
 		exit(cmd->shell->exit_status);
 	}
 	errno = 0;
-	num = strtol(cmd->args[1], &endptr, 10);
+	num = ft_atli(cmd->args[1], &endptr, 10);
 	if (*endptr != '\0' || errno == ERANGE)
 	{
 		handle_exit_error(cmd->args[1]);
