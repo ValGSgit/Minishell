@@ -13,12 +13,8 @@
 #include "../includes/minishell.h"
 #include "../includes/memory.h"
 
-/* Only allowed global variable for signals */
 volatile sig_atomic_t	g_signal_received = 0;
 
-/**
- * Custom malloc wrapper that checks for allocation failures
- */
 void	*xmalloc(size_t size)
 {
 	void	*ptr;
@@ -32,9 +28,6 @@ void	*xmalloc(size_t size)
 	return (ptr);
 }
 
-/**
- * Safe free function that checks for NULL pointer
- */
 void	safe_free(void *ptr)
 {
 	if (ptr)

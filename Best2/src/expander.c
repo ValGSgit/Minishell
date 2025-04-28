@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/26 20:45:00 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/28 15:40:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,18 +32,16 @@ char	*append_str(char *dest, char *src)
 	return (new_str);
 }
 
-static int	handle_dollar_sign(char *arg, int i, t_expander_state *state,
+int	handle_dollar_sign(char *arg, int i, t_expander_state *state,
 			t_shell *shell)
 {
 	char	*value;
 
-	// Special case: trailing $ at the end of string
 	if (!arg[i + 1])
 	{
 		state->result = append_str(state->result, "$");
 		return (i);
 	}
-	// Handle normal expansion if not in single quotes
 	if (!state->in_quote)
 	{
 		value = expand_variable(arg, &i, shell);
@@ -54,15 +52,43 @@ static int	handle_dollar_sign(char *arg, int i, t_expander_state *state,
 		}
 		return (i);
 	}
-	// Just append literal $ if in single quotes
 	state->result = append_str(state->result, "$");
 	return (i);
 }
 
-/**
- * Processes a single argument, expanding any variables as needed
- * Returns the expanded string
- */
+static void	handle_quoted(char *arg, int *i, t_expander_state *state)
+{
+	if (arg[*i] == '\'' && !state->in_dquote)
+	{
+		state->in_quote = !state->in_quote;
+		(*i)++;
+	}
+	else if (arg[*i] == '"' && !state->in_quote)
+	{
+		state->in_dquote = !state->in_dquote;
+		(*i)++;
+	}
+}
+
+static void	process_character(char *arg, int *i, t_expander_state *state, 
+			t_shell *shell)
+{
+	if (arg[*i] == '\'' && !state->in_dquote)
+		handle_quoted(arg, i, state);
+	else if (arg[*i] == '"' && !state->in_quote)
+		handle_quoted(arg, i, state);
+	else if (arg[*i] == '$' && !state->in_quote)
+	{
+		*i = handle_dollar_sign(arg, *i, state, shell);
+		(*i)++;
+	}
+	else
+	{
+		state->result = append_str(state->result, (char[]){arg[*i], '\0'});
+		(*i)++;
+	}
+}
+
 char	*process_argument(char *arg, t_shell *shell)
 {
 	t_expander_state	state;
@@ -72,18 +98,9 @@ char	*process_argument(char *arg, t_shell *shell)
 	state.result = ft_strdup("");
 	if (!state.result || !arg)
 		return (state.result);
-	i = -1;
-	while (arg[++i])
-	{
-		if (arg[i] == '\'' && !state.in_dquote)
-			state.in_quote = !state.in_quote;
-		else if (arg[i] == '"' && !state.in_quote)
-			state.in_dquote = !state.in_dquote;
-		else if (arg[i] == '$' && !state.in_quote)
-			i = handle_dollar_sign(arg, i, &state, shell);
-		else
-			state.result = append_str(state.result, (char[]){arg[i], '\0'});
-	}
+	i = 0;
+	while (arg[i])
+		process_character(arg, &i, &state, shell);
 	return (state.result);
 }
 
@@ -148,10 +165,25 @@ void	expander(t_cmd *cmd, t_shell *shell)
 	cmd->args = apply_word_splitting(cmd->args, shell);
 }
 
+static void	resolve_non_builtin_path(t_cmd *node, t_shell *shell)
+{
+	char	*reresolved;
+
+	if (node->args && node->args[0] && ft_strchr(node->args[0], '/') == NULL
+		&& !is_builtin(node->args[0]))
+	{
+		if (shell->env && get_env_value("PATH", shell->env))
+			reresolved = resolve_path(node->args[0], shell->env);
+		else
+			reresolved = resolve_path_in_current_dir(ft_strdup(node->args[0]));
+		free(node->args[0]);
+		node->args[0] = reresolved;
+	}
+}
+
 void	expand_nodes(t_cmd *cmd, t_shell *shell)
 {
 	t_cmd	*node;
-	char	*reresolved;
 
 	node = cmd;
 	shell->cmd = node;
@@ -159,16 +191,7 @@ void	expand_nodes(t_cmd *cmd, t_shell *shell)
 	{
 		expander(node, shell);
 		node->shell = shell;
-		if (node->args && node->args[0] && ft_strchr(node->args[0], '/') == NULL
-			&& !is_builtin(node->args[0]))
-		{
-			if (shell->env && get_env_value("PATH", shell->env))
-				reresolved = resolve_path(node->args[0], shell->env);
-			else
-				reresolved = resolve_path_in_current_dir(ft_strdup(node->args[0]));
-			free(node->args[0]);
-			node->args[0] = reresolved;
-		}
+		resolve_non_builtin_path(node, shell);
 		node = node->next;
 	}
 }

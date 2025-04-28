@@ -6,55 +6,77 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/01 12:15:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/26 21:10:00 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/28 14:40:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-/**
- * Resolves a command to its full path using PATH environment variable
- * Returns a newly allocated string with the full path, or a copy of cmd
- * if the command is not found in PATH
- */
-char	*resolve_path(char *cmd, char **env)
+static char	*try_path(char *path, char *cmd)
 {
-	int		i;
-	char	*full_path;
 	char	*temp;
-	char	**paths;
+	char	*full_path;
 
+	temp = ft_strjoin(path, "/");
+	if (!temp)
+		return (NULL);
+	full_path = ft_strjoin(temp, cmd);
+	free(temp);
+	if (!full_path)
+		return (NULL);
+	if (access(full_path, F_OK) == 0)
+	{
+		if (access(full_path, X_OK) == 0)
+			return (full_path);
+		free(full_path);
+	}
+	else
+		free(full_path);
+	return (NULL);
+}
+
+static char	*check_direct_path(char *cmd)
+{
 	if (!cmd || !*cmd)
 		return (NULL);
 	if (ft_strchr(cmd, '/'))
 		return (ft_strdup(cmd));
+	return (NULL);
+}
+
+static char	*try_paths(char **paths, char *cmd)
+{
+	int		i;
+	char	*result;
+
+	i = 0;
+	while (paths[i])
+	{
+		result = try_path(paths[i], cmd);
+		if (result)
+			return (result);
+		i++;
+	}
+	return (NULL);
+}
+
+char	*resolve_path(char *cmd, char **env)
+{
+	char	*direct_path;
+	char	*result;
+	char	**paths;
+
+	direct_path = check_direct_path(cmd);
+	if (direct_path)
+		return (direct_path);
 	if (!env || !get_env_value("PATH", env))
 		return (ft_strdup(cmd));
-	i = -1;
 	paths = ft_split(get_env_value("PATH", env), ':');
 	if (!paths)
 		return (ft_strdup(cmd));
-	while (paths[++i])
-	{
-		temp = ft_strjoin(paths[i], "/");
-		if (!temp)
-			continue ;
-		full_path = ft_strjoin(temp, cmd);
-		free(temp);
-		if (!full_path)
-			continue ;
-		if (access(full_path, F_OK) == 0)
-		{
-			if (access(full_path, X_OK) == 0)
-			{
-				free_env(paths);
-				return (full_path);
-			}
-			free(full_path);
-		}
-		else
-			free(full_path);
-	}
+	result = try_paths(paths, cmd);
 	free_env(paths);
+	if (result)
+		return (result);
 	return (ft_strdup(cmd));
 }

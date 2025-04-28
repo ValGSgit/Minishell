@@ -12,16 +12,27 @@
 
 #include "../includes/minishell.h"
 
-/**
- * Processes user input: tokenizes, parses, expands, and executes commands
- * Returns 1 if should exit the shell, 0 otherwise
- */
 int	handle_input(t_shell *shell, char *input)
 {
 	char	**tokens;
+	int		i;
+	bool	only_whitespace;
 
 	if (!input)
 		return (0);
+	i = 0;
+	only_whitespace = true;
+	while (input[i])
+	{
+		if (!ft_isspace(input[i]))
+		{
+			only_whitespace = false;
+			break;
+		}
+		i++;
+	}
+	if (only_whitespace)
+		return (safe_free(input), 0);
 	if (*input)
 		add_history(input);
 	tokens = lexer(input);
@@ -36,16 +47,13 @@ int	handle_input(t_shell *shell, char *input)
 	expand_nodes(shell->cmd, shell);
 	if (shell->cmd->args || shell->cmd->redirs)
 		executor(shell->cmd, shell);
-	free_cmd(shell->cmd);
-	shell->cmd = NULL;
+	//free_cmd(shell->cmd);
+	//shell->cmd = NULL;
 	free_tokens(tokens);
 	safe_free(input);
 	return (0);
 }
 
-/**
- * Main shell loop that reads and processes user input
- */
 void	minishell_loop(t_shell *shell)
 {
 	char	*input;
@@ -64,8 +72,8 @@ void	minishell_loop(t_shell *shell)
 			if (shell->is_interactive)
 				ft_putstr_fd("exit\n", STDOUT_FILENO);
 			safe_free(prompt);
-			// If Ctrl+C was pressed before Ctrl+D, exit status is already 130
-			// Otherwise, exit_status remains what it was before
+			if (g_signal_received == 130)
+				shell->exit_status = 130;
 			break ;
 		}
 		if (handle_input(shell, input) == 1)
@@ -73,15 +81,14 @@ void	minishell_loop(t_shell *shell)
 			safe_free(prompt);
 			break ;
 		}
-		// Update the shell's exit_status from the global variable if it was changed by a signal
-		//if (g_sig_status == 130)
-		//	shell->exit_status = 130;
+		if (g_signal_received == 130)
+		{
+			shell->exit_status = 130;
+			g_signal_received = 0;
+		}
 	}
 }
 
-/**
- * Initialize shell environment and settings
- */
 void	initialize_shell(t_shell *shell, char **argv)
 {
 	char	*prog_name;
@@ -110,9 +117,6 @@ void	initialize_shell(t_shell *shell, char **argv)
 	}
 }
 
-/**
- * Main entry point of the minishell program
- */
 int	main(int argc, char **argv, char **envp)
 {
 	t_shell	shell;

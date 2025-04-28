@@ -13,7 +13,6 @@
 #define _GNU_SOURCE
 #include "../includes/minishell.h"
 
-/* Setup signal handlers */
 void	setup_signals(void)
 {
 	struct sigaction	sa_int;
@@ -29,20 +28,18 @@ void	setup_signals(void)
 	sigaction(SIGQUIT, &sa_quit, NULL);
 }
 
-/* Handle SIGINT (Ctrl+C) */
 void	handle_sigint(int sig)
 {
 	extern volatile sig_atomic_t	g_signal_received;
 
 	(void)sig;
-	g_signal_received = 130; /* Using the exit status 130 for SIGINT */
+	g_signal_received = 130;
 	write(1, "\n", 1);
 	rl_replace_line("", 0);
 	rl_on_new_line();
 	rl_redisplay();
 }
 
-/* Handle SIGQUIT (Ctrl+\) */
 void	handle_sigquit(int sig)
 {
 	(void)sig;
@@ -51,7 +48,6 @@ void	handle_sigquit(int sig)
 	rl_redisplay();
 }
 
-/* Reset signal handlers to default */
 void	reset_signals(void)
 {
 	struct sigaction	sa_default;

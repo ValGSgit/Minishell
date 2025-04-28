@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   env_utils2.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 11:58:27 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/08 17:18:25 by codespace        ###   ########.fr       */
+/*   Updated: 2025/04/28 14:45:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,21 +40,50 @@ char	**copy_env(char **envp)
 	return (env);
 }
 
-char *get_env_value(char *name, char **env)
+char	*get_env_value(char *name, char **env)
 {
-    int i;
-    int len;
+	int	i;
+	int	len;
 
-    if (!name || !env)
-        return (NULL);
-    len = ft_strlen(name);
-    i = 0;
-    while (env[i])
-    {
-        if (ft_strncmp(env[i], name, len) == 0 && env[i][len] == '=')
-            return (env[i] + len + 1); // Return pointer to value part
-        i++;
-    }
-    return (NULL);
+	if (!name || !env)
+		return (NULL);
+	len = ft_strlen(name);
+	i = 0;
+	while (env[i])
+	{
+		if (ft_strncmp(env[i], name, len) == 0 && env[i][len] == '=')
+			return (env[i] + len + 1);
+		i++;
+	}
+	return (NULL);
+}
+
+void	add_to_env(char ***env, char *new_entry)
+{
+	char	**new_env;
+	int		i;
+	int		size;
+
+	if (!new_entry)
+		return ;
+	size = 0;
+	while ((*env)[size])
+		size++;
+	new_env = malloc(sizeof(char *) * (size + 2));
+	if (!new_env)
+	{
+		free(new_entry);
+		return ;
+	}
+	i = 0;
+	while ((*env)[i])
+	{
+		new_env[i] = (*env)[i];
+		i++;
+	}
+	new_env[i] = new_entry;
+	new_env[i + 1] = NULL;
+	free(*env);
+	*env = new_env;
 }
 

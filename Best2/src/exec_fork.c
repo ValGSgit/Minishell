@@ -1,5 +1,16 @@
-#include "../includes/minishell.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   exec_fork.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/28 15:50:00 by vagarcia          #+#    #+#             */
+/*   Updated: 2025/04/28 13:22:26 by vagarcia         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
+#include "../includes/minishell.h"
 
 void	execute_pipeline(t_cmd *cmd, t_shell *shell)
 {
@@ -22,6 +33,7 @@ void	only_redir_fork(t_cmd *cmd)
 {
 	int		status;
 	pid_t	pid;
+
 	if (!cmd->args && cmd->redirs)
 	{
 		pid = fork();
@@ -39,64 +51,7 @@ void	only_redir_fork(t_cmd *cmd)
 			if (WTERMSIG(status) == SIGINT)
 				write(STDERR_FILENO, "\n", 1);
 		}
-		return;
 	}
-}
-
-int	fork_pipeline_commands(t_cmd *cmd, t_shell *shell, pid_t *pids,
-	pid_t *last_pid)
-{
-	int		pipe_fd[2];
-	int		prev_pipe_in;
-	int		i;
-	pid_t	pid;
-
-	prev_pipe_in = 0;
-	i = 0;
-	while (cmd)
-	{
-		if (cmd->next && pipe(pipe_fd) == -1)
-			return (perror("minishell: pipe"), -1);
-		pid = fork_child_process(cmd, prev_pipe_in, pipe_fd, shell);
-		if (pid == -1)
-			return (handle_fork_error(pids), -1);
-		pids[i++] = pid;
-		if (!cmd->next)
-			*last_pid = pid;
-		setup_parent_after_fork(cmd, &prev_pipe_in, pipe_fd);
-		cmd = cmd->next;
-	}
-	return (i);
-}
-
-pid_t fork_child_process(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2], t_shell *shell)
-{
-	pid_t pid;
-
-	pid = fork();
-	if (pid == -1)
-	{
-		perror("fork");
-		return (-1);
-	}
-	if (pid == 0)
-	{
-		rearrange_pipes(cmd, prev_pipe_in, pipe_fd);
-		if (cmd->redirs)
-			apply_redirection(cmd);
-		
-		// Handle command execution with proper exit codes
-		if (cmd->args && cmd->args[0] && is_builtin(cmd->args[0]))
-		{
-			execute_builtin(cmd);
-			exit(shell->exit_status);
-		}
-		else if (cmd->args && cmd->args[0] && cmd->args[0][0])
-			execute_external_command(cmd, shell);
-		else
-			exit(0); // Exit with success for commands with only redirections
-	}
-	return (pid);
 }
 
 pid_t	*allocate_pid_array(int count)
@@ -118,4 +73,11 @@ int	count_pipeline_cmds(t_cmd *cmd)
 		cmd = cmd->next;
 	}
 	return (count);
+}
+
+void	handle_fork_error(pid_t *pids)
+{
+	if (pids)
+		free(pids);
+	perror("fork");
 }

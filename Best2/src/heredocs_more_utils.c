@@ -12,9 +12,32 @@
 
 #include "../includes/minishell.h"
 
-/**
- * Read heredoc input and write it to the temporary file.
- */
+char *process_da_bullshit(char *arg, t_shell *shell)
+{
+	t_expander_state	dabullshit;
+	int				i;
+
+	ft_memset(&dabullshit, 0, sizeof(t_expander_state));
+	dabullshit.result = ft_strdup("");
+	if (!dabullshit.result || !arg)
+		return (dabullshit.result);
+	i = 0;
+	while (arg[i])
+	{
+		if (arg[i] == '$')
+		{
+			i = handle_dollar_sign(arg, i, &dabullshit, shell);
+			i++;
+		}
+		else
+		{
+			dabullshit.result = append_str(dabullshit.result, (char[]){arg[i], '\0'});
+			(i)++;
+		}
+	}
+	return (dabullshit.result);
+}
+
 void	read_heredoc_input(const char *delimiter, int fd, t_cmd *cmd, bool expand_vars)
 {
 	char	*line;
@@ -23,34 +46,31 @@ void	read_heredoc_input(const char *delimiter, int fd, t_cmd *cmd, bool expand_v
 	while (1)
 	{
 		line = readline("> ");
-		if (!line) // Handle EOF (Ctrl+D) in heredocs
+		if (!line)
 		{
 			ft_putstr_fd("warning: here-document delimited by end-of-file (wanted `", 2);
 			ft_putstr_fd((char *)delimiter, 2);
 			ft_putstr_fd("')\n", 2);
 			break;
 		}
-		
-		if (ft_strcmp(line, delimiter) == 0)
+		if (ft_strcmp(line, delimiter) == 0 && ft_strlen(line) == ft_strlen(delimiter))
 		{
 			free(line);
 			break;
 		}
-		
 		if (expand_vars)
 		{
-			processed_line = process_argument(line, cmd->shell);
-			free(line); // Free original line when processed
-			line = NULL; // Set to NULL to avoid potential double free
+			processed_line = process_da_bullshit(line, cmd->shell);
+			free(line);
+			line = NULL;
 		}
 		else
 			processed_line = line;
-			
 		if (processed_line)
 		{
 			write(fd, processed_line, ft_strlen(processed_line));
 			write(fd, "\n", 1);
-			free(processed_line); // Ensure we always free the processed line
+			free(processed_line);
 		}
 	}
 }
@@ -61,19 +81,17 @@ void	heredoc_child_process(t_cmd *cmd, char *clean_eof, int fd, bool expand_vars
 	read_heredoc_input(clean_eof, fd, cmd, expand_vars);
 	close(fd);
 	free(clean_eof);
-	// Clean exit from child process
 	exit(0);
 }
 
 int	heredoc_parent_process(pid_t pid, t_cmd *cmd, int fd, char *clean_eof)
 {
-	int status;
+	int	status;
+	int	exit_code;
 
 	close(fd);
 	free(clean_eof);
 	waitpid(pid, &status, 0);
-	
-	// Handle signal termination
 	if (WIFSIGNALED(status))
 	{
 		cmd->shell->exit_status = 128 + WTERMSIG(status);
@@ -81,15 +99,21 @@ int	heredoc_parent_process(pid_t pid, t_cmd *cmd, int fd, char *clean_eof)
 		{
 			cmd->shell->signal_status = 1;
 			cmd->shell->exit_status = 130;
+			g_signal_received = 130;
 			return (1);
 		}
 	}
-	// Handle normal exit
-	else if (WIFEXITED(status)) 
+	else if (WIFEXITED(status))
 	{
-		cmd->shell->exit_status = WEXITSTATUS(status);
+		exit_code = WEXITSTATUS(status);
+		if (exit_code == 130)
+		{
+			cmd->shell->exit_status = 130;
+			g_signal_received = 130;
+			return (1);
+		}
+		cmd->shell->exit_status = exit_code;
 	}
-
 	return (0);
 }
 
@@ -107,16 +131,12 @@ bool	check_delimiter_quotes(char *eof)
 {
 	int		i;
 	bool	has_quotes;
-	
+
 	if (!eof || !*eof)
 		return (true);
-	
-	// Check for empty quoted strings like '' or ""
 	if ((eof[0] == '\'' && eof[1] == '\'' && !eof[2]) || 
 		(eof[0] == '"' && eof[1] == '"' && !eof[2]))
 		return (false);
-
-	// Check for quotes anywhere in the delimiter
 	i = 0;
 	has_quotes = false;
 	while (eof[i])
@@ -125,7 +145,5 @@ bool	check_delimiter_quotes(char *eof)
 			has_quotes = true;
 		i++;
 	}
-
-	// If there are quotes, don't expand variables
 	return (!has_quotes);
 }

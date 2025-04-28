@@ -76,10 +76,3 @@ int	handle_only_redirection(t_cmd *cmd)
 	}
 	return (0);
 }
-
-
-void	handle_fork_error(pid_t *pids)
-{
-	perror("minishell: fork");
-	free(pids);
-}

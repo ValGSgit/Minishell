@@ -14,10 +14,10 @@
 
 char	*get_random_temp_name(void)
 {
-	char		*temp_name;
-	int		fd;
+	char			*temp_name;
+	int				fd;
 	unsigned char	random_bytes[6];
-	int		i;
+	int				i;
 
 	temp_name = xmalloc(32);
 	if (!temp_name)

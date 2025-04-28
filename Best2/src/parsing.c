@@ -12,18 +12,12 @@
 
 #include "../includes/minishell.h"
 
-/**
- * Check if a token is a redirection symbol
- */
 int	is_redirection(char *tokens)
 {
 	return (ft_strcmp(tokens, ">") == 0 || ft_strcmp(tokens, ">>") == 0
 		|| ft_strcmp(tokens, "<") == 0 || ft_strcmp(tokens, "<<") == 0);
 }
 
-/**
- * Compare length of two tokens
- */
 int	same_length(char *tok1, char *tok2)
 {
 	int	len1;
@@ -36,9 +30,6 @@ int	same_length(char *tok1, char *tok2)
 	return (0);
 }
 
-/**
- * Handle heredoc redirections
- */
 void	handle_heredoc_redirect(t_cmd *cmd, char **tokens, int *i,
 		t_shell *shell)
 {
@@ -64,9 +55,6 @@ void	handle_heredoc_redirect(t_cmd *cmd, char **tokens, int *i,
 	(*i) += 2;
 }
 
-/**
- * Parses tokens into a command structure
- */
 t_cmd	*parser(char **tokens, t_shell *shell)
 {
 	t_cmd	*head;
