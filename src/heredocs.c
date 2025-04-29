@@ -6,117 +6,89 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 13:18:31 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/03 15:05:04 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/27 14:55:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-void	cleanup_heredocs(t_shell *shell)
+static void	heredoc_signal_handler(int sig)
 {
-	t_redir	*redir;
-	t_redir	*next;
-
-	redir = shell->cmd->redirs;
-	while (redir && redir->type == REDIR_HEREDOC)
+	if (sig == SIGINT)
 	{
-		if (redir->type == REDIR_HEREDOC && redir->file
-			&& unlink(redir->file) == -1)
-			perror("unlink");
-		free(redir->file);
-		next = redir->next;
-		free(redir);
-		redir = next;
+		write(STDERR_FILENO, "\n", 1);
+		exit(130);
 	}
-	shell->cmd->redirs = NULL;
-}
-
-static const char	*get_random_temp_name(void)
-{
-	static char		temp_name[32];
-	int				fd;
-	unsigned char	random_bytes[6];
-	int				i;
-
-	ft_strlcpy(temp_name, HERE_TEMP, sizeof(temp_name));
-	fd = open("/dev/urandom", O_RDONLY);
-	if (fd == -1 || read(fd, random_bytes, 6) != 6)
+	else if (sig == SIGTERM)
 	{
-		perror("get_random_temp_name");
-		if (fd != -1)
-			close(fd);
-		return (NULL);
-	}
-	close(fd);
-	i = -1;
-	while (++i < 6)
-		temp_name[13 + i] = '0' + (random_bytes[i] % 10); // Generate digits
-	temp_name[19] = '\0';
-	return (temp_name);
-}
-
-static char	*process_line(char *arg, t_cmd *cmd)
-{
-	char	*expanded_line;
-
-	expanded_line = process_argument(arg, cmd->shell);
-	if (expanded_line && ft_strcmp(expanded_line, arg) != 0)
-	{
-		free(arg);
-		return (expanded_line);
-	}
-	return (arg);
-}
-
-/**
- * Read heredoc input and write it to the temporary file.
- */
-static void	read_heredoc_input(const char *delimiter, int fd, t_cmd *shell)
-{
-	char	*line;
-	char	*expanded_line;
-
-	while (1)
-	{
-		line = readline("> ");
-		if (!line || ft_strcmp(line, delimiter) == 0)
-		{
-			free(line);
-			break ;
-		}
-		expanded_line = process_line(line, shell);
-		if (expanded_line)
-		{
-			write(fd, expanded_line, ft_strlen(expanded_line));
-			write(fd, "\n", 1);
-			free(expanded_line);
-		}
-		else
-		{
-			write(fd, line, ft_strlen(line));
-			write(fd, "\n", 1);
-			free(line);
-		}
+		exit(143);
 	}
 }
 
-/**
- * Handle heredoc redirection.
- */
-void	handle_heredoc(t_cmd *cmd, char *eof)
+void	setup_heredoc_signals(void)
 {
-	const char	*temp_name;
-	int			fd;
+	signal(SIGINT, heredoc_signal_handler);
+	signal(SIGTERM, heredoc_signal_handler);
+}
 
-	temp_name = get_random_temp_name();
-	// printf("Temporary file name: %s\n", temp_name);
+static int	open_heredoc_file(const char *temp_name)
+{
+	int	fd;
+
 	fd = open(temp_name, O_CREAT | O_WRONLY | O_TRUNC, 0600);
 	if (fd == -1)
+		perror(temp_name);
+	return (fd);
+}
+
+static void	handle_heredoc_fork(t_cmd *cmd, char *clean_eof, int fd,
+				bool expand_vars)
+{
+	pid_t	pid;
+
+	pid = fork();
+	if (pid == 0)
+		heredoc_child_process(cmd, clean_eof, fd, expand_vars);
+	else if (pid > 0)
+		heredoc_parent_process(pid, cmd, fd, clean_eof);
+	else
 	{
-		perror("heredoc");
-		return ;
+		close(fd);
+		free(clean_eof);
+		perror("fork");
+		cmd->shell->exit_status = 1;
 	}
-	read_heredoc_input(eof, fd, cmd);
-	close(fd);
-	create_redir_node(cmd, REDIR_HEREDOC, (char *)temp_name);
+}
+
+void	handle_heredoc(t_cmd *cmd, char *eof)
+{
+	char		*temp_name;
+	int			fd;
+	bool		expand_vars;
+	char		*clean_eof;
+
+	if (!cmd || !eof)
+		return;
+	expand_vars = check_delimiter_quotes(eof);
+	clean_eof = remove_quotes(ft_strdup(eof));
+	if (!clean_eof)
+		return;
+	temp_name = get_random_temp_name();
+	if (!temp_name)
+	{
+		free(clean_eof);
+		return;
+	}
+	fd = open_heredoc_file(temp_name);
+	if (fd == -1)
+	{
+		safe_free(clean_eof);
+		safe_free(temp_name);
+		return;
+	}
+	handle_heredoc_fork(cmd, clean_eof, fd, expand_vars);
+	setup_signals();
+	if (g_signal_received != 130)
+		create_redir_node(cmd, REDIR_HEREDOC, temp_name);
+	safe_free(temp_name);
 }

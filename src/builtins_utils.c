@@ -6,95 +6,99 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/02 10:33:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/07 16:11:54 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/28 14:10:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
+static void	update_oldpwd(t_shell *shell, char *old_pwd)
+{
+	char	*oldpwd_var;
+
+	if (old_pwd)
+	{
+		oldpwd_var = ft_strjoin("OLDPWD=", old_pwd);
+		if (oldpwd_var)
+		{
+			update_or_add_env(oldpwd_var, &shell->env);
+			free(oldpwd_var);
+		}
+	}
+}
 
 void	update_pwd(t_shell *shell)
 {
 	char	*cwd;
 	char	*new_pwd;
-	int		i;
+	char	*old_pwd;
 
-	cwd = getcwd(NULL, 0); // Get the current working directory
+	cwd = getcwd(NULL, 0);
 	if (!cwd)
-		return ;                        // Handle error if needed
-	new_pwd = ft_strjoin("PWD=", cwd); // Create the "PWD=" string
-	free(cwd);
-	// Update the environment variable
-	i = 0;
-	while (shell->env[i])
 	{
-		if (ft_strncmp(shell->env[i], "PWD=", 4) == 0)
-		{
-			free(shell->env[i]);
-			shell->env[i] = new_pwd;
-			return ;
-		}
-		i++;
+		old_pwd = get_env_value("PWD", shell->env);
+		update_oldpwd(shell, old_pwd);
+		return ;
 	}
-	// If PWD is not found, add it to the environment
-	update_or_add_env(new_pwd, &shell->env);
-	free(new_pwd);
+	old_pwd = get_env_value("PWD", shell->env);
+	update_oldpwd(shell, old_pwd);
+	new_pwd = ft_strjoin("PWD=", cwd);
+	if (new_pwd)
+	{
+		update_or_add_env(new_pwd, &shell->env);
+		free(new_pwd);
+	}
+	free(cwd);
 }
 
-void	ft_cd(t_cmd *cmd)
+void	update_shlvl(t_shell *shell)
 {
-	char	*path;
+	int		level;
+	char	*level_str;
+	char	*new_shlvl;
+	char	*val;
 
-	if (!cmd->args[1])
-		path = getenv("HOME");
-	if (cmd->args[2])
+	if (!shell->env)
+		return ;
+	val = get_env_value("SHLVL", shell->env);
+	if (!val)
 	{
-		write(2, " too many arguments\n", 20);
-		cmd->shell->exit_status = 1;
-		return;
+		new_shlvl = ft_strdup("SHLVL=1");
+		if (new_shlvl)
+			update_or_add_env(new_shlvl, &shell->env);
+		free(new_shlvl);
+		return ;
 	}
-	else
-		path = cmd->args[1];
-	if (chdir(path) == -1)
+	level = ft_atoi(val);
+	if (level < 0)
+		level = 0;
+	level++;
+	level_str = ft_itoa(level);
+	if (!level_str)
+		return ;
+	new_shlvl = ft_strjoin("SHLVL=", level_str);
+	free(level_str);
+	if (new_shlvl)
 	{
-		perror("cd");
-		cmd->shell->exit_status = 1;
+		update_or_add_env(new_shlvl, &shell->env);
+		free(new_shlvl);
 	}
-	else
-		cmd->shell->exit_status = 0;
-	update_pwd(cmd->shell);
 }
 
 void	ft_pwd(t_cmd *cmd)
 {
 	char	cwd[1024];
 
-	// if (cmd->args[1])
-	// {
-	// 	write(2, "too many arguments\n", 20);
-	// 	cmd->exit_status = 1;
-	// 	//return ;
-	// }
-	if (getcwd(cwd, sizeof(cwd)) != NULL)
-		printf("%s\n", cwd);
+	if (getcwd(cwd, 1024) != NULL)
+	{
+		ft_putendl_fd(cwd, STDOUT_FILENO);
+		cmd->shell->exit_status = 0;
+	}
 	else
-		perror("pwd");
-	cmd->shell->exit_status = 0;
+	{
+		ft_putstr_fd("minishell: pwd: ", 2);
+		ft_putstr_fd(strerror(errno), 2);
+		ft_putstr_fd("\n", 2);
+		cmd->shell->exit_status = 1;
+	}
 }
-
-void ft_env(t_cmd *cmd)
-{
-    int i;
-
-    if (!cmd->shell->env)
-        return;
-    if (cmd->args[1])
-    {
-        cmd->shell->exit_status = 1;
-        return;
-    }
-	i = 0;
-    while (cmd->shell->env[i])
-    	printf("%s\n", cmd->shell->env[i++]);
-}
-

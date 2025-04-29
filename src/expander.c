@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:26 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/07 16:17:20 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/28 15:40:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,98 +23,162 @@ char	*append_str(char *dest, char *src)
 		else
 			return (ft_strdup(""));
 	}
-	if (src && *src)
-		new_str = ft_strjoin(dest, src);
-	else
-		new_str = ft_strjoin(dest, "");
+	if (!src)
+		src = "";
+	new_str = ft_strjoin(dest, src);
+	if (!new_str)
+		return (dest);
 	free(dest);
 	return (new_str);
+}
+
+int	handle_dollar_sign(char *arg, int i, t_expander_state *state,
+			t_shell *shell)
+{
+	char	*value;
+
+	if (!arg[i + 1])
+	{
+		state->result = append_str(state->result, "$");
+		return (i);
+	}
+	if (!state->in_quote)
+	{
+		value = expand_variable(arg, &i, shell);
+		if (value)
+		{
+			state->result = append_str(state->result, value);
+			free(value);
+		}
+		return (i);
+	}
+	state->result = append_str(state->result, "$");
+	return (i);
+}
+
+static void	handle_quoted(char *arg, int *i, t_expander_state *state)
+{
+	if (arg[*i] == '\'' && !state->in_dquote)
+	{
+		state->in_quote = !state->in_quote;
+		(*i)++;
+	}
+	else if (arg[*i] == '"' && !state->in_quote)
+	{
+		state->in_dquote = !state->in_dquote;
+		(*i)++;
+	}
+}
+
+static void	process_character(char *arg, int *i, t_expander_state *state, 
+			t_shell *shell)
+{
+	if (arg[*i] == '\'' && !state->in_dquote)
+		handle_quoted(arg, i, state);
+	else if (arg[*i] == '"' && !state->in_quote)
+		handle_quoted(arg, i, state);
+	else if (arg[*i] == '$' && !state->in_quote)
+	{
+		*i = handle_dollar_sign(arg, *i, state, shell);
+		(*i)++;
+	}
+	else
+	{
+		state->result = append_str(state->result, (char[]){arg[*i], '\0'});
+		(*i)++;
+	}
 }
 
 char	*process_argument(char *arg, t_shell *shell)
 {
 	t_expander_state	state;
 	int					i;
-	char				*value;
 
 	ft_memset(&state, 0, sizeof(t_expander_state));
 	state.result = ft_strdup("");
 	if (!state.result || !arg)
 		return (state.result);
-	i = -1;
-	while (arg[++i])
-	{
-		if (arg[i] == '\'' && !state.in_dquote)
-			state.in_quote = !state.in_quote;
-		else if (arg[i] == '"' && !state.in_quote)
-			state.in_dquote = !state.in_dquote;
-		else if (arg[i] == '$' && !state.in_quote)
-		{
-			value = expand_variable(arg, &i, shell, state.in_dquote);
-			state.result = append_str(state.result, value);
-			free(value);
-		}
-		else
-			state.result = append_str(state.result, (char[]){arg[i], '\0'});
-	}
+	i = 0;
+	while (arg[i])
+		process_character(arg, &i, &state, shell);
 	return (state.result);
+}
+
+static char	*resolve_path_in_current_dir(char *cmd)
+{
+	char	*path;
+	char	*current_dir;
+	char	*temp;
+
+	current_dir = getcwd(NULL, 0);
+	if (!current_dir)
+		return (ft_strdup(cmd));
+	path = ft_strjoin(current_dir, "/");
+	free(current_dir);
+	if (!path)
+		return (ft_strdup(cmd));
+	temp = path;
+	path = ft_strjoin(path, cmd);
+	free(temp);
+	return (path);
+}
+
+static void	handle_special_dir(t_cmd *cmd, t_shell *shell, char *error_msg,
+			int exit_code)
+{
+	ft_putstr_fd(error_msg, 2);
+	shell->exit_status = exit_code;
+	free(cmd->args[0]);
+	free(cmd->args);
+	cmd->args = NULL;
+	cmd->syntax_error = 1;
 }
 
 void	expander(t_cmd *cmd, t_shell *shell)
 {
-	int		i;
 	char	*expanded;
-
+	
 	if (!cmd || !cmd->args)
-		return ;
-	if ((ft_strncmp(cmd->args[0], "./", 2) != 0 || ft_strncmp(cmd->args[0],
-				"../", 3)) && !is_builtin(cmd->args[0]))
+    	return;
+	if (cmd->args[0] && ft_strcmp(cmd->args[0], ".") == 0 && !cmd->args[1])
 	{
-		expanded = resolve_path(cmd->args[0], shell->env);
+		handle_special_dir(cmd, shell, 
+			"Minishell: .: filename argument required\n.: usage: . filename [arguments]\n",
+			2);
+		return ;
+	}
+	if (cmd->args[0] && ft_strcmp(cmd->args[0], "..") == 0 && !cmd->args[1])
+	{
+		handle_special_dir(cmd, shell, "..: command not found\n", 127);
+		return ;
+	}
+	if (cmd->args[0] && ft_strchr(cmd->args[0], '/') == NULL
+		&& !is_builtin(cmd->args[0]))
+	{
+		if (shell->env && get_env_value("PATH", shell->env))
+			expanded = resolve_path(cmd->args[0], shell->env);
+		else
+			expanded = resolve_path_in_current_dir(cmd->args[0]);
 		free(cmd->args[0]);
 		cmd->args[0] = expanded;
 	}
-	i = 0;
-	while (cmd->args[i])
-	{
-		expanded = process_argument(cmd->args[i], shell);
-		if (expanded)
-		{
-			free(cmd->args[i]);
-			cmd->args[i] = expanded;
-		}
-		i++;
-	}
+	cmd->args = apply_word_splitting(cmd->args, shell);
 }
 
-/* Remove null or empty strings from args array */
-static char	**ft_clean_args(char **args)
+static void	resolve_non_builtin_path(t_cmd *node, t_shell *shell)
 {
-	int		i;
-	int		j;
-	char	**cleaned;
+	char	*reresolved;
 
-	i = 0;
-	j = 0;
-	if (!args)
-		return (NULL);
-	while (args[i])
-		i++;
-	cleaned = malloc(sizeof(char *) * (i + 1));
-	i = 0;
-	if (!cleaned)
-		return (NULL);
-	while (args[i])
+	if (node->args && node->args[0] && ft_strchr(node->args[0], '/') == NULL
+		&& !is_builtin(node->args[0]))
 	{
-		if (args[i] && *args[i])
-			cleaned[j++] = args[i];
+		if (shell->env && get_env_value("PATH", shell->env))
+			reresolved = resolve_path(node->args[0], shell->env);
 		else
-			free(args[i]);
-		i++;
+			reresolved = resolve_path_in_current_dir(ft_strdup(node->args[0]));
+		free(node->args[0]);
+		node->args[0] = reresolved;
 	}
-	cleaned[j] = NULL;
-	free(args);
-	return (cleaned);
 }
 
 void	expand_nodes(t_cmd *cmd, t_shell *shell)
@@ -127,8 +191,22 @@ void	expand_nodes(t_cmd *cmd, t_shell *shell)
 	{
 		expander(node, shell);
 		node->shell = shell;
-		if (node->args)
-			node->args = ft_clean_args(node->args);
+		if (!(cmd->args && cmd->args[0] && cmd->args[0][0] == '\0'))
+			resolve_non_builtin_path(node, shell);
+		if (node->args && node->args[0] && node->args[0][0] == '\0')
+		{
+			int k = 1;
+			while (node->args[k])
+			{
+				char *dup = ft_strdup(node->args[k]);
+				if (node->args[k - 1] != NULL)		
+					free(node->args[k - 1]);
+				free(node->args[k]);
+				node->args[k - 1] = dup;
+				node->args[k] = NULL;
+				k++;
+			}
+		}
 		node = node->next;
 	}
 }

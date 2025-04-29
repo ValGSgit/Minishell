@@ -7,7 +7,7 @@ DEBUG_FLAGS = -g -fsanitize=address
 SRC_DIR = src
 OBJ_DIR = obj
 INC_DIR = includes
-LIBFT_DIR = ShellLibft
+LIBFT_DIR = Libft
 
 # Source and object files
 SRCS = $(wildcard $(SRC_DIR)/*.c)
