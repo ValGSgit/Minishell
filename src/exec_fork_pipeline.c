@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:50:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/28 13:42:15 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/29 15:47:40 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,12 +54,13 @@ pid_t fork_child_process(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2], t_shell *
 		if (cmd->redirs)
 			apply_redirection(cmd, true);
 		if (cmd->args && cmd->args[0] && is_builtin(cmd->args[0]))
+		{
 			execute_builtin(cmd);
-		if (cmd->args && cmd->args[0] && cmd->args[0][0] && cmd->args[0][0] != '\0' && !is_builtin(cmd->args[0]))
+			exit(cmd->shell->exit_status);
+		}
+		if (cmd->args && cmd->args[0] && cmd->args[0][0] && cmd->args[0][0] != '\0')
 			execute_external_command(cmd, shell);
-		dup2(cmd->out_fd, STDOUT_FILENO);
-		dup2(cmd->in_fd, STDIN_FILENO); // fix this logic, wrong error code
-		exit(0);// Exit with success for commands with only redirections
+		exit(0);
 	}
 	return (pid);
 }
@@ -69,7 +70,9 @@ void	rearrange_pipes(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2])
 	if (prev_pipe_in != 0)
 	{
 		if (dup2(prev_pipe_in, STDIN_FILENO) == -1)
+		{
 			exit(1);
+		}
 		close(prev_pipe_in);
 	}
 	if (cmd->next)

@@ -2,25 +2,35 @@
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   utils.c                                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
+/*                                                    +:+ +:+        
+	+:+     */
+/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+      
+	+#+        */
+/*                                                +#+#+#+#+#+  
+	+#+           */
 /*   Created: 2025/01/31 15:03:09 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/14 11:16:34 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/27 11:30:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
+
 void	create_redir_node(t_cmd *cmd, int type, char *file)
 {
-	t_redir	*node;
-	t_redir	*tmp;
+	t_redir *node;
+	t_redir *tmp;
 
 	node = xmalloc(sizeof(t_redir));
 	if (!node)
 		return ;
 	node->type = type;
+	node->prefile = ft_strdup(file);
+	if (!node->prefile)
+	{
+		safe_free(node);
+		return ;
+	}
 	node->file = process_argument(file, cmd->shell);
 	node->next = NULL;
 	if (!cmd->redirs)
@@ -32,24 +42,22 @@ void	create_redir_node(t_cmd *cmd, int type, char *file)
 			tmp = tmp->next;
 		tmp->next = node;
 	}
-	return ;
 }
 
 t_cmd	*create_cmd_node(void)
 {
-	t_cmd	*node;
+	t_cmd *node;
 
 	node = xmalloc(sizeof(t_cmd));
 	if (!node)
 		return (NULL);
-	node->in_fd = STDIN_FILENO;
-	node->out_fd = STDOUT_FILENO;
+	node->in_fd = -1;
+	node->out_fd = -1;
 	node->args = NULL;
 	node->redirs = NULL;
 	node->next = NULL;
 	node->in_file = NULL;
 	node->out_file = NULL;
-	node->env = NULL;
 	node->syntax_error = false;
 	return (node);
 }
@@ -57,9 +65,9 @@ t_cmd	*create_cmd_node(void)
 /* Updates the shell prompt based on the current working directory */
 char	*update_prompt(void)
 {
-	static char	cwd[1024];
-	char		*prompt;
-	char		*result;
+	static char cwd[1024];
+	char *prompt;
+	char *result;
 
 	if (!getcwd(cwd, sizeof(cwd)))
 	{
@@ -71,10 +79,10 @@ char	*update_prompt(void)
 	result = ft_strdup(prompt);
 	if (!result)
 	{
-		xfree(prompt);
+		free(prompt);
 		return (NULL);
 	}
-	xfree(prompt);
+	free(prompt);
 	return (result);
 }
 
@@ -87,4 +95,19 @@ void	handle_syntax_error(char *token, t_shell *shell)
 	ft_putstr_fd(token, 2);
 	ft_putstr_fd("'\n", 2);
 	shell->exit_status = 2;
+}
+
+void cleanup_shell(t_shell *shell)
+{
+    if (shell->cmd)
+    {
+        t_cmd *cmd_ptr = shell->cmd;
+        while (cmd_ptr)
+        {
+            close_cmd_fds(cmd_ptr);
+            cmd_ptr = cmd_ptr->next;
+        }
+    }
+    
+    free_shell(shell);
 }

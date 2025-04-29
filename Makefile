@@ -10,7 +10,7 @@ INC_DIR = includes
 LIBFT_DIR = Libft
 
 # Source and object files
-SRCS = $(wildcard $(SRC_DIR)/*.c)
+SRCS = $(filter-out $(SRC_DIR)/builtins_backup.c, $(wildcard $(SRC_DIR)/*.c))
 OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 # Library

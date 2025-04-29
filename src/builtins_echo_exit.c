@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 14:15:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/28 13:07:59 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/29 15:33:25 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,6 +100,8 @@ static long ft_atli(const char *str, char **endptr)
     long result = 0;
     int sign = 1;
     unsigned long cutoff;
+	int digit;
+
     while (*str == ' ' || (*str >= '\t' && *str <= '\r'))
         str++;
     if (*str == '-')
@@ -115,8 +117,8 @@ static long ft_atli(const char *str, char **endptr)
         cutoff = LONG_MAX;
     while (*str >= '0' && *str <= '9')
     {
-        int digit = *str - '0';
-        if (result > cutoff / 10 || (result == cutoff / 10 && digit > cutoff % 10))
+        digit = *str - '0';
+        if ((unsigned long)result > cutoff / 10 || (result == cutoff / 10 && (unsigned long)digit > cutoff % 10))
             return handle_overflow(sign, endptr, str);
         result = result * 10 + digit;
         str++;
@@ -136,12 +138,15 @@ void	ft_exit(t_cmd *cmd)
 		ft_putstr_fd("exit\n", 2);
 	if (!cmd->args[1])
 	{
-		exit(cmd->shell->exit_status);
+		exit_code = cmd->shell->exit_status;
+		cleanup_shell(cmd->shell);
+		exit(exit_code);
 	}
 	errno = 0;
-	num = ft_atli(cmd->args[1], &endptr, 10);
+	num = ft_atli(cmd->args[1], &endptr);
 	if (*endptr != '\0' || errno == ERANGE)
 	{
+		cleanup_shell(cmd->shell);
 		handle_exit_error(cmd->args[1]);
 	}
 	exit_code = (unsigned char)num;
@@ -151,5 +156,6 @@ void	ft_exit(t_cmd *cmd)
 		cmd->shell->exit_status = 1;
 		return ;
 	}
+	cleanup_shell(cmd->shell);
 	exit(exit_code);
 }

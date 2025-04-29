@@ -3,60 +3,80 @@
 /*                                                        :::      ::::::::   */
 /*   env_utils1.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/01 12:15:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/08 17:18:14 by codespace        ###   ########.fr       */
+/*   Updated: 2025/04/28 14:40:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-char	*resolve_path(char *cmd, char **env)
+static char	*try_path(char *path, char *cmd)
 {
-	int		i;
-	char	*full_path;
 	char	*temp;
-	char	**paths;
+	char	*full_path;
 
-	// Handle NULL or empty command
+	temp = ft_strjoin(path, "/");
+	if (!temp)
+		return (NULL);
+	full_path = ft_strjoin(temp, cmd);
+	free(temp);
+	if (!full_path)
+		return (NULL);
+	if (access(full_path, F_OK) == 0)
+	{
+		if (access(full_path, X_OK) == 0)
+			return (full_path);
+		free(full_path);
+	}
+	else
+		free(full_path);
+	return (NULL);
+}
+
+static char	*check_direct_path(char *cmd)
+{
 	if (!cmd || !*cmd)
 		return (NULL);
-		
-	// If command already contains a slash (relative or absolute path)
-	// return it directly without searching PATH
 	if (ft_strchr(cmd, '/'))
 		return (ft_strdup(cmd));
-		
-	// If no environment or PATH not set, return command as-is
+	return (NULL);
+}
+
+static char	*try_paths(char **paths, char *cmd)
+{
+	int		i;
+	char	*result;
+
+	i = 0;
+	while (paths[i])
+	{
+		result = try_path(paths[i], cmd);
+		if (result)
+			return (result);
+		i++;
+	}
+	return (NULL);
+}
+
+char	*resolve_path(char *cmd, char **env)
+{
+	char	*direct_path;
+	char	*result;
+	char	**paths;
+
+	direct_path = check_direct_path(cmd);
+	if (direct_path)
+		return (direct_path);
 	if (!env || !get_env_value("PATH", env))
 		return (ft_strdup(cmd));
-		
-	// Split PATH into directories and search in each one
-	i = -1;
 	paths = ft_split(get_env_value("PATH", env), ':');
 	if (!paths)
 		return (ft_strdup(cmd));
-		
-	while (paths[++i])
-	{
-		temp = ft_strjoin(paths[i], "/");
-		full_path = ft_strjoin(temp, cmd);
-		xfree(temp);
-		if (access(full_path, F_OK) == 0)  // First check if file exists
-		{
-			if (access(full_path, X_OK) == 0)  // Then check if executable
-			{
-				free_env(paths);
-				return (full_path);
-			}
-			xfree(full_path); // File exists but not executable
-		}
-		else
-		{
-			xfree(full_path); // File doesn't exist
-		}
-	}
+	result = try_paths(paths, cmd);
 	free_env(paths);
-	return (ft_strdup(cmd)); // Return command as-is if not found in PATH
+	if (result)
+		return (result);
+	return (ft_strdup(cmd));
 }

@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/14 13:07:15 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/14 13:08:57 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/26 21:15:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,6 @@ int	is_redirection(char *tokens)
 		|| ft_strcmp(tokens, "<") == 0 || ft_strcmp(tokens, "<<") == 0);
 }
 
-/**
- * Handle file redirection
- */
 int	same_length(char *tok1, char *tok2)
 {
 	int	len1;
@@ -48,18 +45,13 @@ void	handle_heredoc_redirect(t_cmd *cmd, char **tokens, int *i,
 		cmd->syntax_error = 1;
 		return ;
 	}
-	
-	// Pass the heredoc delimiter as is, quotes will be handled by handle_heredoc
 	handle_heredoc(cmd, tokens[*i + 1]);
-	
-	// Check if the shell was interrupted by a signal during heredoc
 	if (shell->signal_status)
 	{
 		cmd->syntax_error = 1;
-		shell->signal_status = 0;  // Reset for future commands
-		return;
+		shell->signal_status = 0;
+		return ;
 	}
-	
 	(*i) += 2;
 }
 
@@ -69,7 +61,7 @@ t_cmd	*parser(char **tokens, t_shell *shell)
 	t_cmd	*current;
 	int		i;
 
-	if (!tokens || !tokens[0])// || check_syntax_errors(tokens, shell))
+	if (!tokens || !tokens[0])
 		return (NULL);
 	head = create_cmd_node();
 	if (!head)
@@ -77,7 +69,6 @@ t_cmd	*parser(char **tokens, t_shell *shell)
 	current = head;
 	current->shell = shell;
 	i = 0;
-	//check_syntax_errors(tokens, shell);
 	while (tokens[i] && !current->syntax_error)
 	{
 		handle_parser_token(&current, tokens, &i, shell);

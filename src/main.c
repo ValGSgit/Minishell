@@ -6,45 +6,51 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/14 12:56:32 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/27 12:30:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-// debug_shell_state(tokens, NULL, "Before parsing");
-// debug_shell_state(tokens, shell->cmd, "After parsing");
-// debug_shell_state(tokens, shell->cmd, "After expansion");
-// if (shell->cmd && shell->cmd->args && shell->cmd->args[0] != NULL)
-
 int	handle_input(t_shell *shell, char *input)
 {
 	char	**tokens;
+	int		i;
+	bool	only_whitespace;
 
 	if (!input)
 		return (0);
+	i = 0;
+	only_whitespace = true;
+	while (input[i])
+	{
+		if (!ft_isspace(input[i]))
+		{
+			only_whitespace = false;
+			break;
+		}
+		i++;
+	}
+	if (only_whitespace)
+		return (safe_free(input), 0);
 	if (*input)
 		add_history(input);
 	tokens = lexer(input);
 	if (!tokens)
 	{
-		xfree(input);
+		safe_free(input);
 		return (0);
 	}
 	shell->cmd = parser(tokens, shell);
 	if (!shell->cmd)
-		return (xfree(input), free_tokens(tokens), 0);
+		return (safe_free(input), free_tokens(tokens), 0);
 	expand_nodes(shell->cmd, shell);
-	//debug_shell_state(tokens, shell->cmd, "After expansion");
 	if (shell->cmd->args || shell->cmd->redirs)
-	{
-		//debug_shell_state(tokens, shell->cmd, "After expansion");
 		executor(shell->cmd, shell);
-	}
 	free_cmd(shell->cmd);
-	if (tokens)
-		free_tokens(tokens);
-	xfree(input);
+	shell->cmd = NULL;
+	free_tokens(tokens);
+	safe_free(input);
 	return (0);
 }
 
@@ -54,27 +60,31 @@ void	minishell_loop(t_shell *shell)
 	char	*prompt;
 
 	shell->cmd = NULL;
-    prompt = ft_strdup("Minishell-> ");
+	prompt = xmalloc(ft_strlen("Minishell-> ") + 1);
+	if (prompt)
+		ft_strcpy(prompt, "Minishell-> ");
 	while (1)
 	{
 		setup_signals();
-		//prompt = update_prompt();
-		//if (!prompt)
-        //    prompt = ft_strdup("Minishell-> ");
-        input = readline(prompt);
-		//free(prompt);
+		input = readline(prompt);
 		if (!input)
 		{
 			if (shell->is_interactive)
 				ft_putstr_fd("exit\n", STDOUT_FILENO);
-			xfree(prompt); // Free prompt before breaking the loop
+			safe_free(prompt);
+			if (g_signal_received == 130)
+				shell->exit_status = 130;
 			break ;
 		}
 		if (handle_input(shell, input) == 1)
 		{
-			xfree(input);
-			xfree(prompt); // Free prompt before breaking the loop
+			safe_free(prompt);
 			break ;
+		}
+		if (g_signal_received == 130)
+		{
+			shell->exit_status = 130;
+			g_signal_received = 0;
 		}
 	}
 }
@@ -101,7 +111,8 @@ void	initialize_shell(t_shell *shell, char **argv)
 			pwd_var = ft_strjoin("PWD=", cwd);
 			if (pwd_var)
 				update_or_add_env(pwd_var, &shell->env);
-			(xfree(pwd_var), xfree(cwd));
+			safe_free(pwd_var);
+			safe_free(cwd);
 		}
 	}
 }
@@ -113,11 +124,8 @@ int	main(int argc, char **argv, char **envp)
 	(void)argc;
 	if (*envp)
 		shell.env = copy_env(envp);
-	if (!shell.env)
-	{
-		write(2, "environment copy failed\n", 25);
-		exit(EXIT_FAILURE);
-	}
+	else
+		shell.env = NULL;
 	initialize_shell(&shell, argv);
 	shell.path_unset = false;
 	shell.exit_status = 0;
@@ -125,7 +133,6 @@ int	main(int argc, char **argv, char **envp)
 	shell.signal_status = 0;
 	minishell_loop(&shell);
 	rl_clear_history();
-	free_env(shell.env);
-	clean_memory(); // Add this to clean up all remaining memory before exit
+	cleanup_shell(&shell);
 	return (shell.exit_status);
 }

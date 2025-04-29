@@ -6,14 +6,13 @@
 /*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:19:53 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/08 15:21:55 by codespace        ###   ########.fr       */
+/*   Updated: 2025/04/27 11:15:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #define _GNU_SOURCE
 #include "../includes/minishell.h"
 
-/* Setup signal handlers */
 void	setup_signals(void)
 {
 	struct sigaction	sa_int;
@@ -29,17 +28,18 @@ void	setup_signals(void)
 	sigaction(SIGQUIT, &sa_quit, NULL);
 }
 
-/* Handle SIGINT (Ctrl+C) */
 void	handle_sigint(int sig)
 {
+	extern volatile sig_atomic_t	g_signal_received;
+
 	(void)sig;
+	g_signal_received = 130;
 	write(1, "\n", 1);
 	rl_replace_line("", 0);
 	rl_on_new_line();
 	rl_redisplay();
 }
 
-/* Handle SIGQUIT (Ctrl+\) */
 void	handle_sigquit(int sig)
 {
 	(void)sig;
@@ -48,7 +48,6 @@ void	handle_sigquit(int sig)
 	rl_redisplay();
 }
 
-/* Reset signal handlers to default */
 void	reset_signals(void)
 {
 	struct sigaction	sa_default;
@@ -60,14 +59,9 @@ void	reset_signals(void)
 	sigaction(SIGQUIT, &sa_default, NULL);
 }
 
-/* Ignore signals (used during child process execution) */
 void	ignore_signals(void)
 {
-	struct sigaction	sa_ignore;
-
-	sa_ignore.sa_handler = SIG_IGN;
-	sigemptyset(&sa_ignore.sa_mask);
-	sa_ignore.sa_flags = 0;
-	sigaction(SIGINT, &sa_ignore, NULL);
-	sigaction(SIGQUIT, &sa_ignore, NULL);
+	signal(SIGINT, SIG_IGN);
+	signal(SIGQUIT, SIG_IGN);
+	signal(SIGTERM, SIG_IGN);
 }
