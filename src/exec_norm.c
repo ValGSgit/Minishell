@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/29 14:59:22 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/29 15:47:40 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/29 22:26:22 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,30 +25,56 @@ void	executor(t_cmd *cmd, t_shell *shell)
 		execute_pipeline(cmd, shell);
 }
 
+void	execute_forked_command(t_cmd *cmd, t_shell *shell)
+{
+	if (cmd->redirs)
+		apply_redirection(cmd, true);
+	
+	if (cmd->args && cmd->args[0] && is_builtin(cmd->args[0]))
+	{
+		execute_builtin(cmd);
+		exit(cmd->shell->exit_status);
+	}
+	else if (cmd->args && cmd->args[0])
+		execute_external_command(cmd, shell);
+	else if (!cmd->args && cmd->redirs)
+		; /* Just apply redirections and exit */
+	
+	exit(cmd->exit_status % 256);
+}
+
 void	execute_single_command(t_cmd *cmd, t_shell *shell)
 {
 	pid_t	pid;
 
-	if(cmd->args && cmd->args[0] && cmd->args[0][0] == '\0' && !cmd->args[1] && !cmd->redirs)
+	if (cmd->args && cmd->args[0] && cmd->args[0][0] == '\0' 
+		&& !cmd->args[1] && !cmd->redirs)
 		return;
 	
-	if ((!cmd->args && cmd->redirs) || (cmd->args && cmd->args[0] 
-		&& is_builtin(cmd->args[0])))
+	// Always fork when redirections are involved, even for builtins
+	if (cmd->redirs)
 	{
-		if (cmd->redirs)
-			apply_redirection(cmd, false);
-		if (cmd->args && is_builtin(cmd->args[0]))
-			execute_builtin(cmd);
+		pid = fork();
+		if (pid == 0)
+			execute_forked_command(cmd, shell);
+		waitpid_for_single_command(pid, shell);
 		return;
 	}
 	
+	// No redirections, execute builtin directly
+	if (cmd->args && cmd->args[0])
+	{
+		if (is_env_cmd(cmd->args[0]) || is_builtin(cmd->args[0]))
+		{
+			execute_builtin(cmd);
+			return;
+		}
+	}
+	
+	// For non-builtins, fork and execute
 	pid = fork();
 	if (pid == 0)
-	{
-		if (cmd->redirs)
-			apply_redirection(cmd, true);
-		execute_external_command(cmd, shell);
-	}
+		execute_forked_command(cmd, shell);
 	
 	waitpid_for_single_command(pid, shell);
 }
@@ -62,25 +88,28 @@ void	execute_external_command(t_cmd *cmd, t_shell *shell)
 	exec_path = NULL;
 	if (cmd->args && cmd->args[0])
 	{
+		cmd_name = get_clean_cmd_name(cmd->args[0]);
+		
 		if (cmd->args[0] && shell->path_unset && ft_strchr(cmd->args[0], '/') == NULL)
 		{
-			ft_putstr_fd(cmd->args[0], 2);
+			ft_putstr_fd(cmd_name, 2);
 			ft_putstr_fd(": No such file or directory\n", 2);
 			close_cmd_fds(cmd);
+			shell->exit_status = 127;
 			exit(127);
 		}
 		if (access(cmd->args[0], F_OK) != 0)
 		{
 			if (ft_strchr(cmd->args[0], '/') != NULL)
 			{
-				ft_putstr_fd(cmd->args[0], 2);
+				ft_putstr_fd(cmd_name, 2);
 				ft_putstr_fd(": No such file or directory\n", 2);
 				close_cmd_fds(cmd);
 				exit(127);
 			}
 			else
 			{
-				ft_putstr_fd(cmd->args[0], 2);
+				ft_putstr_fd(cmd_name, 2);
 				ft_putstr_fd(": command not found\n", 2);
 				close_cmd_fds(cmd);
 				exit(127);
@@ -88,14 +117,14 @@ void	execute_external_command(t_cmd *cmd, t_shell *shell)
 		}
 		if (stat(cmd->args[0], &sb) == 0 && S_ISDIR(sb.st_mode))
 		{
-			ft_putstr_fd(cmd->args[0], 2);
+			ft_putstr_fd(cmd_name, 2);
 			ft_putstr_fd(": Is a directory\n", 2);
 			close_cmd_fds(cmd);
 			exit(126);
 		}
 		if (access(cmd->args[0], X_OK) != 0)
 		{
-			ft_putstr_fd(get_clean_cmd_name(cmd->args[0]), 2);
+			ft_putstr_fd(cmd_name, 2);
 			ft_putstr_fd(": Permission denied\n", 2);
 			close_cmd_fds(cmd);
 			exit(126);
@@ -106,7 +135,6 @@ void	execute_external_command(t_cmd *cmd, t_shell *shell)
 			close_cmd_fds(cmd);
 			exit(1);
 		}
-		cmd_name = get_clean_cmd_name(cmd->args[0]);
 		execve(exec_path, cmd->args, shell->env);
 		safe_free(exec_path);
 		ft_putstr_fd(cmd_name, 2);
@@ -134,17 +162,20 @@ char	*get_clean_cmd_name(const char *path)
 
 void	external_cmd_checks(t_cmd *cmd)
 {
+	char	*cmd_name;
+	
+	cmd_name = get_clean_cmd_name(cmd->args[0]);
 	if (access(cmd->args[0], F_OK) != 0)
 	{
 		if (ft_strchr(cmd->args[0], '/') != NULL)
 		{
-			ft_putstr_fd(cmd->args[0], 2);
+			ft_putstr_fd(cmd_name, 2);
 			ft_putstr_fd(": No such file or directory\n", 2);
 			exit(127);
 		}
 		else
 		{
-			ft_putstr_fd(cmd->args[0], 2);
+			ft_putstr_fd(cmd_name, 2);
 			ft_putstr_fd(": command not found\n", 2);
 			exit(127);
 		}
@@ -153,7 +184,10 @@ void	external_cmd_checks(t_cmd *cmd)
 
 void	execve_error(t_cmd *cmd)
 {
-	ft_putstr_fd(cmd->args[0], 2);
+	char	*cmd_name;
+	
+	cmd_name = get_clean_cmd_name(cmd->args[0]);
+	ft_putstr_fd(cmd_name, 2);
 	ft_putstr_fd(": ", 2);
 	ft_putstr_fd(strerror(errno), 2);
 	ft_putstr_fd("\n", 2);

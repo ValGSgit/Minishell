@@ -99,9 +99,11 @@ void	handle_syntax_error(char *token, t_shell *shell)
 
 void cleanup_shell(t_shell *shell)
 {
+	t_cmd *cmd_ptr;
+
     if (shell->cmd)
     {
-        t_cmd *cmd_ptr = shell->cmd;
+        cmd_ptr = shell->cmd;
         while (cmd_ptr)
         {
             close_cmd_fds(cmd_ptr);

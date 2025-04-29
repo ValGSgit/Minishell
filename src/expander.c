@@ -193,6 +193,20 @@ void	expand_nodes(t_cmd *cmd, t_shell *shell)
 		node->shell = shell;
 		if (!(cmd->args && cmd->args[0] && cmd->args[0][0] == '\0'))
 			resolve_non_builtin_path(node, shell);
+		if (node->args && node->args[0] && node->args[0][0] == '\0')
+		{
+			int k = 1;
+			while (node->args[k])
+			{
+				char *dup = ft_strdup(node->args[k]);
+				if (node->args[k - 1] != NULL)		
+					free(node->args[k - 1]);
+				free(node->args[k]);
+				node->args[k - 1] = dup;
+				node->args[k] = NULL;
+				k++;
+			}
+		}
 		node = node->next;
 	}
 }

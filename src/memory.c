@@ -13,7 +13,7 @@
 #include "../includes/minishell.h"
 #include "../includes/memory.h"
 
-volatile sig_atomic_t	g_signal_received = 0;
+// volatile sig_atomic_t	g_signal_received = 0;
 
 void	*xmalloc(size_t size)
 {

@@ -39,7 +39,7 @@ static void	display_env_vars(t_cmd *cmd)
 
 void	ft_env(t_cmd *cmd)
 {
-	int k;
+	int	k;
 
 	k = 1;
 	while (cmd->args[k])

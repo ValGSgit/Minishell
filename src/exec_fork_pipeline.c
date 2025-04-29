@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:50:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/29 15:47:40 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/29 21:48:12 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,21 +19,23 @@ int	fork_pipeline_commands(t_cmd *cmd, t_shell *shell, pid_t *pids,
 	int		prev_pipe_in;
 	int		i;
 	pid_t	pid;
+	t_cmd	*node;
 
+	node = cmd;
 	prev_pipe_in = 0;
 	i = 0;
-	while (cmd)
+	while (node)
 	{
-		if (cmd->next && pipe(pipe_fd) == -1)
+		if (node->next && pipe(pipe_fd) == -1)
 			return (perror("minishell: pipe"), -1);
-		pid = fork_child_process(cmd, prev_pipe_in, pipe_fd, shell);
+		pid = fork_child_process(node, prev_pipe_in, pipe_fd, shell);
 		if (pid == -1)
 			return (handle_fork_error(pids), -1);
 		pids[i++] = pid;
-		if (!cmd->next)
+		if (!node->next)
 			*last_pid = pid;
-		setup_parent_after_fork(cmd, &prev_pipe_in, pipe_fd);
-		cmd = cmd->next;
+		setup_parent_after_fork(node, &prev_pipe_in, pipe_fd);
+		node = node->next;
 	}
 	return (i);
 }
@@ -56,7 +58,7 @@ pid_t fork_child_process(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2], t_shell *
 		if (cmd->args && cmd->args[0] && is_builtin(cmd->args[0]))
 		{
 			execute_builtin(cmd);
-			exit(cmd->shell->exit_status);
+			exit(cmd->shell->exit_status & 0xFF);
 		}
 		if (cmd->args && cmd->args[0] && cmd->args[0][0] && cmd->args[0][0] != '\0')
 			execute_external_command(cmd, shell);
@@ -99,9 +101,10 @@ void	wait_for_pipeline(pid_t *pids, int count, pid_t last_pid,
 	t_shell *shell)
 {
 	int	i;
-	int	status = 
+	int	status;
 
 	i = 0;
+	status = 0;
 	while (i < count)
 	{
 		if (pids[i] == last_pid)

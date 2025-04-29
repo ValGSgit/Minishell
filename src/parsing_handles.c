@@ -6,36 +6,40 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/14 11:13:45 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/14 11:18:09 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/30 10:30:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
+
+static int	get_redirection_type(char *token, t_shell *shell, t_cmd *cmd)
+{
+	if (ft_strcmp(token, ">>") == 0 && same_length(token, ">>"))
+		return (REDIR_APPEND);
+	else if (ft_strcmp(token, ">") == 0 && same_length(token, ">"))
+		return (REDIR_OUT);
+	else if (ft_strcmp(token, "<") == 0 && same_length(token, "<"))
+		return (REDIR_IN);
+	handle_syntax_error(token, shell);
+	cmd->syntax_error = 1;
+	return (-1);
+}
 
 void	handle_redirection(t_cmd *cmd, char **tokens, int *i, t_shell *shell)
 {
 	int		redir_type;
 	char	*filename;
 
-	if (ft_strcmp(tokens[*i], ">>") == 0 && same_length(tokens[*i], ">>"))
-		redir_type = REDIR_APPEND;
-	else if (ft_strcmp(tokens[*i], "<<") == 0 && same_length(tokens[*i], "<<"))
+	if (ft_strcmp(tokens[*i], "<<") == 0 && same_length(tokens[*i], "<<"))
 	{
 		handle_heredoc_redirect(cmd, tokens, i, shell);
-		return ;
+		return;
 	}
-	else if (ft_strcmp(tokens[*i], ">") == 0 && same_length(tokens[*i], ">"))
-		redir_type = REDIR_OUT;
-	else if (ft_strcmp(tokens[*i], "<") == 0 && same_length(tokens[*i], "<"))
-		redir_type = REDIR_IN;
-	else
-	{
-		handle_syntax_error(tokens[*i], shell);
-		cmd->syntax_error = 1;
-		return ;
-	}
+	redir_type = get_redirection_type(tokens[*i], shell, cmd);
+	if (redir_type == -1)
+		return;
 	if (!check_redirect_filename(tokens, i, shell, cmd))
-		return ;
+		return;
 	filename = tokens[*i + 1];
 	create_redir_node(cmd, redir_type, filename);
 	(*i) += 2;

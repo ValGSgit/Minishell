@@ -107,8 +107,11 @@ typedef struct s_shell
 	t_cmd *cmd;
 } t_shell;
 
-/* Function Prototypes */
+/* Only allowed global variable for signals */
+extern volatile sig_atomic_t	g_signal_received;
 
+/* Function Prototypes */
+extern volatile sig_atomic_t	g_signal_received;
 /* Debug */
 void	debug_shell_state(char **tokens, t_cmd *cmd, const char *stage);
 void	print_tokens(char **tokens);
@@ -169,8 +172,8 @@ void	setup_parent_after_fork(t_cmd *cmd, int *prev_pipe_in, int pipe_fd[2]);
 void close_cmd_fds(t_cmd *cmd);
 void	apply_redirection(t_cmd *cmd, bool fork);
 void	handle_redirection_out_append(t_cmd *cmd, t_redir *redir);
-void	handle_redirection_out(int append, t_cmd *cmd);
-void	handle_redirection_in(t_cmd *cmd);
+bool	handle_redirection_out(int append, t_cmd *cmd, bool fork);
+bool	handle_redirection_in(t_cmd *cmd, bool fork);
 
 /* Builtins */
 void	execute_builtin(t_cmd *cmd);
@@ -226,6 +229,7 @@ char	*append_str(char *dest, char *src);
 bool	is_metacharacter(char *token);
 void	add_argument(t_cmd *node, char *arg);
 void	update_shlvl(t_shell *shell);
+int		is_env_cmd(char *cmd);
 
 /* Memory Management */
 void cleanup_shell(t_shell *shell);

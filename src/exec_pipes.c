@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:45:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/28 13:41:11 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/29 22:22:57 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,13 @@ void	waitpid_for_single_command(pid_t pid, t_shell *shell)
 		shell->exit_status = 128 + WTERMSIG(status);
 		if (WTERMSIG(status) == SIGINT)
 			write(STDERR_FILENO, "\n", 1);
+		else if (WTERMSIG(status) == SIGQUIT)
+			write(STDERR_FILENO, "Quit (core dumped)\n", 19);
 	}
 }
 
 void	execute_builtin_or_exit(t_cmd *cmd)
 {
 	execute_builtin(cmd);
-	exit(cmd->shell->exit_status);
+	exit(cmd->shell->exit_status & 	0xFF);
 }
