@@ -1,39 +1,58 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   exec_redirs.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/29 21:26:40 by vagarcia          #+#    #+#             */
+/*   Updated: 2025/04/29 22:22:16 by vagarcia         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/minishell.h"
 
 
 void	apply_redirection(t_cmd *cmd, bool fork)
 {
-	t_redir *redir_node;
+	t_cmd	*node;
+	bool	error;
 
-	redir_node = cmd->redirs;
+	error = false;
+	node = cmd;
 	if (cmd->redirs->file && cmd->redirs->file[0] == '\0')
 	{
 		cmd->shell->exit_status = 1;
 		ft_putstr_fd("Minishell: ", 2);
 		ft_putstr_fd(cmd->redirs->prefile, 2);
 		ft_putstr_fd(": ambiguous redirect\n", 2);
-		if(fork)
+		if (fork)
 		{
 			close_cmd_fds(cmd);
 			exit(1);
 		}
 		return;
-	} 
-	while (redir_node)
-	{
-		if (redir_node->type == REDIR_IN)
-			handle_redirection_in(cmd);
-		else if (redir_node->type == REDIR_OUT)
-			handle_redirection_out(0, cmd);
-		else if (redir_node->type == REDIR_APPEND)
-			handle_redirection_out(1, cmd);
-		else if (redir_node->type == REDIR_HEREDOC)
-			handle_redirection_in(cmd);
-		redir_node = redir_node->next;
 	}
+	while (node->redirs && !error)
+	{
+		if (node->redirs->type == REDIR_IN)
+			error = handle_redirection_in(node, fork);
+		else if (node->redirs->type == REDIR_OUT)
+			error = handle_redirection_out(0, node, fork);
+		else if (node->redirs->type == REDIR_APPEND)
+			error = handle_redirection_out(1, node, fork);
+		else if (node->redirs->type == REDIR_HEREDOC)
+			error = handle_redirection_in(node, fork);
+		
+		if (!error)
+			node->redirs = node->redirs->next;
+	}
+	
+	if (error && fork)
+		exit(1);
 }
 
-void	handle_redirection_in(t_cmd *cmd)
+bool	handle_redirection_in(t_cmd *cmd, bool fork)
 {
 	int fd;
 
@@ -46,14 +65,19 @@ void	handle_redirection_in(t_cmd *cmd)
 		ft_putstr_fd(strerror(errno), 2);
 		ft_putstr_fd("\n", 2);
 		cmd->shell->exit_status = 1;
-		close_cmd_fds(cmd); // Close any open FDs before exit
-		exit(1);
+		if (fork)
+		{
+			close_cmd_fds(cmd); // Close any open FDs before exit
+			exit(1); //maybe return instead
+		}
+		return true;
 	}
 	dup2(fd, STDIN_FILENO);
 	close(fd);
+	return false;
 }
 
-void	handle_redirection_out(int append, t_cmd *cmd)
+bool	handle_redirection_out(int append, t_cmd *cmd, bool fork)
 {
 	int fd;
 
@@ -69,10 +93,15 @@ void	handle_redirection_out(int append, t_cmd *cmd)
 		ft_putstr_fd(strerror(errno), 2);
 		ft_putstr_fd("\n", 2);
 		cmd->shell->exit_status = 1;
-		close_cmd_fds(cmd); // Close any open FDs before exit
-		exit(1);
+		if (fork)
+		{
+			close_cmd_fds(cmd); // Close any open FDs before exit
+			exit(1);
+		}
+		return true;
 	}
 	dup2(fd, STDOUT_FILENO);
 	close(fd);
+	return false;
 }
 

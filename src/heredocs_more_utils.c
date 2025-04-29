@@ -81,14 +81,14 @@ void	heredoc_child_process(t_cmd *cmd, char *clean_eof, int fd, bool expand_vars
 	read_heredoc_input(clean_eof, fd, cmd, expand_vars);
 	close(fd);
 	free(clean_eof);
-	cleanup_shell(cmd->shell);
+	if (cmd && cmd->shell)
+		cleanup_shell(cmd->shell);
 	exit(0);
 }
 
 int	heredoc_parent_process(pid_t pid, t_cmd *cmd, int fd, char *clean_eof)
 {
 	int	status;
-	int	exit_code;
 
 	close(fd);
 	free(clean_eof);
@@ -96,26 +96,14 @@ int	heredoc_parent_process(pid_t pid, t_cmd *cmd, int fd, char *clean_eof)
 	if (WIFSIGNALED(status))
 	{
 		cmd->shell->exit_status = 128 + WTERMSIG(status);
-		if (WTERMSIG(status) == SIGINT)
-		{
-			cmd->shell->signal_status = 1;
-			cmd->shell->exit_status = 130;
-			g_signal_received = 130;
-			close(fd);
-			return (1);
-		}
+		g_signal_received = cmd->shell->exit_status;
+		return (1);
 	}
-	else if (WIFEXITED(status))
+	else if (WIFEXITED(status) && WEXITSTATUS(status) == 130)
 	{
-		exit_code = WEXITSTATUS(status);
-		if (exit_code == 130)
-		{
-			cmd->shell->exit_status = 130;
-			g_signal_received = 130;
-			close(fd);
-			return (1);
-		}
-		cmd->shell->exit_status = exit_code;
+		cmd->shell->exit_status = 130;
+		g_signal_received = 130;
+		return (1);
 	}
 	return (0);
 }

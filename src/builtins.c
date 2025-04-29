@@ -33,6 +33,19 @@ int	is_builtin(char *cmd)
 	return (0);
 }
 
+int	is_env_cmd(char *cmd)
+{
+	if (!cmd)
+		return (0);
+	else if (ft_strncmp(cmd, "export", 7) == 0)
+		return (1);
+	else if (ft_strncmp(cmd, "unset", 6) == 0)
+		return (1);
+	else if (ft_strncmp(cmd, "exit", 5) == 0)
+		return (1);
+	return (0);
+}
+
 void	execute_builtin(t_cmd *cmd)
 {
 	if (ft_strncmp(cmd->args[0], "echo", 5) == 0)

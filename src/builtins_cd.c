@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 14:00:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/28 20:12:49 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/29 22:26:22 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,6 @@ static void	handle_cd_error(t_cmd *cmd, char *old_pwd, char *path_dup)
 	ft_putstr_fd("\n", 2);
 	if (old_pwd != NULL)
 		free(old_pwd);
-	//if (path_dup != NULL)
-	//	free(path_dup); // was double free
 	cmd->shell->exit_status = 1;
 }
 
@@ -72,14 +70,6 @@ void	ft_cd(t_cmd *cmd)
 	char	*path_dup;
 
 	old_pwd = getcwd(NULL, 0);
-	// if (!old_pwd)
-	// {
-	// 	ft_putstr_fd("minishell: cd: ", 2);
-	// 	ft_putstr_fd(strerror(errno), 2);
-	// 	ft_putstr_fd("\n", 2);
-	// 	cmd->shell->exit_status = 1;
-	// 	//
-	// }
 	if (cmd->args[1] && cmd->args[2])
 	{
 		ft_putstr_fd("minishell: cd: too many arguments\n", 2);
@@ -97,7 +87,10 @@ void	ft_cd(t_cmd *cmd)
 	handle_cd_path(cmd, &path, &path_dup, old_pwd);
 	if (chdir(path) != 0)
 	{
-		handle_cd_error(cmd, old_pwd, path_dup ? path_dup : path);
+		if (path_dup)
+			handle_cd_error(cmd, old_pwd, path_dup);
+		else
+			handle_cd_error(cmd, old_pwd, path);
 		return ;
 	}
 	update_pwd(cmd->shell);

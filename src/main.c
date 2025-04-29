@@ -45,6 +45,7 @@ int	handle_input(t_shell *shell, char *input)
 	if (!shell->cmd)
 		return (safe_free(input), free_tokens(tokens), 0);
 	expand_nodes(shell->cmd, shell);
+	//debug_shell_state(tokens, shell->cmd, "tes");
 	if (shell->cmd->args || shell->cmd->redirs)
 		executor(shell->cmd, shell);
 	free_cmd(shell->cmd);
