@@ -22,8 +22,7 @@ void	*xmalloc(size_t size)
 	ptr = malloc(size);
 	if (!ptr)
 	{
-		ft_putstr_fd("minishell: malloc: memory allocation failed\n", 2);
-		exit(EXIT_FAILURE);
+		ft_putstr_fd("No problem \n", 2);
 	}
 	return (ptr);
 }

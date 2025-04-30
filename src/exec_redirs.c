@@ -6,102 +6,98 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/29 21:26:40 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/29 22:22:16 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/30 20:17:52 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-
-void	apply_redirection(t_cmd *cmd, bool fork)
+static bool	check_ambiguous_redirect(t_redir *node, t_cmd *cmd, bool fork)
 {
-	t_cmd	*node;
-	bool	error;
-
-	error = false;
-	node = cmd;
-	if (cmd->redirs->file && cmd->redirs->file[0] == '\0')
+	if (node->file && node->file[0] == '\0')
 	{
 		cmd->shell->exit_status = 1;
-		ft_putstr_fd("Minishell: ", 2);
-		ft_putstr_fd(cmd->redirs->prefile, 2);
-		ft_putstr_fd(": ambiguous redirect\n", 2);
+		print_error_message("minishell: ", node->prefile, ": ambiguous redirect\n");
 		if (fork)
 		{
 			close_cmd_fds(cmd);
 			exit(1);
 		}
-		return;
+		return (true);
 	}
-	while (node->redirs && !error)
+	return (false);
+}
+
+void	apply_redirection(t_cmd *cmd, bool fork)
+{
+	t_redir	*node;
+	t_cmd 	*temp_cmd;
+	bool	error;
+
+	error = false;
+	temp_cmd = cmd;
+	node = cmd->redirs;
+	while (node && !error)
 	{
-		if (node->redirs->type == REDIR_IN)
-			error = handle_redirection_in(node, fork);
-		else if (node->redirs->type == REDIR_OUT)
-			error = handle_redirection_out(0, node, fork);
-		else if (node->redirs->type == REDIR_APPEND)
-			error = handle_redirection_out(1, node, fork);
-		else if (node->redirs->type == REDIR_HEREDOC)
-			error = handle_redirection_in(node, fork);
-		
-		if (!error)
-			node->redirs = node->redirs->next;
+		if (check_ambiguous_redirect(node, temp_cmd, fork))
+			return ;
+		if (node->type == REDIR_IN || node->type == REDIR_HEREDOC)
+			error = handle_redirection_in(node, temp_cmd, fork);
+		else if (node->type == REDIR_OUT)
+			error = handle_redirection_out(0, node, temp_cmd, fork);
+		else if (node->type == REDIR_APPEND)
+			error = handle_redirection_out(1, node, temp_cmd, fork);
+		node = node->next;
+		temp_cmd->redirs = temp_cmd->redirs->next;
 	}
-	
 	if (error && fork)
 		exit(1);
 }
 
-bool	handle_redirection_in(t_cmd *cmd, bool fork)
+bool	handle_redirection_in(t_redir *redir, t_cmd *cmd, bool fork)
 {
 	int fd;
 
-	fd = open(cmd->redirs->file, O_RDONLY);
+	fd = open(redir->file, O_RDONLY);
 	if (fd == -1)
 	{
-		ft_putstr_fd("minishell: ", 2);
-		ft_putstr_fd(cmd->redirs->file, 2);
-		ft_putstr_fd(": ", 2);
-		ft_putstr_fd(strerror(errno), 2);
-		ft_putstr_fd("\n", 2);
+		print_error_message("minishell: ", redir->file, ": ");
+		print_error_message(NULL, strerror(errno), "\n");
 		cmd->shell->exit_status = 1;
 		if (fork)
 		{
-			close_cmd_fds(cmd); // Close any open FDs before exit
-			exit(1); //maybe return instead
+			close_cmd_fds(cmd);
+			exit(1);
 		}
-		return true;
+		return (true);
 	}
 	dup2(fd, STDIN_FILENO);
 	close(fd);
-	return false;
+	return (false);
 }
 
-bool	handle_redirection_out(int append, t_cmd *cmd, bool fork)
+bool	handle_redirection_out(int append, t_redir *redir, t_cmd *cmd, bool fork)
 {
 	int fd;
 
 	if (append)
-		fd = open(cmd->redirs->file, O_WRONLY | O_APPEND | O_CREAT, 0644);
+		fd = open(redir->file, O_WRONLY | O_APPEND | O_CREAT, 0644);
 	else
-		fd = open(cmd->redirs->file, O_WRONLY | O_CREAT | O_TRUNC, 0644); 
+		fd = open(redir->file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd == -1)
 	{
-		ft_putstr_fd("minishell: ", 2);
-		ft_putstr_fd(cmd->redirs->file, 2);
-		ft_putstr_fd(": ", 2);
-		ft_putstr_fd(strerror(errno), 2);
-		ft_putstr_fd("\n", 2);
+		print_error_message("minishell: ", redir->file, ": ");
+		print_error_message(NULL, strerror(errno), "\n");
 		cmd->shell->exit_status = 1;
 		if (fork)
 		{
-			close_cmd_fds(cmd); // Close any open FDs before exit
+			close_cmd_fds(cmd);
 			exit(1);
 		}
-		return true;
+		return (true);
 	}
 	dup2(fd, STDOUT_FILENO);
 	close(fd);
-	return false;
+	return (false);
 }
 

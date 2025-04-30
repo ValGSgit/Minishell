@@ -12,6 +12,8 @@
 
 #include "../includes/minishell.h"
 
+extern volatile sig_atomic_t	g_signal_received;
+
 static void	heredoc_signal_handler(int sig)
 {
 	if (sig == SIGINT)
@@ -19,9 +21,9 @@ static void	heredoc_signal_handler(int sig)
 		write(STDERR_FILENO, "\n", 1);
 		exit(130);
 	}
-	else if (sig == SIGTERM)
+	else if (sig == SIGQUIT)
 	{
-		exit(143);
+		// Ignore SIGQUIT in heredoc
 	}
 }
 

@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/29 14:59:22 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/29 22:26:22 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/30 20:16:38 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,8 +92,7 @@ void	execute_external_command(t_cmd *cmd, t_shell *shell)
 		
 		if (cmd->args[0] && shell->path_unset && ft_strchr(cmd->args[0], '/') == NULL)
 		{
-			ft_putstr_fd(cmd_name, 2);
-			ft_putstr_fd(": No such file or directory\n", 2);
+			print_error_message(cmd_name, ": No such file or directory\n", NULL);
 			close_cmd_fds(cmd);
 			shell->exit_status = 127;
 			exit(127);
@@ -102,30 +101,26 @@ void	execute_external_command(t_cmd *cmd, t_shell *shell)
 		{
 			if (ft_strchr(cmd->args[0], '/') != NULL)
 			{
-				ft_putstr_fd(cmd_name, 2);
-				ft_putstr_fd(": No such file or directory\n", 2);
+				print_error_message(cmd_name, ": No such file or directory\n", NULL);
 				close_cmd_fds(cmd);
 				exit(127);
 			}
 			else
 			{
-				ft_putstr_fd(cmd_name, 2);
-				ft_putstr_fd(": command not found\n", 2);
+				print_error_message(cmd_name, ": command not found\n", NULL);
 				close_cmd_fds(cmd);
 				exit(127);
 			}
 		}
 		if (stat(cmd->args[0], &sb) == 0 && S_ISDIR(sb.st_mode))
 		{
-			ft_putstr_fd(cmd_name, 2);
-			ft_putstr_fd(": Is a directory\n", 2);
+			print_error_message(cmd_name, ": Is a directory\n", NULL);
 			close_cmd_fds(cmd);
 			exit(126);
 		}
 		if (access(cmd->args[0], X_OK) != 0)
 		{
-			ft_putstr_fd(cmd_name, 2);
-			ft_putstr_fd(": Permission denied\n", 2);
+			print_error_message(cmd_name, ": Permission denied\n", NULL);
 			close_cmd_fds(cmd);
 			exit(126);
 		}
@@ -137,9 +132,7 @@ void	execute_external_command(t_cmd *cmd, t_shell *shell)
 		}
 		execve(exec_path, cmd->args, shell->env);
 		safe_free(exec_path);
-		ft_putstr_fd(cmd_name, 2);
-		ft_putstr_fd(": ", 2);
-		ft_putstr_fd(strerror(errno), 2);
+		print_error_message(cmd_name, ": ", strerror(errno));
 		ft_putstr_fd("\n", 2);
 		close_cmd_fds(cmd);
 		exit(126);
@@ -169,14 +162,12 @@ void	external_cmd_checks(t_cmd *cmd)
 	{
 		if (ft_strchr(cmd->args[0], '/') != NULL)
 		{
-			ft_putstr_fd(cmd_name, 2);
-			ft_putstr_fd(": No such file or directory\n", 2);
+			print_error_message(cmd_name, ": No such file or directory\n", NULL);
 			exit(127);
 		}
 		else
 		{
-			ft_putstr_fd(cmd_name, 2);
-			ft_putstr_fd(": command not found\n", 2);
+			print_error_message(cmd_name, ": command not found\n", NULL);
 			exit(127);
 		}
 	}
@@ -187,9 +178,7 @@ void	execve_error(t_cmd *cmd)
 	char	*cmd_name;
 	
 	cmd_name = get_clean_cmd_name(cmd->args[0]);
-	ft_putstr_fd(cmd_name, 2);
-	ft_putstr_fd(": ", 2);
-	ft_putstr_fd(strerror(errno), 2);
+	print_error_message(cmd_name, ": ", strerror(errno));
 	ft_putstr_fd("\n", 2);
 	exit(126);
 }

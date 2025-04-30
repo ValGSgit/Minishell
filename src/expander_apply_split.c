@@ -99,9 +99,12 @@ static void	process_arg_for_splitting(char *arg, char *expanded, int *count,
 	}
 	j = 0;
 	while (word_tokens[j])
-		new_args[(*count)++] = word_tokens[j++];
-	// Free the word_tokens array but not its contents which were copied to new_args
-	free(word_tokens);
+	{
+		new_args[(*count)++] = ft_strdup(word_tokens[j]);
+		j++;
+	}
+	// Free both the array and its contents
+	free_tokens(word_tokens);
 	free(expanded);
 }
 

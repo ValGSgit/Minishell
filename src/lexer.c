@@ -82,14 +82,23 @@ char	**lexer(char *input)
 	char	**tokens;
 	t_lexer	lx;
 
-	tokens = xmalloc(MAX_TOKENS * sizeof(char *));
+	tokens = ft_calloc(MAX_TOKENS, sizeof(char *));
 	if (!tokens || !input)
-		return (safe_free(tokens), NULL);
-	lx = (t_lexer){0};
+	{
+		safe_free(tokens);
+		return (NULL);
+	}
+	ft_memset(&lx, 0, sizeof(t_lexer));  // Initialize lexer struct properly
 	lx.start = input;
 	if (process_input(&input, &lx, tokens) < 0)
-		return (free_tokens(tokens), NULL);
+	{
+		free_tokens(tokens);
+		return (NULL);
+	}
 	if (!finalize_tokens(lx, input, tokens))
-		return (free_tokens(tokens), NULL);
+	{
+		free_tokens(tokens);
+		return (NULL);
+	}
 	return (tokens);
 }

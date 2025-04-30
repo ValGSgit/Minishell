@@ -118,15 +118,20 @@ char	*expand_variable(char *str, int *i, t_shell *shell)
 	char	*special_case_result;
 	char	*special_char_result;
 	char	*var_name;
+	char    *result;
 
 	special_case_result = handle_special_cases(str, i, shell);
 	if (special_case_result)
 		return (special_case_result);
+	
 	special_char_result = handle_special_characters(str, i);
 	if (special_char_result)
 		return (special_char_result);
+	
 	var_name = extract_variable_name(str, i);
 	if (!var_name)
 		return (ft_strdup(""));
-	return (lookup_variable_value(var_name, shell));
+	
+	result = lookup_variable_value(var_name, shell);
+	return (result);
 }

@@ -15,7 +15,6 @@
 
 #include "../includes/minishell.h"
 
-
 void	create_redir_node(t_cmd *cmd, int type, char *file)
 {
 	t_redir *node;
@@ -91,25 +90,26 @@ char	*update_prompt(void)
  */
 void	handle_syntax_error(char *token, t_shell *shell)
 {
-	ft_putstr_fd("minishell: syntax error near unexpected token `", 2);
-	ft_putstr_fd(token, 2);
-	ft_putstr_fd("'\n", 2);
+	print_error_message("minishell: syntax error near unexpected token `", token, "'\n");
 	shell->exit_status = 2;
 }
 
 void cleanup_shell(t_shell *shell)
 {
-	t_cmd *cmd_ptr;
-
     if (shell->cmd)
     {
-        cmd_ptr = shell->cmd;
-        while (cmd_ptr)
-        {
-            close_cmd_fds(cmd_ptr);
-            cmd_ptr = cmd_ptr->next;
-        }
+        free_cmd(shell->cmd);
+        shell->cmd = NULL;
     }
-    
-    free_shell(shell);
+    if (shell->env)
+    {
+        free_env(shell->env);
+        shell->env = NULL;
+    }
+    // Clear readline history to prevent memory leaks
+    rl_clear_history();
+    // This additional function call helps address readline internal memory leaks
+    rl_free_line_state();
+    rl_attempted_completion_over = 0;
+    rl_completion_type = 0;
 }

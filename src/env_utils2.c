@@ -87,3 +87,11 @@ void	add_to_env(char ***env, char *new_entry)
 	*env = new_env;
 }
 
+/* Checks if the token contains a metacharacter */
+bool	contains_metacharacter(char *token)
+{
+	if (!token)
+		return (false);
+	return (ft_strchr(token, '|') || ft_strchr(token, '<') || ft_strchr(token,
+		'>'));
+}

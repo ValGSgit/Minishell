@@ -12,7 +12,8 @@
 
 #include "../includes/minishell.h"
 
-volatile sig_atomic_t	g_signal_received = 0;
+/* Definition of the global variable declared in minishell.h */
+volatile sig_atomic_t	g_signal_received;
 
 void	setup_signals(void)
 {

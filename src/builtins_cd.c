@@ -6,19 +6,83 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 14:00:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/29 22:26:22 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/30 20:15:49 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
+/**
+ * Creates and prints a single error message to stderr
+ * Takes variable parts and joins them before printing
+ */
+void	print_error_message(const char *prefix, const char *msg, const char *extra)
+{
+	char	*error_msg;
+	char	*temp;
+
+	if (!prefix && !msg && !extra)
+		return;
+	if (prefix)
+		error_msg = ft_strdup(prefix);
+	else
+		error_msg = ft_strdup("");
+	if (!error_msg)
+		return;
+	if (msg)
+	{
+		temp = error_msg;
+		error_msg = ft_strjoin(error_msg, msg);
+		free(temp);
+		if (!error_msg)
+			return;
+	}
+	if (extra)
+	{
+		temp = error_msg;
+		error_msg = ft_strjoin(error_msg, extra);
+		free(temp);
+		if (!error_msg)
+			return;
+	}
+	ft_putstr_fd(error_msg, 2);
+	free(error_msg);
+}
+
+static void	cd_error(char *path_dup)
+{
+	char *error_msg;
+	
+	error_msg = ft_strjoin("minishell: cd: ", path_dup);
+	if (!error_msg)
+		return;
+	
+	char *temp = error_msg;
+	char *with_colon = ft_strjoin(error_msg, ": ");
+	free(temp);
+	if (!with_colon)
+		return;
+	
+	temp = with_colon;
+	error_msg = ft_strjoin(with_colon, strerror(errno));
+	free(temp);
+	if (!error_msg)
+		return;
+	
+	temp = error_msg;
+	error_msg = ft_strjoin(error_msg, "\n");
+	free(temp);
+	
+	if (error_msg)
+	{
+		ft_putstr_fd(error_msg, 2);
+		free(error_msg);
+	}
+}
+
 static void	handle_cd_error(t_cmd *cmd, char *old_pwd, char *path_dup)
 {
-	ft_putstr_fd("minishell: cd: ", 2);
-	ft_putstr_fd(path_dup, 2);
-	ft_putstr_fd(": ", 2);
-	ft_putstr_fd(strerror(errno), 2);
-	ft_putstr_fd("\n", 2);
+	cd_error(path_dup);
 	if (old_pwd != NULL)
 		free(old_pwd);
 	cmd->shell->exit_status = 1;

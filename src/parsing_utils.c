@@ -15,7 +15,6 @@
 
 #include "../includes/minishell.h"
 
-
 /* Checks if the token is quoted */
 bool	is_quoted(char *token)
 {
@@ -25,15 +24,6 @@ bool	is_quoted(char *token)
 	}
 	return ((token[0] == '\'' && token[ft_strlen(token) - 1] == '\'')
 		|| (token[0] == '"' && token[ft_strlen(token) - 1] == '"'));
-}
-
-/* Checks if the token contains a metacharacter */
-bool	contains_metacharacter(char *token)
-{
-	if (!token)
-		return (false);
-	return (ft_strchr(token, '|') || ft_strchr(token, '<') || ft_strchr(token,
-		'>'));
 }
 
 /* Checks if the token is a metacharacter (|, <, >, >>, <<) */

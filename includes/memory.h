@@ -17,6 +17,8 @@
 # include <stdbool.h>
 # include <signal.h>
 
+/* Only allowed global variable for signals */
+extern volatile sig_atomic_t	g_signal_received;
 
 /* Memory management functions */
 void	*xmalloc(size_t size);

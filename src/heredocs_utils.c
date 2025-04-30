@@ -63,10 +63,7 @@ char	*clean_empty_expansions(char *arg)
 	}
 	result[j] = '\0';
 	if (j < (int)ft_strlen(arg))
-	{
-		free(arg);
-		return (result);
-	}
+		return (free(arg), result);
 	free(result);
 	return (arg);
 }
@@ -76,45 +73,72 @@ char	*remove_quotes(char *lim)
 	char	*new_lim;
 	int		i;
 	int		j;
+	char	quote_type;
+	int		len;
 
 	if (!lim)
 		return (NULL);
-	new_lim = xmalloc(sizeof(char) * (ft_strlen(lim) + 1));
+	len = ft_strlen(lim);
+	if (len == 1 && (lim[0] == '\'' || lim[0] == '\"'))
+		return (lim);  /* Single quote/double quote case */
+	new_lim = xmalloc(sizeof(char) * (len + 1));
 	if (!new_lim)
 		return (NULL);
 	i = 0;
 	j = 0;
+	quote_type = 0;
 	while (lim[i])
 	{
-		if (lim[i] != '"' && lim[i] != '\'')
-			new_lim[j++] = lim[i];
-		i++;
+		if ((lim[i] == '\'' || lim[i] == '\"') && !quote_type)
+			quote_type = lim[i++];
+		else if (lim[i] == quote_type)
+		{
+			quote_type = 0;
+			i++;
+		}
+		else
+			new_lim[j++] = lim[i++];
 	}
 	new_lim[j] = '\0';
 	free(lim);
 	return (new_lim);
 }
 
-void	cleanup_heredocs(t_shell *shell)
+void	cleanup_heredocs(t_shell *shell) //use when sigint for no issues ior improve
 {
+	t_cmd	*cmd;
 	t_redir	*redir;
 	t_redir	*next;
+	t_redir	*prev;
 
 	if (!shell || !shell->cmd)
 		return ;
-	redir = shell->cmd->redirs;
-	while (redir && redir->type == REDIR_HEREDOC)
+	cmd = shell->cmd;
+	while (cmd)
 	{
-		next = redir->next;
-		if (redir->type == REDIR_HEREDOC && redir->file
-			&& unlink(redir->file) == -1)
-			perror("unlink");
-		if (redir->file)
-			safe_free(redir->file);
-		if (redir->prefile)
-			safe_free(redir->prefile);
-		free(redir);
-		redir = next;
+		redir = cmd->redirs;
+		prev = NULL;
+		
+		while (redir && redir->type == REDIR_HEREDOC)
+		{
+			next = redir->next;
+			if (redir->type == REDIR_HEREDOC && redir->file)
+			{
+				if (access(redir->file, F_OK) == 0 && unlink(redir->file) == -1)
+					perror("unlink");
+			}
+			if (redir->file)
+				safe_free(redir->file);
+			if (redir->prefile)
+				safe_free(redir->prefile);
+			free(redir);
+			redir = next;
+		}
+		
+		if (prev)
+			prev->next = redir;
+		else
+			cmd->redirs = redir;
+		cmd = cmd->next;
 	}
-	shell->cmd->redirs = redir;
 }
