@@ -6,73 +6,34 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 14:00:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/30 20:15:49 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/30 21:23:17 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-/**
- * Creates and prints a single error message to stderr
- * Takes variable parts and joins them before printing
- */
-void	print_error_message(const char *prefix, const char *msg, const char *extra)
+static void	cd_error(char *path_dup)
 {
 	char	*error_msg;
 	char	*temp;
+	char	*with_colon;
 
-	if (!prefix && !msg && !extra)
-		return;
-	if (prefix)
-		error_msg = ft_strdup(prefix);
-	else
-		error_msg = ft_strdup("");
-	if (!error_msg)
-		return;
-	if (msg)
-	{
-		temp = error_msg;
-		error_msg = ft_strjoin(error_msg, msg);
-		free(temp);
-		if (!error_msg)
-			return;
-	}
-	if (extra)
-	{
-		temp = error_msg;
-		error_msg = ft_strjoin(error_msg, extra);
-		free(temp);
-		if (!error_msg)
-			return;
-	}
-	ft_putstr_fd(error_msg, 2);
-	free(error_msg);
-}
-
-static void	cd_error(char *path_dup)
-{
-	char *error_msg;
-	
 	error_msg = ft_strjoin("minishell: cd: ", path_dup);
 	if (!error_msg)
-		return;
-	
-	char *temp = error_msg;
-	char *with_colon = ft_strjoin(error_msg, ": ");
+		return ;
+	temp = error_msg;
+	with_colon = ft_strjoin(error_msg, ": ");
 	free(temp);
 	if (!with_colon)
-		return;
-	
+		return ;
 	temp = with_colon;
 	error_msg = ft_strjoin(with_colon, strerror(errno));
 	free(temp);
 	if (!error_msg)
-		return;
-	
+		return ;
 	temp = error_msg;
 	error_msg = ft_strjoin(error_msg, "\n");
 	free(temp);
-	
 	if (error_msg)
 	{
 		ft_putstr_fd(error_msg, 2);
@@ -127,6 +88,18 @@ static void	handle_cd_path_not_found(t_cmd *cmd, char *old_pwd)
 	cmd->shell->exit_status = 1;
 }
 
+static int	check_cd_args(t_cmd *cmd, char *old_pwd)
+{
+	if (cmd->args[1] && cmd->args[2])
+	{
+		ft_putstr_fd("minishell: cd: too many arguments\n", 2);
+		free(old_pwd);
+		cmd->shell->exit_status = 1;
+		return (0);
+	}
+	return (1);
+}
+
 void	ft_cd(t_cmd *cmd)
 {
 	char	*path;
@@ -134,13 +107,8 @@ void	ft_cd(t_cmd *cmd)
 	char	*path_dup;
 
 	old_pwd = getcwd(NULL, 0);
-	if (cmd->args[1] && cmd->args[2])
-	{
-		ft_putstr_fd("minishell: cd: too many arguments\n", 2);
-		free(old_pwd);
-		cmd->shell->exit_status = 1;
+	if (!check_cd_args(cmd, old_pwd))
 		return ;
-	}
 	path = get_cd_path(cmd);
 	if (!path)
 	{
@@ -157,9 +125,5 @@ void	ft_cd(t_cmd *cmd)
 			handle_cd_error(cmd, old_pwd, path);
 		return ;
 	}
-	update_pwd(cmd->shell);
-	free(old_pwd);
-	if (path_dup)
-		free(path_dup);
-	cmd->shell->exit_status = 0;
+	finish_cd_success(cmd, old_pwd, path_dup);
 }

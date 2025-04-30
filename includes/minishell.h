@@ -2,9 +2,12 @@
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
+/*                                                    +:+ +:+        
+	+:+     */
+/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+      
+	+#+        */
+/*                                                +#+#+#+#+#+  
+	+#+           */
 /*   Created: 2025/04/24 16:15:02 by vagarcia          #+#    #+#             */
 /*   Updated: 2025/04/27 10:45:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
@@ -107,25 +110,26 @@ typedef struct s_shell
 	t_cmd *cmd;
 } t_shell;
 
-extern volatile sig_atomic_t	g_signal_received;
+extern volatile sig_atomic_t g_signal_received;
 
 /* Debug */
-void	print_error_message(const char *prefix, const char *msg, const char *extra);
+void	print_error_message(const char *prefix, char *msg, char *extra);
 void	debug_shell_state(char **tokens, t_cmd *cmd, const char *stage);
 void	print_tokens(char **tokens);
 
 /* Checks if the token contains a metacharacter */
 bool	contains_metacharacter(char *token);
-int		handle_quotes(char **input, bool *in_quote, char *quote_char);
+int	handle_quotes(char **input, bool *in_quote, char *quote_char);
 char	**lexer(char *input);
 bool	is_metacharacter(char *token);
 bool	contains_metacharacter(char *token);
 
 /* Parser */
-int		check_redirect_filename(char **tokens, int *i, t_shell *shell, t_cmd *cmd);
-void    create_redir_node(t_cmd *cmd, int type, char *file);
+void	finish_cd_success(t_cmd *cmd, char *old_pwd, char *path_dup);
+int	check_redirect_filename(char **tokens, int *i, t_shell *shell, t_cmd *cmd);
+void	create_redir_node(t_cmd *cmd, int type, char *file);
 t_cmd	*parser(char **tokens, t_shell *shell);
-t_cmd	*create_cmd_node();
+t_cmd	*create_cmd_node(void);
 int	is_redirection(char *tokens);
 void	handle_parser_token(t_cmd **cmd, char **tokens, int *i,
 		t_shell *shell);
@@ -139,7 +143,7 @@ int	same_length(char *tok1, char *tok2);
 void	handle_pipeline(t_cmd **current, t_shell *shell);
 void	handle_redirection_token(t_cmd *cmd, char **tokens, int *i);
 void	handle_pipe_token(t_cmd **current, char **tokens, int *i,
-	t_shell *shell);
+		t_shell *shell);
 void	handle_arg_token(t_cmd *cmd, char *token, int *i);
 void	handle_heredoc_redirect(t_cmd *cmd, char **tokens, int *i,
 		t_shell *shell);
@@ -155,23 +159,24 @@ void	execute_pipeline(t_cmd *cmd, t_shell *shell);
 void	external_cmd_checks(t_cmd *cmd);
 void	execve_error(t_cmd *cmd);
 char	*get_clean_cmd_name(const char *path);
-int		fork_pipeline_commands(t_cmd *cmd, t_shell *shell, pid_t *pids,
-			pid_t *last_pid);
+int	fork_pipeline_commands(t_cmd *cmd, t_shell *shell, pid_t *pids,
+		pid_t *last_pid);
 pid_t	fork_child_process(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2],
-			t_shell *shell);
+		t_shell *shell);
 pid_t	*allocate_pid_array(int count);
-int		count_pipeline_cmds(t_cmd *cmd);
-void	wait_for_pipeline(pid_t *pids, int count, pid_t last_pid, 
-			t_shell *shell);
+int	count_pipeline_cmds(t_cmd *cmd);
+void	wait_for_pipeline(pid_t *pids, int count, pid_t last_pid,
+		t_shell *shell);
 void	handle_fork_error(pid_t *pids);
 void	rearrange_pipes(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2]);
 void	setup_parent_after_fork(t_cmd *cmd, int *prev_pipe_in, int pipe_fd[2]);
 
 /* Redirections */
-void close_cmd_fds(t_cmd *cmd);
+void	close_cmd_fds(t_cmd *cmd);
 void	apply_redirection(t_cmd *cmd, bool fork);
 void	handle_redirection_out_append(t_cmd *cmd, t_redir *redir);
-bool	handle_redirection_out(int append, t_redir *redir, t_cmd *cmd, bool fork);
+bool	handle_redirection_out(int append, t_redir *redir, t_cmd *cmd,
+		bool fork);
 bool	handle_redirection_in(t_redir *redir, t_cmd *cmd, bool fork);
 
 /* Builtins */
@@ -195,7 +200,7 @@ void	setup_heredoc_signals(void);
 
 /* Environment */
 int	handle_dollar_sign(char *arg, int i, t_expander_state *state,
-	t_shell *shell);
+		t_shell *shell);
 char	*handle_append_syntax(char *arg, char **env);
 char	*extract_var_name(char *arg);
 char	*resolve_path(char *cmd, char **env);
@@ -228,10 +233,10 @@ char	*append_str(char *dest, char *src);
 bool	is_metacharacter(char *token);
 void	add_argument(t_cmd *node, char *arg);
 void	update_shlvl(t_shell *shell);
-int		is_env_cmd(char *cmd);
+int	is_env_cmd(char *cmd);
 
 /* Memory Management */
-void cleanup_shell(t_shell *shell);
+void	cleanup_shell(t_shell *shell);
 void	*xmalloc(size_t size);
 void	safe_free(void *ptr);
 

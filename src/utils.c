@@ -2,11 +2,11 @@
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   utils.c                                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+        
+/*                                                    +:+ +:+
 	+:+     */
-/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+      
+/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+
 	+#+        */
-/*                                                +#+#+#+#+#+  
+/*                                                +#+#+#+#+#+
 	+#+           */
 /*   Created: 2025/01/31 15:03:09 by vagarcia          #+#    #+#             */
 /*   Updated: 2025/04/27 11:30:00 by vagarcia         ###   ########.fr       */
@@ -17,8 +17,8 @@
 
 void	create_redir_node(t_cmd *cmd, int type, char *file)
 {
-	t_redir *node;
-	t_redir *tmp;
+	t_redir	*node;
+	t_redir	*tmp;
 
 	node = xmalloc(sizeof(t_redir));
 	if (!node)
@@ -45,7 +45,7 @@ void	create_redir_node(t_cmd *cmd, int type, char *file)
 
 t_cmd	*create_cmd_node(void)
 {
-	t_cmd *node;
+	t_cmd	*node;
 
 	node = xmalloc(sizeof(t_cmd));
 	if (!node)
@@ -64,9 +64,9 @@ t_cmd	*create_cmd_node(void)
 /* Updates the shell prompt based on the current working directory */
 char	*update_prompt(void)
 {
-	static char cwd[1024];
-	char *prompt;
-	char *result;
+	static char	cwd[1024];
+	char		*prompt;
+	char		*result;
 
 	if (!getcwd(cwd, sizeof(cwd)))
 	{
@@ -90,26 +90,22 @@ char	*update_prompt(void)
  */
 void	handle_syntax_error(char *token, t_shell *shell)
 {
-	print_error_message("minishell: syntax error near unexpected token `", token, "'\n");
+	print_error_message("minishell: syntax error near unexpected token `",
+		token, "'\n");
 	shell->exit_status = 2;
 }
 
-void cleanup_shell(t_shell *shell)
+void	cleanup_shell(t_shell *shell)
 {
-    if (shell->cmd)
-    {
-        free_cmd(shell->cmd);
-        shell->cmd = NULL;
-    }
-    if (shell->env)
-    {
-        free_env(shell->env);
-        shell->env = NULL;
-    }
-    // Clear readline history to prevent memory leaks
-    rl_clear_history();
-    // This additional function call helps address readline internal memory leaks
-    rl_free_line_state();
-    rl_attempted_completion_over = 0;
-    rl_completion_type = 0;
+	if (shell->cmd)
+	{
+		free_cmd(shell->cmd);
+		shell->cmd = NULL;
+	}
+	if (shell->env)
+	{
+		free_env(shell->env);
+		shell->env = NULL;
+	}
+	rl_clear_history();
 }

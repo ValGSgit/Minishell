@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/01/31 13:33:20 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/28 13:07:56 by vagarcia         ###   ########.fr       */
+/*   Created: 2025/04/30 20:33:47 by vagarcia          #+#    #+#             */
+/*   Updated: 2025/04/30 23:32:45 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,4 +62,57 @@ void	execute_builtin(t_cmd *cmd)
 		ft_env(cmd);
 	else if (ft_strncmp(cmd->args[0], "exit", 5) == 0)
 		ft_exit(cmd);
+}
+
+/**
+ * Creates and prints a single error message to stderr
+ * Takes variable parts and joins them before printing
+ */
+/**
+ * Builds an error message from prefix, msg, and extra components
+ * Returns a newly allocated string that must be freed by the caller
+ */
+static char	*build_error_message(const char *prefix, char *msg, char *extra)
+{
+	char	*error_msg;
+	char	*temp;
+
+	if (!prefix && !msg && !extra)
+		return (NULL);
+	if (prefix)
+		error_msg = ft_strdup(prefix);
+	else
+		error_msg = ft_strdup("");
+	if (!error_msg)
+		return (NULL);
+	if (msg)
+	{
+		temp = error_msg;
+		error_msg = ft_strjoin(error_msg, msg);
+		free(temp);
+		if (!error_msg)
+			return (NULL);
+	}
+	if (extra)
+	{
+		temp = error_msg;
+		error_msg = ft_strjoin(error_msg, extra);
+	}
+	return (error_msg);
+}
+
+/**
+ * Creates and prints a single error message to stderr
+ * Takes variable parts and joins them before printing
+ */
+void	print_error_message(const char *prefix, char *msg, char *extra)
+{
+	char	*error_msg;
+
+	error_msg = build_error_message(prefix, msg, extra);
+	if (error_msg)
+	{
+		ft_putstr_fd(error_msg, 2);
+		free(error_msg);
+	}
 }

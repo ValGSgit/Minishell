@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/14 11:09:29 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/14 11:17:12 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/30 21:05:45 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,6 @@ int	check_redir_errors(char **tokens, t_shell *shell, int *i)
 	}
 	return (0);
 }
-
 
 int	check_redirect_filename(char **tokens, int *i, t_shell *shell, t_cmd *cmd)
 {

@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 11:58:27 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/28 14:45:00 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/30 20:50:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,5 +93,5 @@ bool	contains_metacharacter(char *token)
 	if (!token)
 		return (false);
 	return (ft_strchr(token, '|') || ft_strchr(token, '<') || ft_strchr(token,
-		'>'));
+			'>'));
 }

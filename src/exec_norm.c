@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/29 14:59:22 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/30 20:16:38 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/30 23:34:36 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,7 +112,7 @@ void	execute_external_command(t_cmd *cmd, t_shell *shell)
 				exit(127);
 			}
 		}
-		if (stat(cmd->args[0], &sb) == 0 && S_ISDIR(sb.st_mode))
+		if (cmd->args[0] && stat(cmd->args[0], &sb) == 0 && S_ISDIR(sb.st_mode))
 		{
 			print_error_message(cmd_name, ": Is a directory\n", NULL);
 			close_cmd_fds(cmd);
