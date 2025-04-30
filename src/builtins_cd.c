@@ -6,19 +6,44 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 14:00:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/29 22:26:22 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/30 21:23:17 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
+static void	cd_error(char *path_dup)
+{
+	char	*error_msg;
+	char	*temp;
+	char	*with_colon;
+
+	error_msg = ft_strjoin("minishell: cd: ", path_dup);
+	if (!error_msg)
+		return ;
+	temp = error_msg;
+	with_colon = ft_strjoin(error_msg, ": ");
+	free(temp);
+	if (!with_colon)
+		return ;
+	temp = with_colon;
+	error_msg = ft_strjoin(with_colon, strerror(errno));
+	free(temp);
+	if (!error_msg)
+		return ;
+	temp = error_msg;
+	error_msg = ft_strjoin(error_msg, "\n");
+	free(temp);
+	if (error_msg)
+	{
+		ft_putstr_fd(error_msg, 2);
+		free(error_msg);
+	}
+}
+
 static void	handle_cd_error(t_cmd *cmd, char *old_pwd, char *path_dup)
 {
-	ft_putstr_fd("minishell: cd: ", 2);
-	ft_putstr_fd(path_dup, 2);
-	ft_putstr_fd(": ", 2);
-	ft_putstr_fd(strerror(errno), 2);
-	ft_putstr_fd("\n", 2);
+	cd_error(path_dup);
 	if (old_pwd != NULL)
 		free(old_pwd);
 	cmd->shell->exit_status = 1;
@@ -63,6 +88,18 @@ static void	handle_cd_path_not_found(t_cmd *cmd, char *old_pwd)
 	cmd->shell->exit_status = 1;
 }
 
+static int	check_cd_args(t_cmd *cmd, char *old_pwd)
+{
+	if (cmd->args[1] && cmd->args[2])
+	{
+		ft_putstr_fd("minishell: cd: too many arguments\n", 2);
+		free(old_pwd);
+		cmd->shell->exit_status = 1;
+		return (0);
+	}
+	return (1);
+}
+
 void	ft_cd(t_cmd *cmd)
 {
 	char	*path;
@@ -70,13 +107,8 @@ void	ft_cd(t_cmd *cmd)
 	char	*path_dup;
 
 	old_pwd = getcwd(NULL, 0);
-	if (cmd->args[1] && cmd->args[2])
-	{
-		ft_putstr_fd("minishell: cd: too many arguments\n", 2);
-		free(old_pwd);
-		cmd->shell->exit_status = 1;
+	if (!check_cd_args(cmd, old_pwd))
 		return ;
-	}
 	path = get_cd_path(cmd);
 	if (!path)
 	{
@@ -93,9 +125,5 @@ void	ft_cd(t_cmd *cmd)
 			handle_cd_error(cmd, old_pwd, path);
 		return ;
 	}
-	update_pwd(cmd->shell);
-	free(old_pwd);
-	if (path_dup)
-		free(path_dup);
-	cmd->shell->exit_status = 0;
+	finish_cd_success(cmd, old_pwd, path_dup);
 }

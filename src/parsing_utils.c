@@ -2,11 +2,11 @@
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   parsing_utils.c                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+        
+/*                                                    +:+ +:+
 	+:+     */
-/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+      
+/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+
 	+#+        */
-/*                                                +#+#+#+#+#+  
+/*                                                +#+#+#+#+#+
 	+#+           */
 /*   Created: 2025/04/03 12:00:04 by vagarcia          #+#    #+#             */
 /*   Updated: 2025/04/14 13:09:44 by vagarcia         ###   ########.fr       */
@@ -14,7 +14,6 @@
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
-
 
 /* Checks if the token is quoted */
 bool	is_quoted(char *token)
@@ -25,15 +24,6 @@ bool	is_quoted(char *token)
 	}
 	return ((token[0] == '\'' && token[ft_strlen(token) - 1] == '\'')
 		|| (token[0] == '"' && token[ft_strlen(token) - 1] == '"'));
-}
-
-/* Checks if the token contains a metacharacter */
-bool	contains_metacharacter(char *token)
-{
-	if (!token)
-		return (false);
-	return (ft_strchr(token, '|') || ft_strchr(token, '<') || ft_strchr(token,
-		'>'));
 }
 
 /* Checks if the token is a metacharacter (|, <, >, >>, <<) */
@@ -49,9 +39,9 @@ bool	is_metacharacter(char *token)
 /* Adds an argument to the command */
 void	add_argument_to_array(char ***args, char *arg)
 {
-	char **new_args;
-	int len;
-	int i;
+	char	**new_args;
+	int		len;
+	int		i;
 
 	len = 0;
 	while ((*args) && (*args)[len])
@@ -80,7 +70,6 @@ void	add_argument(t_cmd *node, char *arg)
 {
 	if (!node || !arg)
 		return ;
-
 	if (!node->args)
 	{
 		node->args = ft_calloc(2, sizeof(char *));
@@ -105,7 +94,7 @@ void	add_argument(t_cmd *node, char *arg)
  */
 void	handle_pipeline(t_cmd **current, t_shell *shell)
 {
-	t_cmd *new_cmd;
+	t_cmd	*new_cmd;
 
 	new_cmd = create_cmd_node();
 	if (!new_cmd)

@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/14 13:07:15 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/26 21:15:00 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/30 21:07:54 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,8 @@ void	handle_heredoc_redirect(t_cmd *cmd, char **tokens, int *i,
 		cmd->syntax_error = 1;
 		return ;
 	}
-	if (is_metacharacter(tokens[*i + 1]) || contains_metacharacter(tokens[*i + 1]))
+	if (is_metacharacter(tokens[*i + 1])
+		|| contains_metacharacter(tokens[*i + 1]))
 	{
 		handle_syntax_error(tokens[*i + 1], shell);
 		cmd->syntax_error = 1;

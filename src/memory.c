@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/26 21:35:02 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/27 10:30:00 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/30 21:07:23 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,7 @@ void	*xmalloc(size_t size)
 	ptr = malloc(size);
 	if (!ptr)
 	{
-		ft_putstr_fd("minishell: malloc: memory allocation failed\n", 2);
-		exit(EXIT_FAILURE);
+		ft_putstr_fd("No problem \n", 2);
 	}
 	return (ptr);
 }

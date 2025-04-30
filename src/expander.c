@@ -175,9 +175,12 @@ static void	resolve_non_builtin_path(t_cmd *node, t_shell *shell)
 		if (shell->env && get_env_value("PATH", shell->env))
 			reresolved = resolve_path(node->args[0], shell->env);
 		else
-			reresolved = resolve_path_in_current_dir(ft_strdup(node->args[0]));
-		free(node->args[0]);
-		node->args[0] = reresolved;
+			reresolved = resolve_path_in_current_dir(node->args[0]);
+		
+		if (reresolved) {
+			free(node->args[0]);
+			node->args[0] = reresolved;
+		}
 	}
 }
 

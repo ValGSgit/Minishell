@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/14 11:13:45 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/30 10:30:00 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/30 21:05:29 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,13 +33,13 @@ void	handle_redirection(t_cmd *cmd, char **tokens, int *i, t_shell *shell)
 	if (ft_strcmp(tokens[*i], "<<") == 0 && same_length(tokens[*i], "<<"))
 	{
 		handle_heredoc_redirect(cmd, tokens, i, shell);
-		return;
+		return ;
 	}
 	redir_type = get_redirection_type(tokens[*i], shell, cmd);
 	if (redir_type == -1)
-		return;
+		return ;
 	if (!check_redirect_filename(tokens, i, shell, cmd))
-		return;
+		return ;
 	filename = tokens[*i + 1];
 	create_redir_node(cmd, redir_type, filename);
 	(*i) += 2;

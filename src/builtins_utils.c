@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/02 10:33:07 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/28 14:10:00 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/30 20:47:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,18 @@ void	update_pwd(t_shell *shell)
 	free(cwd);
 }
 
+static void	set_default_shlvl(t_shell *shell)
+{
+	char	*new_shlvl;
+
+	new_shlvl = ft_strdup("SHLVL=1");
+	if (new_shlvl)
+	{
+		update_or_add_env(new_shlvl, &shell->env);
+		free(new_shlvl);
+	}
+}
+
 void	update_shlvl(t_shell *shell)
 {
 	int		level;
@@ -63,10 +75,7 @@ void	update_shlvl(t_shell *shell)
 	val = get_env_value("SHLVL", shell->env);
 	if (!val)
 	{
-		new_shlvl = ft_strdup("SHLVL=1");
-		if (new_shlvl)
-			update_or_add_env(new_shlvl, &shell->env);
-		free(new_shlvl);
+		set_default_shlvl(shell);
 		return ;
 	}
 	level = ft_atoi(val);

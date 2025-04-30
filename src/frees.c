@@ -36,16 +36,31 @@ void close_cmd_fds(t_cmd *cmd)
     if (!cmd)
         return;
     
+    // Close standard input redirection
     if (cmd->in_fd >= 0 && cmd->in_fd != STDIN_FILENO)
     {
         close(cmd->in_fd);
         cmd->in_fd = -1;
     }
     
+    // Close standard output redirection
     if (cmd->out_fd >= 0 && cmd->out_fd != STDOUT_FILENO)
     {
         close(cmd->out_fd);
         cmd->out_fd = -1;
+    }
+    
+    // Check if there are any heredoc files that need to be cleaned up
+    t_redir *redir = cmd->redirs;
+    while (redir)
+    {
+        if (redir->type == REDIR_HEREDOC && redir->file)
+        {
+            // Try to access the file and unlink it if it exists
+            if (access(redir->file, F_OK) == 0)
+                unlink(redir->file);
+        }
+        redir = redir->next;
     }
 }
 

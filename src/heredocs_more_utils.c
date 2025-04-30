@@ -12,10 +12,13 @@
 
 #include "../includes/minishell.h"
 
+extern volatile sig_atomic_t	g_signal_received;
+
 char *process_da_bullshit(char *arg, t_shell *shell)
 {
 	t_expander_state	dabullshit;
 	int				i;
+	char			*result;
 
 	ft_memset(&dabullshit, 0, sizeof(t_expander_state));
 	dabullshit.result = ft_strdup("");
@@ -31,7 +34,14 @@ char *process_da_bullshit(char *arg, t_shell *shell)
 		}
 		else
 		{
+			result = dabullshit.result;
 			dabullshit.result = append_str(dabullshit.result, (char[]){arg[i], '\0'});
+			if (result != dabullshit.result && !dabullshit.result)
+			{
+				// If append_str failed but we had a previous result
+				dabullshit.result = result;
+				break;
+			}
 			(i)++;
 		}
 	}
@@ -77,12 +87,23 @@ void	read_heredoc_input(const char *delimiter, int fd, t_cmd *cmd, bool expand_v
 
 void	heredoc_child_process(t_cmd *cmd, char *clean_eof, int fd, bool expand_vars)
 {
+	// Setup signals for heredoc
 	setup_heredoc_signals();
+	
+	// Read heredoc input
 	read_heredoc_input(clean_eof, fd, cmd, expand_vars);
+	
+	// Close file descriptor
 	close(fd);
+	
+	// Free memory
 	free(clean_eof);
 	if (cmd && cmd->shell)
+	{
+		// Clear readline history to prevent leaks
+		rl_clear_history();
 		cleanup_shell(cmd->shell);
+	}
 	exit(0);
 }
 
@@ -97,12 +118,14 @@ int	heredoc_parent_process(pid_t pid, t_cmd *cmd, int fd, char *clean_eof)
 	{
 		cmd->shell->exit_status = 128 + WTERMSIG(status);
 		g_signal_received = cmd->shell->exit_status;
+		cleanup_heredocs(cmd->shell);
 		return (1);
 	}
 	else if (WIFEXITED(status) && WEXITSTATUS(status) == 130)
 	{
 		cmd->shell->exit_status = 130;
 		g_signal_received = 130;
+		cleanup_heredocs(cmd->shell);
 		return (1);
 	}
 	return (0);

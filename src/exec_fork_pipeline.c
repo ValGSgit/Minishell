@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:50:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/29 21:48:12 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/04/29 23:04:37 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,17 +26,43 @@ int	fork_pipeline_commands(t_cmd *cmd, t_shell *shell, pid_t *pids,
 	i = 0;
 	while (node)
 	{
-		if (node->next && pipe(pipe_fd) == -1)
-			return (perror("minishell: pipe"), -1);
+		if (node->next)
+		{
+			if (pipe(pipe_fd) == -1)
+			{
+				// Close previous pipe if it's open before returning
+				if (prev_pipe_in != 0)
+					close(prev_pipe_in);
+				return (perror("minishell: pipe"), -1);
+			}
+		}
+		
 		pid = fork_child_process(node, prev_pipe_in, pipe_fd, shell);
 		if (pid == -1)
+		{
+			// On fork error, ensure all pipes are closed
+			if (prev_pipe_in != 0)
+				close(prev_pipe_in);
+			if (node->next)
+			{
+				close(pipe_fd[READ_END]);
+				close(pipe_fd[WRITE_END]);
+			}
 			return (handle_fork_error(pids), -1);
+		}
+		
 		pids[i++] = pid;
 		if (!node->next)
 			*last_pid = pid;
+			
 		setup_parent_after_fork(node, &prev_pipe_in, pipe_fd);
 		node = node->next;
 	}
+	
+	// Make sure any remaining open pipe is closed
+	if (prev_pipe_in != 0)
+		close(prev_pipe_in);
+		
 	return (i);
 }
 
@@ -52,17 +78,22 @@ pid_t fork_child_process(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2], t_shell *
 	}
 	if (pid == 0)
 	{
+		signal(SIGQUIT, SIG_DFL);
+		signal(SIGINT, SIG_DFL);
+		
 		rearrange_pipes(cmd, prev_pipe_in, pipe_fd);
 		if (cmd->redirs)
 			apply_redirection(cmd, true);
 		if (cmd->args && cmd->args[0] && is_builtin(cmd->args[0]))
 		{
 			execute_builtin(cmd);
-			exit(cmd->shell->exit_status & 0xFF);
+			exit(cmd->shell->exit_status);
 		}
 		if (cmd->args && cmd->args[0] && cmd->args[0][0] && cmd->args[0][0] != '\0')
 			execute_external_command(cmd, shell);
-		exit(0);
+		
+		// Exit with correct status if we get here
+		exit(cmd->shell->exit_status);
 	}
 	return (pid);
 }
@@ -81,7 +112,10 @@ void	rearrange_pipes(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2])
 	{
 		close(pipe_fd[READ_END]);
 		if (dup2(pipe_fd[WRITE_END], STDOUT_FILENO) == -1)
+		{
+			close(pipe_fd[WRITE_END]);
 			exit(1);
+		}
 		close(pipe_fd[WRITE_END]);
 	}
 }

@@ -2,9 +2,12 @@
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
+/*                                                    +:+ +:+        
+	+:+     */
+/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+      
+	+#+        */
+/*                                                +#+#+#+#+#+  
+	+#+           */
 /*   Created: 2025/01/31 13:35:07 by vagarcia          #+#    #+#             */
 /*   Updated: 2025/04/27 12:30:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
@@ -12,11 +15,14 @@
 
 #include "../includes/minishell.h"
 
+
+extern volatile sig_atomic_t g_signal_received;
+
 int	handle_input(t_shell *shell, char *input)
 {
-	char	**tokens;
-	int		i;
-	bool	only_whitespace;
+	char **tokens;
+	int i;
+	bool only_whitespace;
 
 	if (!input)
 		return (0);
@@ -27,7 +33,7 @@ int	handle_input(t_shell *shell, char *input)
 		if (!ft_isspace(input[i]))
 		{
 			only_whitespace = false;
-			break;
+			break ;
 		}
 		i++;
 	}
@@ -43,10 +49,13 @@ int	handle_input(t_shell *shell, char *input)
 	}
 	shell->cmd = parser(tokens, shell);
 	if (!shell->cmd)
-		return (safe_free(input), free_tokens(tokens), 0);
+	{
+		safe_free(input);
+		free_tokens(tokens);
+		return (0);
+	}
 	expand_nodes(shell->cmd, shell);
-	//debug_shell_state(tokens, shell->cmd, "tes");
-	if (shell->cmd->args || shell->cmd->redirs)
+	if ((shell->cmd->args && shell->cmd->args[0]) || shell->cmd->redirs)
 		executor(shell->cmd, shell);
 	free_cmd(shell->cmd);
 	shell->cmd = NULL;
@@ -55,10 +64,20 @@ int	handle_input(t_shell *shell, char *input)
 	return (0);
 }
 
+void	*gimme_it(void *ptr)
+{
+	static void *save;
+
+	if (ptr == NULL)
+		return (save);
+	save = ptr;
+	return (save);
+}
+
 void	minishell_loop(t_shell *shell)
 {
-	char	*input;
-	char	*prompt;
+	char *input;
+	char *prompt;
 
 	shell->cmd = NULL;
 	prompt = xmalloc(ft_strlen("Minishell-> ") + 1);
@@ -92,9 +111,9 @@ void	minishell_loop(t_shell *shell)
 
 void	initialize_shell(t_shell *shell, char **argv)
 {
-	char	*prog_name;
-	char	*cwd;
-	char	*pwd_var;
+	char *prog_name;
+	char *cwd;
+	char *pwd_var;
 
 	prog_name = ft_strrchr(argv[0], '/');
 	if (prog_name)
@@ -120,9 +139,10 @@ void	initialize_shell(t_shell *shell, char **argv)
 
 int	main(int argc, char **argv, char **envp)
 {
-	t_shell	shell;
+	t_shell shell;
 
 	(void)argc;
+	ft_memset(&shell, 0, sizeof(t_shell));
 	if (*envp)
 		shell.env = copy_env(envp);
 	else
@@ -132,7 +152,9 @@ int	main(int argc, char **argv, char **envp)
 	shell.exit_status = 0;
 	shell.is_interactive = isatty(STDIN_FILENO);
 	shell.signal_status = 0;
+	gimme_it(&shell);
 	minishell_loop(&shell);
+	cleanup_heredocs(&shell);
 	rl_clear_history();
 	cleanup_shell(&shell);
 	return (shell.exit_status);
