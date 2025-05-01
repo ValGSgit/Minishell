@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 10:35:57 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/28 15:15:00 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/01 12:55:07 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,8 +97,8 @@ static void	print_env_var(char *env_var, int fd)
 		j++;
 		while (env_var[j])
 		{
-			if (env_var[j] == '\"' || env_var[j] == '$' || 
-				env_var[j] == '\\' || env_var[j] == '`')
+			if (env_var[j] == '\"' || env_var[j] == '$' || env_var[j] == '\\' 
+						|| env_var[j] == '`')
 				ft_putchar_fd('\\', fd);
 			ft_putchar_fd(env_var[j], fd);
 			j++;

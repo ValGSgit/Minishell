@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/14 11:19:03 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/27 11:05:00 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/01 12:52:36 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ char	*remove_quotes(char *lim)
 		return (NULL);
 	len = ft_strlen(lim);
 	if (len == 1 && (lim[0] == '\'' || lim[0] == '\"'))
-		return (lim);  /* Single quote/double quote case */
+		return (lim);
 	new_lim = xmalloc(sizeof(char) * (len + 1));
 	if (!new_lim)
 		return (NULL);
@@ -92,10 +92,7 @@ char	*remove_quotes(char *lim)
 		if ((lim[i] == '\'' || lim[i] == '\"') && !quote_type)
 			quote_type = lim[i++];
 		else if (lim[i] == quote_type)
-		{
-			quote_type = 0;
-			i++;
-		}
+			(quote_type = 0, i++);
 		else
 			new_lim[j++] = lim[i++];
 	}
