@@ -92,7 +92,10 @@ char	*remove_quotes(char *lim)
 		if ((lim[i] == '\'' || lim[i] == '\"') && !quote_type)
 			quote_type = lim[i++];
 		else if (lim[i] == quote_type)
-			(quote_type = 0, i++);
+		{
+			quote_type = 0;
+			i++;
+		}
 		else
 			new_lim[j++] = lim[i++];
 	}

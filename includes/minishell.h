@@ -178,6 +178,7 @@ void	handle_redirection_out_append(t_cmd *cmd, t_redir *redir);
 bool	handle_redirection_out(int append, t_redir *redir, t_cmd *cmd,
 		bool fork);
 bool	handle_redirection_in(t_redir *redir, t_cmd *cmd, bool fork);
+char *process_da_bullshit(char *arg, t_shell *shell);
 
 /* Builtins */
 void	execute_builtin(t_cmd *cmd);
