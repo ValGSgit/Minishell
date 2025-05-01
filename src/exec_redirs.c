@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/29 21:26:40 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/30 20:17:52 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/01 14:48:51 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,24 +31,21 @@ static bool	check_ambiguous_redirect(t_redir *node, t_cmd *cmd, bool fork)
 void	apply_redirection(t_cmd *cmd, bool fork)
 {
 	t_redir	*node;
-	t_cmd 	*temp_cmd;
 	bool	error;
 
 	error = false;
-	temp_cmd = cmd;
 	node = cmd->redirs;
 	while (node && !error)
 	{
-		if (check_ambiguous_redirect(node, temp_cmd, fork))
+		if (check_ambiguous_redirect(node, cmd, fork))
 			return ;
 		if (node->type == REDIR_IN || node->type == REDIR_HEREDOC)
-			error = handle_redirection_in(node, temp_cmd, fork);
+			error = handle_redirection_in(node, cmd, fork);
 		else if (node->type == REDIR_OUT)
-			error = handle_redirection_out(0, node, temp_cmd, fork);
+			error = handle_redirection_out(0, node, cmd, fork);
 		else if (node->type == REDIR_APPEND)
-			error = handle_redirection_out(1, node, temp_cmd, fork);
+			error = handle_redirection_out(1, node, cmd, fork);
 		node = node->next;
-		temp_cmd->redirs = temp_cmd->redirs->next;
 	}
 	if (error && fork)
 		exit(1);

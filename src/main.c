@@ -86,6 +86,7 @@ void	minishell_loop(t_shell *shell)
 	while (1)
 	{
 		setup_signals();
+		//prompt = update_prompt();
 		input = readline(prompt);
 		if (!input)
 		{

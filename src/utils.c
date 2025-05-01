@@ -61,30 +61,6 @@ t_cmd	*create_cmd_node(void)
 	return (node);
 }
 
-/* Updates the shell prompt based on the current working directory */
-char	*update_prompt(void)
-{
-	static char	cwd[1024];
-	char		*prompt;
-	char		*result;
-
-	if (!getcwd(cwd, sizeof(cwd)))
-	{
-		return (ft_strdup("Minishell-> "));
-	}
-	prompt = ft_strjoin(cwd, " -> ");
-	if (!prompt)
-		return (NULL);
-	result = ft_strdup(prompt);
-	if (!result)
-	{
-		free(prompt);
-		return (NULL);
-	}
-	free(prompt);
-	return (result);
-}
-
 /**
  * Report a syntax error and set the shell exit status to 2
  */
