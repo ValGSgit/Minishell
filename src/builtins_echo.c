@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 14:15:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/30 21:23:51 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/01 13:12:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,20 +39,20 @@ void	ft_echo(t_cmd *cmd)
 	i = 1;
 	if (!cmd->args[1])
 	{
-		ft_putchar_fd('\n', STDOUT_FILENO);
+		ft_putchar_fd('\n', cmd->out_fd);
 		cmd->shell->exit_status = 0;
 		return ;
 	}
 	n_flag = process_options(cmd, &i);
 	while (cmd->args[i])
 	{
-		ft_putstr_fd(cmd->args[i], STDOUT_FILENO);
+		ft_putstr_fd(cmd->args[i], cmd->out_fd);
 		if (cmd->args[i + 1])
-			ft_putchar_fd(' ', STDOUT_FILENO);
+			ft_putchar_fd(' ', cmd->out_fd);
 		i++;
 	}
 	if (!n_flag)
-		ft_putchar_fd('\n', STDOUT_FILENO);
+		ft_putchar_fd('\n', cmd->out_fd);
 	cmd->shell->exit_status = 0;
 }
 

@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/29 14:59:22 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/30 23:34:36 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/01 13:13:26 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,8 +88,10 @@ void	execute_external_command(t_cmd *cmd, t_shell *shell)
 	exec_path = NULL;
 	if (cmd->args && cmd->args[0])
 	{
-		cmd_name = get_clean_cmd_name(cmd->args[0]);
-		
+		if (cmd->args[0])
+			cmd_name = get_clean_cmd_name(cmd->args[0]);
+		else
+			cmd_name = cmd->args[0];
 		if (cmd->args[0] && shell->path_unset && ft_strchr(cmd->args[0], '/') == NULL)
 		{
 			print_error_message(cmd_name, ": No such file or directory\n", NULL);
