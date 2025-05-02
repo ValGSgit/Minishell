@@ -81,6 +81,9 @@ t_cmd	*create_cmd_node(void)
 	return (node);
 }
 
+/**
+ * Report a syntax error and set the shell exit status to 2
+ */
 void	handle_syntax_error(char *token, t_shell *shell)
 {
 	print_error_message("minishell: syntax error near unexpected token `",

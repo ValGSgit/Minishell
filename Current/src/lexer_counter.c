@@ -12,6 +12,18 @@
 
 #include "../includes/minishell.h"
 
+int	count_special_char(char *input)
+{
+	if (is_special_char(*input))
+	{
+		if ((*input == '>' && *(input + 1) == '>')
+			|| (*input == '<' && *(input + 1) == '<'))
+			return (1);
+		return (1);
+	}
+	return (0);
+}
+
 static int	count_quotes(char **input, bool *in_quote, char *quote_char)
 {
 	if (!*in_quote && (**input == '\'' || **input == '\"'))
@@ -31,36 +43,6 @@ static int	count_quotes(char **input, bool *in_quote, char *quote_char)
 	return (0);
 }
 
-static void	process_token_logic(char **input, char **start,
-	int *count, bool *was_empty_quote)
-{
-	if (*was_empty_quote && (ft_isspace(**input)
-			|| is_special_char(**input) || !**input))
-	{
-		*start = *input;
-		*was_empty_quote = false;
-	}
-	if (!ft_isspace(**input) && !is_special_char(**input))
-		return ;
-	if (*start != *input)
-		(*count)++;
-	if (count_special_char(*input))
-		(*count)++;
-	*start = *input + 1;
-}
-
-static bool	handle_empty_quote_token(char *input, char *start,
-	int *token_count, bool *was_empty_quote)
-{
-	if (input - start == 2)
-	{
-		(*token_count)++;
-		*was_empty_quote = true;
-		return (true);
-	}
-	return (false);
-}
-
 static int	count_tokens_processing(char *input)
 {
 	int		token_count;
@@ -76,11 +58,30 @@ static int	count_tokens_processing(char *input)
 	was_empty_quote = false;
 	while (*input)
 	{
-		if (count_quotes(&input, &in_quote, &quote_char) && !in_quote
-			&& handle_empty_quote_token(input,
-				start, &token_count, &was_empty_quote))
-			start = input; //continue;
-		process_token_logic(&input, &start, &token_count, &was_empty_quote);
+		if (count_quotes(&input, &in_quote, &quote_char))
+		{
+			if (!in_quote && input - start == 2)
+			{
+				token_count++;
+				start = input;
+				was_empty_quote = true;
+			}
+			continue ;
+		}
+		if (was_empty_quote && (ft_isspace(*input)
+				|| is_special_char(*input) || !*input))
+		{
+			start = input;
+			was_empty_quote = false;
+		}
+		if (!in_quote && (ft_isspace(*input) || is_special_char(*input)))
+		{
+			if (start != input)
+				token_count++;
+			if (count_special_char(input))
+				token_count++;
+			start = input + 1;
+		}
 		input++;
 	}
 	if (start != input && !was_empty_quote)

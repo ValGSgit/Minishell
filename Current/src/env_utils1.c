@@ -81,6 +81,7 @@ char	*resolve_path(char *cmd, char **env)
 	return (ft_strdup(cmd));
 }
 
+/* Checks if the token contains a metacharacter */
 bool	contains_metacharacter(char *token)
 {
 	if (!token)

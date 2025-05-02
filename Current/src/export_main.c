@@ -18,7 +18,7 @@ static void	update_env_entry(char ***env, char *arg, int i)
 	(*env)[i] = ft_strdup(arg);
 	if (!(*env)[i])
 	{
-		perror("minishell: malloc"); //this was commented out
+		perror("minishell: malloc");
 		free_env(*env);
 		free(arg);
 	}

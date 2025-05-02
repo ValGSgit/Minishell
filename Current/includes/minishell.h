@@ -108,7 +108,7 @@ typedef struct s_shell
 	t_cmd	*cmd;
 }	t_shell;
 
-extern volatile	sig_atomic_t	g_signal_recieved;
+extern volatile sig_atomic_t	g_signal_recieved;
 
 void	*xmalloc(size_t size);
 void	safe_free(void *ptr);
@@ -215,6 +215,10 @@ void	print_sorted_env(char **env);
 void	update_pwd(t_shell *shell);
 void	update_shlvl(t_shell *shell);
 int		is_valid_key(char *key);
+void	print_sorted_env(char **env);
+void	free_env_copy(char **env_copy);
+void	print_env_var(char *env_var, int fd);
+char	**copy_env_array(char **env, int env_count);
 
 /* Utils */
 void	cd_error(char *path_dup);
@@ -239,6 +243,7 @@ int		is_env_cmd(char *cmd);
 int		count_special_char(char *input);
 void	handle_signal_exit(t_shell *shell);
 int		process_shell_input(t_shell *shell, char *input, char *prompt);
+bool	needs_word_splitting(char *str);
 
 /* Memory Management */
 void	cleanup_shell(t_shell *shell);

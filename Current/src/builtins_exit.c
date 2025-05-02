@@ -12,6 +12,9 @@
 
 #include "../includes/minishell.h"
 
+/**
+ * Handles exit error by printing message and exiting with code 2
+ */
 static void	handle_exit_error(char *arg)
 {
 	ft_putstr_fd("minishell: exit: ", STDERR_FILENO);
@@ -20,6 +23,10 @@ static void	handle_exit_error(char *arg)
 	exit(2);
 }
 
+/**
+ * Checks if string is a valid number
+ * Returns 1 if string is invalid, 0 if valid
+ */
 static int	is_invalid_number(const char *str)
 {
 	int	i;
@@ -45,8 +52,12 @@ static int	is_invalid_number(const char *str)
 	return (1);
 }
 
+/**
+ * Custom implementation of atol
+ * Doesn't use loops, recursive approach instead
+ */
 static long long	recursive_atol(const char *str, int i, int sign,
-	long long result)
+		long long result)
 {
 	if (!str[i] || str[i] < '0' || str[i] > '9')
 		return (result * sign);
@@ -61,6 +72,9 @@ static long long	recursive_atol(const char *str, int i, int sign,
 	return (recursive_atol(str, i + 1, sign, result * 10 + (str[i] - '0')));
 }
 
+/**
+ * Converts string to long long
+ */
 static long long	ft_atol_improved(const char *str)
 {
 	int	i;
@@ -85,6 +99,9 @@ static long long	ft_atol_improved(const char *str)
 	return (recursive_atol(str, i, sign, 0));
 }
 
+/**
+ * Built-in exit command implementation
+ */
 void	ft_exit(t_cmd *cmd)
 {
 	long long	exit_code;

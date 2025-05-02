@@ -12,28 +12,6 @@
 
 #include "../includes/minishell.h"
 
-static bool	needs_word_splitting(char *str)
-{
-	int		i;
-	bool	in_quote;
-	bool	in_dquote;
-
-	in_quote = false;
-	in_dquote = false;
-	i = 0;
-	while (str && str[i])
-	{
-		if (str[i] == '\'' && !in_dquote)
-			in_quote = !in_quote;
-		else if (str[i] == '"' && !in_quote)
-			in_dquote = !in_dquote;
-		else if (str[i] == '$' && !in_quote)
-			return (true);
-		i++;
-	}
-	return (false);
-}
-
 static int	count_tokens_for_arg(char *arg, t_shell *shell)
 {
 	int		j;
@@ -61,6 +39,21 @@ static int	count_tokens_for_arg(char *arg, t_shell *shell)
 	if (expanded)
 		free(expanded);
 	return (token_count);
+}
+
+static int	count_args_after_splitting(char **args, t_shell *shell)
+{
+	int	i;
+	int	count;
+
+	count = 0;
+	i = 0;
+	while (args && args[i])
+	{
+		count += count_tokens_for_arg(args[i], shell);
+		i++;
+	}
+	return (count);
 }
 
 static void	process_arg_for_splitting(char *arg, char *expanded, int *count,
@@ -119,19 +112,12 @@ static char	**build_args_after_splitting(char **args, int max_count,
 
 char	**apply_word_splitting(char **args, t_shell *shell)
 {
-	int		i;
 	int		count;
 	char	**new_args;
 
-	count = 0;
-	i = 0;
 	if (!args)
 		return (NULL);
-	while (args && args[i])
-	{
-		count += count_tokens_for_arg(args[i], shell);
-		i++;
-	}
+	count = count_args_after_splitting(args, shell);
 	new_args = build_args_after_splitting(args, count, shell);
 	return (new_args);
 }

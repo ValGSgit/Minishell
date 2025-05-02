@@ -12,6 +12,11 @@
 
 #include "../includes/minishell.h"
 
+/**
+ * Split an expanded variable value into separate tokens by whitespace
+ * Used when a variable is not quoted and needs to be split by IFS (whitespace)
+ * Returns an array of tokens, or NULL if no splitting occurs or on error
+ */
 static int	count_words(char *value)
 {
 	int		i;

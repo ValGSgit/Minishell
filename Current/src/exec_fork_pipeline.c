@@ -71,6 +71,7 @@ pid_t	fork_child_process(t_cmd *cmd, int ppi, int pipe_fd[2], t_shell *shell)
 {
 	pid_t	pid;
 
+	ignore_signals();
 	pid = fork();
 	if (pid == -1)
 	{
@@ -79,7 +80,6 @@ pid_t	fork_child_process(t_cmd *cmd, int ppi, int pipe_fd[2], t_shell *shell)
 	}
 	if (pid == 0)
 	{
-		reset_signals();
 		rearrange_pipes(cmd, ppi, pipe_fd);
 		if (cmd->redirs)
 			apply_redirection(cmd, true);

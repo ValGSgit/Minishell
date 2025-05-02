@@ -90,6 +90,9 @@ void	add_argument(t_cmd *node, char *arg)
 	}
 }
 
+/**
+ * Create a new command node in the pipeline
+ */
 void	handle_pipeline(t_cmd **current, t_shell *shell)
 {
 	t_cmd	*new_cmd;

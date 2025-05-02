@@ -12,6 +12,7 @@
 
 #include "../includes/minishell.h"
 
+/* Copy environment variables into a new array */
 char	**copy_env_part1(int count)
 {
 	char	**env;

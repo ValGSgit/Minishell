@@ -1,42 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   export_extra.c                                     :+:      :+:    :+:   */
+/*   expander_extra_extra.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: iionescu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/02 09:19:40 by iionescu          #+#    #+#             */
-/*   Updated: 2025/05/02 09:19:44 by iionescu         ###   ########.fr       */
+/*   Created: 2025/05/02 16:13:39 by iionescu          #+#    #+#             */
+/*   Updated: 2025/05/02 16:13:42 by iionescu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-void	ft_sort_strings(char **arr, int count)
+bool	needs_word_splitting(char *str)
 {
 	int		i;
-	int		j;
-	int		swapped;
-	char	*temp;
+	bool	in_quote;
+	bool	in_dquote;
 
+	in_quote = false;
+	in_dquote = false;
 	i = 0;
-	while (i < count - 1)
+	while (str && str[i])
 	{
-		swapped = 0;
-		j = 0;
-		while (j < count - i - 1)
-		{
-			if (ft_strcmp(arr[j], arr[j + 1]) > 0)
-			{
-				temp = arr[j];
-				arr[j] = arr[j + 1];
-				arr[j + 1] = temp;
-				swapped = 1;
-			}
-			j++;
-		}
-		if (swapped == 0)
-			break ;
+		if (str[i] == '\'' && !in_dquote)
+			in_quote = !in_quote;
+		else if (str[i] == '"' && !in_quote)
+			in_dquote = !in_dquote;
+		else if (str[i] == '$' && !in_quote)
+			return (true);
 		i++;
 	}
+	return (false);
 }

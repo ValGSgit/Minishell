@@ -16,37 +16,22 @@ void	waitpid_for_single_command(pid_t pid, t_shell *shell)
 {
 	int	status;
 
-	(void)shell;
 	status = 0;
 	waitpid(pid, &status, 0);
+	if (WIFEXITED(status))
+		shell->exit_status = WEXITSTATUS(status);
+	else if (WIFSIGNALED(status))
+	{
+		shell->exit_status = 128 + WTERMSIG(status);
+		if (WTERMSIG(status) == SIGINT)
+			write(STDERR_FILENO, "\n", 1);
+		else if (WTERMSIG(status) == SIGQUIT)
+			write(STDERR_FILENO, "Quit (core dumped)\n", 19);
+	}
 }
 
 void	execute_builtin_or_exit(t_cmd *cmd)
 {
 	execute_builtin(cmd);
 	exit(cmd->shell->exit_status & 0xFF);
-}
-
-char	*get_clean_cmd_name(const char *path)
-{
-	const char	*last_slash;
-
-	if (!path)
-		return (NULL);
-	last_slash = ft_strrchr(path, '/');
-	if (last_slash)
-		return ((char *)(last_slash + 1));
-	return ((char *)path);
-}
-
-void	execve_error(t_cmd *cmd)
-{
-	char	*cmd_name;
-
-	if (!cmd || !cmd->args || !cmd->args[0])
-		return ;
-	cmd_name = get_clean_cmd_name(cmd->args[0]);
-	print_error_message(cmd_name, ": ", strerror(errno));
-	ft_putstr_fd("\n", 2);
-	exit(126);
 }

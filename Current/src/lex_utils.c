@@ -41,6 +41,7 @@ int	is_redir_without_space(char **input)
 		return (0);
 }
 
+/* Handles quotes and toggles the in_quote state */
 int	handle_quotes(char **input, bool *in_quote, char *quote_char)
 {
 	if (!*in_quote && (**input == '\'' || **input == '\"'))
@@ -55,18 +56,6 @@ int	handle_quotes(char **input, bool *in_quote, char *quote_char)
 		*in_quote = false;
 		*quote_char = '\0';
 		(*input)++;
-		return (1);
-	}
-	return (0);
-}
-
-int	count_special_char(char *input)
-{
-	if (is_special_char(*input))
-	{
-		if ((*input == '>' && *(input + 1) == '>')
-			|| (*input == '<' && *(input + 1) == '<'))
-			return (1);
 		return (1);
 	}
 	return (0);

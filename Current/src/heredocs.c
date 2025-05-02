@@ -19,26 +19,19 @@ void	heredoc_sigint(int sig)
 {
 	if (sig == SIGINT)
 	{
+		write(1, "\n", 1);
+		rl_on_new_line();
+		rl_redisplay();
 		if (g_signal_recieved != -1)
 			close(g_signal_recieved);
 		exit(130);
 	}
 }
 
-static void	init_sigaction(struct sigaction *sa)
+static int	handle_child_process(t_cmd *cmd, char *clean_eof,
+								char *temp_name, bool expand_vars)
 {
-	sa->sa_handler = heredoc_sigint;
-	sigemptyset(&sa->sa_mask);
-	sa->sa_flags = 0;
-	sigaction(SIGINT, sa, NULL);
-}
-
-static int	handle_child_process(t_cmd *cmd,
-	char *clean_eof, char *temp_name, bool expand_vars)
-{
-	struct sigaction	sa;
-
-	init_sigaction(&sa);
+	signal(SIGINT, heredoc_sigint);
 	g_signal_recieved = open(temp_name, O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	if (g_signal_recieved < 0)
 		exit(EXIT_FAILURE);
@@ -62,10 +55,6 @@ static int	handle_parent_process(t_cmd *cmd, int status)
 		cmd->shell->exit_status = 128 + WTERMSIG(status);
 		g_signal_recieved = cmd->shell->exit_status;
 		cleanup_heredocs(cmd->shell);
-		write(1, "\n", 1);
-		rl_on_new_line();
-		rl_replace_line("", 0);
-		//rl_redisplay();
 		return (WEXITSTATUS(status));
 	}
 	return (0);
@@ -77,6 +66,7 @@ int	handle_heredoc_fork(t_cmd *cmd, char *clean_eof, char *temp_name,
 	pid_t	pid;
 	int		status;
 
+	signal(SIGINT, SIG_IGN);
 	pid = fork();
 	if (pid == -1)
 		return (1);
@@ -86,6 +76,7 @@ int	handle_heredoc_fork(t_cmd *cmd, char *clean_eof, char *temp_name,
 	{
 		free(clean_eof);
 		waitpid(pid, &status, 0);
+		signal(SIGINT, handle_sigint);
 		return (handle_parent_process(cmd, status));
 	}
 	return (0);

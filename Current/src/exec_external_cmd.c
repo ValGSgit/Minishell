@@ -68,8 +68,8 @@ static void	cmd_checks(t_cmd *cmd, t_shell *shell, char *cmd_name)
 static void	handle_execve_failure(char *exec_path, t_cmd *cmd, char *cmd_name)
 {
 	safe_free(exec_path);
+	safe_free(cmd_name);
 	print_error_message(cmd_name, ": ", strerror(errno));
-	ft_putstr_fd("\n", 2);
 	close_cmd_fds(cmd);
 	exit(126);
 }
@@ -80,22 +80,17 @@ void	execute_external_command(t_cmd *cmd, t_shell *shell)
 	char		*cmd_name;
 
 	exec_path = NULL;
-	cmd_name = NULL;
 	if (cmd->args && cmd->args[0])
 	{
-		if (cmd->args[0])
-			cmd_name = get_clean_cmd_name(cmd->args[0]);
-		else
-			cmd_name = cmd->args[0];
+		cmd_name = get_clean_cmd_name(cmd->args[0]);
 		cmd_checks(cmd, shell, cmd_name);
+		signal(SIGINT, SIG_DFL);
 		exec_path = ft_strdup(cmd->args[0]);
 		if (!exec_path)
 		{
 			close_cmd_fds(cmd);
 			exit(1);
 		}
-		free(cmd->args[0]);
-		cmd->args[0] = cmd_name;
 		execve(exec_path, cmd->args, shell->env);
 		handle_execve_failure(exec_path, cmd, cmd_name);
 	}

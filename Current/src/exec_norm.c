@@ -56,16 +56,34 @@ void	execute_single_command(t_cmd *cmd, t_shell *shell)
 		waitpid_for_single_command(pid, shell);
 		return ;
 	}
-	if (cmd->args && cmd->args[0])
+	if (cmd->args && cmd->args[0] && is_builtin(cmd->args[0]))
 	{
-		if (is_env_cmd(cmd->args[0]) || is_builtin(cmd->args[0]))
-		{
-			execute_builtin(cmd);
-			return ;
-		}
+		execute_builtin(cmd);
+		return ;
 	}
+	signal(SIGINT, SIG_IGN);
 	pid = fork();
 	if (pid == 0)
 		execute_forked_command(cmd, shell);
 	waitpid_for_single_command(pid, shell);
+	signal(SIGINT, handle_sigint);
+}
+
+void	execute_builtin_statement(t_cmd *cmd)
+{
+	if (is_env_cmd(cmd->args[0]) || is_builtin(cmd->args[0]))
+		execute_builtin(cmd);
+	return ;
+}
+
+char	*get_clean_cmd_name(const char *path)
+{
+	const char	*last_slash;
+
+	if (!path)
+		return (NULL);
+	last_slash = ft_strrchr(path, '/');
+	if (last_slash)
+		return ((char *)(last_slash + 1));
+	return ((char *)path);
 }

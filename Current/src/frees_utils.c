@@ -12,6 +12,9 @@
 
 #include "../includes/minishell.h"
 
+/**
+ * Free an array of tokens
+ */
 void	free_tokens(char **tokens)
 {
 	int	i;
@@ -27,6 +30,9 @@ void	free_tokens(char **tokens)
 	safe_free(tokens);
 }
 
+/**
+ * Free the environment variables array
+ */
 void	free_env(char **env)
 {
 	int	i;
@@ -42,6 +48,9 @@ void	free_env(char **env)
 	safe_free(env);
 }
 
+/**
+ * Free the entire shell structure
+ */
 void	free_shell(t_shell *shell)
 {
 	if (!shell)

@@ -12,6 +12,9 @@
 
 #include "../includes/minishell.h"
 
+/**
+ * Free a single redirection node and its linked list
+ */
 void	free_redir(t_redir *redir)
 {
 	t_redir	*temp;
@@ -56,6 +59,9 @@ void	close_cmd_fds(t_cmd *cmd)
 	}
 }
 
+/**
+ * Free a single command node and its linked list
+ */
 void	free_cmd(t_cmd *cmd)
 {
 	t_cmd	*temp;
