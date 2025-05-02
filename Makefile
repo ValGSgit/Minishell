@@ -1,13 +1,13 @@
 # Compiler and flags
 CC = cc
 CFLAGS = -Wall -Wextra -Werror -Iinclude -g
-DEBUG_FLAGS = -g -fsanitize=address
+DEBUG_FLAGS = valgrind --suppressions=./mini.supp --leak-check=full --show-leak-kinds=all --track-origins=yes --trace-children=yes --track-fds=all
 
 # Directories
 SRC_DIR = src
 OBJ_DIR = obj
 INC_DIR = includes
-LIBFT_DIR = ShellLibft
+LIBFT_DIR = Libft
 
 # Source and object files
 SRCS = $(wildcard $(SRC_DIR)/*.c)
@@ -53,5 +53,10 @@ re: fclean all
 
 debug: CFLAGS += $(DEBUG_FLAGS)
 debug: re
+
+run_flags: CFLAGS += $(DEBUG_FLAGS)
+run_flags: all
+	@echo "Running $(NAME) with Valgrind..."
+	@$(DEBUG_FLAGS) ./$(NAME)
 
 .PHONY: all clean fclean re debug
