@@ -86,9 +86,7 @@ pid_t	fork_child_process(t_cmd *cmd, int ppi, int pipe_fd[2], t_shell *shell)
 		if (cmd->args && cmd->args[0] && is_builtin(cmd->args[0]))
 		{
 			execute_builtin(cmd);
-			close(0);
-			close(1);
-			exit(cmd->shell->exit_status);
+			forked_exit(cmd->shell->exit_status, cmd);
 		}
 		if (cmd->args && cmd->args[0] && cmd->args[0][0]
 			&& cmd->args[0][0] != '\0')
@@ -101,7 +99,7 @@ pid_t	fork_child_process(t_cmd *cmd, int ppi, int pipe_fd[2], t_shell *shell)
 			close(0);
 			close(1);
 		}
-		forked_exit(cmd->shell->exit_status);
+		forked_exit(cmd->shell->exit_status, cmd);
 	}
 	return (pid);
 }

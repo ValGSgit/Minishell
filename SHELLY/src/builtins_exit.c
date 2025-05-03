@@ -12,21 +12,14 @@
 
 #include "../includes/minishell.h"
 
-/**
- * Handles exit error by printing message and exiting with code 2
- */
-static void	handle_exit_error(char *arg)
+static void	handle_exit_error(char *arg, t_cmd *cmd)
 {
 	ft_putstr_fd("minishell: exit: ", STDERR_FILENO);
 	ft_putstr_fd(arg, STDERR_FILENO);
 	ft_putstr_fd(": numeric argument required\n", STDERR_FILENO);
-	exit(2);
+	forked_exit(2, cmd);
 }
 
-/**
- * Checks if string is a valid number
- * Returns 1 if string is invalid, 0 if valid
- */
 static int	is_invalid_number(const char *str)
 {
 	int	i;
@@ -52,10 +45,6 @@ static int	is_invalid_number(const char *str)
 	return (1);
 }
 
-/**
- * Custom implementation of atol
- * Doesn't use loops, recursive approach instead
- */
 static long long	recursive_atol(const char *str, int i, int sign,
 		long long result)
 {
@@ -71,10 +60,6 @@ static long long	recursive_atol(const char *str, int i, int sign,
 	}
 	return (recursive_atol(str, i + 1, sign, result * 10 + (str[i] - '0')));
 }
-
-/**
- * Converts string to long long
- */
 static long long	ft_atol_improved(const char *str)
 {
 	int	i;
@@ -99,9 +84,6 @@ static long long	ft_atol_improved(const char *str)
 	return (recursive_atol(str, i, sign, 0));
 }
 
-/**
- * Built-in exit command implementation
- */
 void	ft_exit(t_cmd *cmd)
 {
 	long long	exit_code;
@@ -117,10 +99,10 @@ void	ft_exit(t_cmd *cmd)
 	}
 	cmd_arg = cmd->args[1];
 	if (is_invalid_number(cmd_arg))
-		handle_exit_error(cmd->args[1]);
+		handle_exit_error(cmd->args[1], cmd);
 	exit_code = ft_atol_improved(cmd_arg);
 	if (errno == ERANGE)
-		handle_exit_error(cmd->args[1]);
+		handle_exit_error(cmd->args[1], cmd);
 	if (cmd->args[2])
 	{
 		ft_putstr_fd("minishell: exit: too many arguments\n", 2);
@@ -129,5 +111,5 @@ void	ft_exit(t_cmd *cmd)
 	}
 	cleanup_shell(cmd->shell);
 
-	forked_exit(exit_code & 0xFF);
+	forked_exit(exit_code & 0xFF, cmd);
 }

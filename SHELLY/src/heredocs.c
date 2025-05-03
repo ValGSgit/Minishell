@@ -34,18 +34,20 @@ static int	handle_child_process(t_cmd *cmd, char *clean_eof,
 	signal(SIGINT, heredoc_sigint);
 	g_signal_recieved = open(temp_name, O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	if (g_signal_recieved < 0)
-		exit(EXIT_FAILURE);
+		forked_exit(EXIT_FAILURE, cmd);
 	read_heredoc_input(clean_eof, g_signal_recieved, cmd, expand_vars);
 	close(g_signal_recieved);
-	exit(EXIT_SUCCESS);
+	forked_exit(EXIT_SUCCESS, cmd);
+	return (1);
 }
 
-static int	handle_parent_process(t_cmd *cmd, int status)
+/* static int	handle_parent_process(t_cmd *cmd, int status)
 {
 	if (WIFEXITED(status) && WEXITSTATUS(status) == 130)
 	{
 		cmd->shell->exit_status = 130;
 		g_signal_recieved = 130;
+
 		cleanup_heredocs(cmd->shell);
 		cmd->syntax_error = 1;
 		return (130);
@@ -58,7 +60,37 @@ static int	handle_parent_process(t_cmd *cmd, int status)
 		return (WEXITSTATUS(status));
 	}
 	return (0);
+} */
+
+static int	handle_parent_process(t_cmd *cmd, int status)
+{
+	if (WIFEXITED(status))
+	{
+		int exit_code = WEXITSTATUS(status);
+		if (exit_code == 130)
+		{
+			cmd->shell->exit_status = 130;
+			g_signal_recieved = 130;
+			cleanup_heredocs(cmd->shell);
+			cmd->syntax_error = 1;
+			return (130);
+		}
+		else if (exit_code == 0)
+		{
+			cleanup_heredocs(cmd->shell);
+			return (0);
+		}
+	}
+	else if (WIFSIGNALED(status))
+	{
+		cmd->shell->exit_status = 128 + WTERMSIG(status);
+		g_signal_recieved = cmd->shell->exit_status;
+		cleanup_heredocs(cmd->shell);
+		return (WEXITSTATUS(status));
+	}
+	return (0);
 }
+
 
 int	handle_heredoc_fork(t_cmd *cmd, char *clean_eof, char *temp_name,
 		bool expand_vars)

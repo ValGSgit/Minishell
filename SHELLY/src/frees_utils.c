@@ -12,9 +12,6 @@
 
 #include "../includes/minishell.h"
 
-/**
- * Free an array of tokens
- */
 void	free_tokens(char **tokens)
 {
 	int	i;
@@ -27,7 +24,7 @@ void	free_tokens(char **tokens)
 		free(tokens[i]);
 		i++;
 	}
-	safe_free(tokens);
+	free(tokens);
 }
 
 /**

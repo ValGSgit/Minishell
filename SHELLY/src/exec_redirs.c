@@ -22,7 +22,7 @@ static bool	check_ambiguous_redirect(t_redir *node, t_cmd *cmd, bool fork)
 		if (fork)
 		{
 			close_cmd_fds(cmd);
-			exit(1);
+			forked_exit(1, cmd);
 		}
 		return (true);
 	}
@@ -49,7 +49,7 @@ void	apply_redirection(t_cmd *cmd, bool fork)
 		node = node->next;
 	}
 	if (error && fork)
-		exit(1);
+		forked_exit(1, cmd);
 }
 
 bool	handle_redirection_in(t_redir *redir, t_cmd *cmd, bool fork)
@@ -65,9 +65,7 @@ bool	handle_redirection_in(t_redir *redir, t_cmd *cmd, bool fork)
 		if (fork)
 		{
 			close_cmd_fds(cmd);
-			close(0);
-			close(1);
-			exit(1);
+			forked_exit(1, cmd);
 		}
 		return (true);
 	}
@@ -93,7 +91,7 @@ bool	handle_redirection_out(int append, t_redir *redir, \
 		if (fork)
 		{
 			close_cmd_fds(cmd);
-			exit(1);
+			forked_exit(1, cmd);
 		}
 		return (true);
 	}

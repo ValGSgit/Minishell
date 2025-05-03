@@ -88,6 +88,7 @@ typedef struct s_cmd
 	int				in_fd;
 	int				out_fd;
 	char			*in_file;
+	pid_t			*pid_array;
 	char			*out_file;
 	char			**args;
 	t_redir			*redirs;
@@ -175,7 +176,7 @@ bool	handle_redirection_out(int append, t_redir *redir, t_cmd *cmd,
 			bool fork);
 bool	handle_redirection_in(t_redir *redir, t_cmd *cmd, bool fork);
 char	*process_da_bullshit(char *arg, t_shell *shell);
-void 	forked_exit(int code);
+void 	forked_exit(int code, t_cmd *cmd);
 
 /* Builtins */
 void	handle_cd_path(t_cmd *cmd, char **path, char **path_dup,
@@ -243,7 +244,7 @@ void	update_shlvl(t_shell *shell);
 int		is_env_cmd(char *cmd);
 int		count_special_char(char *input);
 void	handle_signal_exit(t_shell *shell);
-int		process_shell_input(t_shell *shell, char *input, char *prompt);
+int		process_shell_input(t_shell *shell, char *input, const char *prompt);
 bool	needs_word_splitting(char *str);
 
 /* Memory Management */

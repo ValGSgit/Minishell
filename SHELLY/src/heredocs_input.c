@@ -41,7 +41,7 @@ static void	handle_eof_warning(const char *delimiter)
 	ft_putstr_fd("')\n", 2);
 }
 
-void	read_heredoc_input(const char *delimiter, int fd, t_cmd *cmd,
+/* void	read_heredoc_input(const char *delimiter, int fd, t_cmd *cmd,
 						bool expand_vars)
 {
 	char	*line;
@@ -67,7 +67,39 @@ void	read_heredoc_input(const char *delimiter, int fd, t_cmd *cmd,
 			processed_line = line;
 		process_input_line(fd, processed_line);
 	}
+} */
+
+void	read_heredoc_input(const char *delimiter, int fd, t_cmd *cmd,
+	bool expand_vars)
+{
+	char	*line;
+	char	*processed_line;
+
+	while (42)
+	{
+		line = readline("> ");
+		if (!line)
+		{
+			handle_eof_warning(delimiter);
+			break ;
+		}
+		if (check_delimiter_match(line, delimiter))
+		{
+			free(line);
+			break ;
+		}
+		if (expand_vars)
+		{
+			processed_line = process_da_bullshit(line, cmd->shell);
+		}
+		else
+		{
+			processed_line = line;
+		}
+		process_input_line(fd, processed_line);
+	}
 }
+
 
 void	handle_heredoc(t_cmd *cmd, char *eof)
 {

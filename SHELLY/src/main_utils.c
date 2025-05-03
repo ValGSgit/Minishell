@@ -38,6 +38,7 @@ static int	check_empty_input(char *input)
 static int	process_input(t_shell *shell, char **tokens)
 {
 	shell->cmd = parser(tokens, shell);
+	free_tokens(tokens); // comment
 	if (!shell->cmd)
 		return (1);
 	expand_nodes(shell->cmd, shell);
@@ -67,8 +68,8 @@ int	handle_input(t_shell *shell, char *input)
 		return (0);
 	}
 	result = process_input(shell, tokens);
-	if (tokens)
-		free_tokens(tokens);
+	//if (tokens)
+	//	free_tokens(tokens);
 	safe_free(input);
 	if (result)
 		return (0);

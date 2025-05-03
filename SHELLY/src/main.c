@@ -25,8 +25,9 @@ void	handle_signal_exit(t_shell *shell)
 		shell->exit_status = 130;
 }
 
-int	process_shell_input(t_shell *shell, char *input, char *prompt)
+int	process_shell_input(t_shell *shell, char *input, const char *prompt)
 {
+	(void)prompt;
 	if (!input)
 	{
 		handle_signal_exit(shell);
@@ -34,7 +35,7 @@ int	process_shell_input(t_shell *shell, char *input, char *prompt)
 	}
 	if (handle_input(shell, input) == 1)
 	{
-		safe_free(prompt);
+		//safe_free(prompt);
 		return (1);
 	}
 	if (g_signal_received == 130)
@@ -45,7 +46,7 @@ int	process_shell_input(t_shell *shell, char *input, char *prompt)
 	return (0);
 }
 
-void	minishell_loop(t_shell *shell)
+/* void	minishell_loop(t_shell *shell)
 {
 	char	*input;
 	char	*prompt;
@@ -62,6 +63,22 @@ void	minishell_loop(t_shell *shell)
 			break ;
 	}
 	safe_free(prompt);
+} */
+
+void	minishell_loop(t_shell *shell)
+{
+	char		*input;
+	const char	*prompt;
+
+	prompt = "Minishell-> ";
+	shell->cmd = NULL;
+	while (1)
+	{
+		setup_signals();
+		input = readline(prompt);
+		if (process_shell_input(shell, input, prompt))
+			break ;
+	}
 }
 
 void	initialize_shell(t_shell *shell, char **argv)

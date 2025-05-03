@@ -78,6 +78,7 @@ t_cmd	*create_cmd_node(void)
 	node->in_file = NULL;
 	node->out_file = NULL;
 	node->syntax_error = false;
+	node->pid_array = NULL;
 	return (node);
 }
 
@@ -93,6 +94,11 @@ void	handle_syntax_error(char *token, t_shell *shell)
 
 void	cleanup_shell(t_shell *shell)
 {
+    if (shell && shell->cmd && shell->cmd->pid_array != NULL)
+	{
+		free(shell->cmd->pid_array);
+		shell->cmd->pid_array = NULL;
+	}
 	if (shell->cmd)
 	{
 		free_cmd(shell->cmd);
