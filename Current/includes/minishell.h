@@ -175,6 +175,7 @@ bool	handle_redirection_out(int append, t_redir *redir, t_cmd *cmd,
 			bool fork);
 bool	handle_redirection_in(t_redir *redir, t_cmd *cmd, bool fork);
 char	*process_da_bullshit(char *arg, t_shell *shell);
+void 	forked_exit(int code);
 
 /* Builtins */
 void	handle_cd_path(t_cmd *cmd, char **path, char **path_dup,

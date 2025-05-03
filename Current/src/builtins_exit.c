@@ -128,5 +128,6 @@ void	ft_exit(t_cmd *cmd)
 		return ;
 	}
 	cleanup_shell(cmd->shell);
-	exit(exit_code & 0xFF);
+
+	forked_exit(exit_code & 0xFF);
 }

@@ -12,7 +12,7 @@
 
 #include "../includes/minishell.h"
 
-static void	setup_std_pipes(t_cmd *cmd, int prev_pipe_in,
+/* static void	setup_std_pipes(t_cmd *cmd, int prev_pipe_in,
 	int pipe_fd[2], int stderr_pipe[2])
 {
 	if (pipe(stderr_pipe) == -1)
@@ -82,4 +82,26 @@ void	rearrange_pipes(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2])
 	}
 	close(stderr_pipe[READ_END]);
 	close(original_stderr);
+} */
+
+void	rearrange_pipes(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2])
+{
+	if (prev_pipe_in != 0)
+	{
+		if (dup2(prev_pipe_in, STDIN_FILENO) == -1)
+		{
+			exit(1);
+		}
+		close(prev_pipe_in);
+	}
+	if (cmd->next)
+	{
+		close(pipe_fd[READ_END]);
+		if (dup2(pipe_fd[WRITE_END], STDOUT_FILENO) == -1)
+		{
+			close(pipe_fd[WRITE_END]);
+			exit(1);
+		}
+		close(pipe_fd[WRITE_END]);
+	}
 }

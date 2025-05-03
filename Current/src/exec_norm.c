@@ -14,7 +14,10 @@
 
 void	executor(t_cmd *cmd, t_shell *shell)
 {
-	if (!cmd)
+	t_cmd *node;
+
+	node = cmd;
+	if (!node)
 	{
 		shell->exit_status = 0;
 		return ;
@@ -22,7 +25,7 @@ void	executor(t_cmd *cmd, t_shell *shell)
 	if (!cmd->next)
 		execute_single_command(cmd, shell);
 	else
-		execute_pipeline(cmd, shell);
+		execute_pipeline(node, shell);
 }
 
 void	execute_forked_command(t_cmd *cmd, t_shell *shell)
@@ -32,12 +35,16 @@ void	execute_forked_command(t_cmd *cmd, t_shell *shell)
 	if (cmd->args && cmd->args[0] && is_builtin(cmd->args[0]))
 	{
 		execute_builtin(cmd);
+		close(0);
+		close(1);
 		exit(cmd->shell->exit_status);
 	}
 	else if (cmd->args && cmd->args[0])
 		execute_external_command(cmd, shell);
 	else if (!cmd->args && cmd->redirs)
 		;
+	close(0);
+	close(1);
 	exit(cmd->exit_status % 256);
 }
 

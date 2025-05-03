@@ -86,12 +86,22 @@ pid_t	fork_child_process(t_cmd *cmd, int ppi, int pipe_fd[2], t_shell *shell)
 		if (cmd->args && cmd->args[0] && is_builtin(cmd->args[0]))
 		{
 			execute_builtin(cmd);
+			close(0);
+			close(1);
 			exit(cmd->shell->exit_status);
 		}
 		if (cmd->args && cmd->args[0] && cmd->args[0][0]
 			&& cmd->args[0][0] != '\0')
+		{
 			execute_external_command(cmd, shell);
-		exit(cmd->shell->exit_status);
+			close(pipe_fd[0]);
+			close(pipe_fd[1]);
+			if (ppi != -1) 
+                close(ppi);
+			close(0);
+			close(1);
+		}
+		forked_exit(cmd->shell->exit_status);
 	}
 	return (pid);
 }

@@ -65,6 +65,8 @@ bool	handle_redirection_in(t_redir *redir, t_cmd *cmd, bool fork)
 		if (fork)
 		{
 			close_cmd_fds(cmd);
+			close(0);
+			close(1);
 			exit(1);
 		}
 		return (true);
