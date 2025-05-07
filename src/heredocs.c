@@ -88,15 +88,15 @@ static int	handle_parent_process(t_cmd *cmd, int status)
 	if (WIFEXITED(status) && WEXITSTATUS(status) == 130)
 	{
 		cmd->shell->exit_status = 130;
-		//g_signal_received = 1;
+		g_signal_received = SIGINT;
 		cleanup_heredocs(cmd->shell);
 		cmd->syntax_error = 1;
 		return (130);
 	}
 	else if (WIFSIGNALED(status))
 	{
-		cmd->shell->exit_status = 128 + WTERMSIG(status);
-		//g_signal_received = 1;
+		cmd->shell->exit_status = 130;
+		// g_signal_received = 1;
 		cleanup_heredocs(cmd->shell);
 		cmd->syntax_error = 1;
 		return (cmd->shell->exit_status);

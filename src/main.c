@@ -18,7 +18,8 @@ void	handle_signal_exit(t_shell *shell)
 {
 	if (shell->is_interactive)
 		ft_putstr_fd("exit\n", STDOUT_FILENO);
-	shell->exit_status = 128 + SIGINT;
+	if (g_signal_received == SIGINT)
+		shell->exit_status = 128 + SIGINT;
 }
 
 void	process_received_signal(t_shell *shell)
@@ -30,22 +31,21 @@ void	process_received_signal(t_shell *shell)
 	}
 	else if (g_signal_received)
 	{
-		shell->exit_status = 128 + g_signal_received;
+		shell->exit_status = 130;
 		g_signal_received = 0;
 	}
 }
 
 int	process_shell_input(t_shell *shell, char *input)
 {
+	process_received_signal(shell);
 	if (!input)
 	{
-		process_received_signal(shell);
 		handle_signal_exit(shell);
 		return (1);
 	}
 	if (handle_input(shell, input) == 1)
 		return (1);
-	
 	return (0);
 }
 
