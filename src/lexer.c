@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:56:16 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/30 21:10:48 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/01 17:25:23 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,9 +83,10 @@ char	**lexer(char *input)
 	t_lexer	lx;
 
 	tokens = ft_calloc(MAX_TOKENS, sizeof(char *));
-	if (!tokens || !input)
+	if (!input)
 	{
-		safe_free(tokens);
+		if (tokens)
+			free_tokens(tokens);
 		return (NULL);
 	}
 	ft_memset(&lx, 0, sizeof(t_lexer));

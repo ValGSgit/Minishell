@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:20:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/28 20:46:38 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/05 11:33:32 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,11 @@ static void	update_env_entry(char ***env, char *arg, int i)
 	free((*env)[i]);
 	(*env)[i] = ft_strdup(arg);
 	if (!(*env)[i])
+	{
 		perror("minishell: malloc");
+		free_env(*env);
+		free(arg);
+	}
 }
 
 static void	find_and_update_env(char *arg, char *var_name, char ***env)

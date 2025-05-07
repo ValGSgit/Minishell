@@ -6,22 +6,22 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 13:42:34 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/28 13:42:57 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/05 10:51:39 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-static void	process_env_args(t_cmd *cmd, int k)
-{
-	char	*tmp;
+// static void	process_env_args(t_cmd *cmd, int k)
+// {
+// 	char	*tmp;
 
-	tmp = ft_strdup(cmd->args[k]);
-	free(cmd->args[k - 1]);
-	free(cmd->args[k]);
-	cmd->args[k - 1] = tmp;
-	cmd->args[k] = NULL;
-}
+// 	tmp = ft_strdup(cmd->args[k]);
+// 	free(cmd->args[k - 1]);
+// 	free(cmd->args[k]);
+// 	cmd->args[k - 1] = tmp;
+// 	cmd->args[k] = NULL;
+// }
 
 static void	display_env_vars(t_cmd *cmd)
 {
@@ -39,18 +39,11 @@ static void	display_env_vars(t_cmd *cmd)
 
 void	ft_env(t_cmd *cmd)
 {
-	int	k;
-
-	k = 1;
-	while (cmd->args[k])
+	if (cmd->args[1])
 	{
-		process_env_args(cmd, k);
-		k++;
-		if (!cmd->args[k])
-		{
-			executor(cmd, cmd->shell);
-			return ;
-		}
+		ft_putstr_fd("env: too many arguments\n", STDERR_FILENO);
+		cmd->shell->exit_status = 1;
+		return ;
 	}
 	if (!cmd->shell->env)
 	{

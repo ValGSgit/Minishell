@@ -6,11 +6,22 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:50:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/29 23:04:37 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/03 18:47:40 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
+
+static int	create_pipe_if_needed(int *pipe_fd, int *prev_pipe_in)
+{
+	if (pipe(pipe_fd) == -1)
+	{
+		if (*prev_pipe_in != 0)
+			close(*prev_pipe_in);
+		return (perror("minishell: pipe"), -1);
+	}
+	return (0);
+}
 
 int	fork_pipeline_commands(t_cmd *cmd, t_shell *shell, pid_t *pids,
 	pid_t *last_pid)
@@ -26,98 +37,61 @@ int	fork_pipeline_commands(t_cmd *cmd, t_shell *shell, pid_t *pids,
 	i = 0;
 	while (node)
 	{
-		if (node->next)
-		{
-			if (pipe(pipe_fd) == -1)
-			{
-				// Close previous pipe if it's open before returning
-				if (prev_pipe_in != 0)
-					close(prev_pipe_in);
-				return (perror("minishell: pipe"), -1);
-			}
-		}
-		
+		if (node->next && create_pipe_if_needed(pipe_fd, &prev_pipe_in) == -1)
+			return (-1);
 		pid = fork_child_process(node, prev_pipe_in, pipe_fd, shell);
 		if (pid == -1)
-		{
-			// On fork error, ensure all pipes are closed
-			if (prev_pipe_in != 0)
-				close(prev_pipe_in);
-			if (node->next)
-			{
-				close(pipe_fd[READ_END]);
-				close(pipe_fd[WRITE_END]);
-			}
-			return (handle_fork_error(pids), -1);
-		}
-		
+			return (handle_fork_failure(prev_pipe_in, node, pids, pipe_fd));
 		pids[i++] = pid;
 		if (!node->next)
 			*last_pid = pid;
-			
 		setup_parent_after_fork(node, &prev_pipe_in, pipe_fd);
 		node = node->next;
 	}
-	
-	// Make sure any remaining open pipe is closed
 	if (prev_pipe_in != 0)
 		close(prev_pipe_in);
-		
 	return (i);
 }
 
-pid_t fork_child_process(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2], t_shell *shell)
+void	close_pipe_exec(int pipe_fd[2], int ppi)
 {
-	pid_t pid;
+	close(pipe_fd[0]);
+	close(pipe_fd[1]);
+	if (ppi != -1)
+	{
+		close(ppi);
+	}
+	close(0);
+	close(1);
+}
 
+pid_t	fork_child_process(t_cmd *cmd, int ppi, int pipe_fd[2], t_shell *shell)
+{
+	pid_t	pid;
+
+	ignore_signals();
 	pid = fork();
 	if (pid == -1)
-	{
-		perror("fork");
-		return (-1);
-	}
+		return (perror("fork"), cleanup_heredocs(shell), -1);
 	if (pid == 0)
 	{
-		signal(SIGQUIT, SIG_DFL);
-		signal(SIGINT, SIG_DFL);
-		
-		rearrange_pipes(cmd, prev_pipe_in, pipe_fd);
+		rearrange_pipes(cmd, ppi, pipe_fd);
 		if (cmd->redirs)
 			apply_redirection(cmd, true);
 		if (cmd->args && cmd->args[0] && is_builtin(cmd->args[0]))
 		{
 			execute_builtin(cmd);
-			exit(cmd->shell->exit_status);
+			forked_exit(cmd->shell->exit_status, cmd);
 		}
-		if (cmd->args && cmd->args[0] && cmd->args[0][0] && cmd->args[0][0] != '\0')
+		if (cmd->args && cmd->args[0] && cmd->args[0][0]
+			&& cmd->args[0][0] != '\0')
+		{
 			execute_external_command(cmd, shell);
-		
-		// Exit with correct status if we get here
-		exit(cmd->shell->exit_status);
+			close_pipe_exec(pipe_fd, ppi);
+		}
+		forked_exit(cmd->shell->exit_status, cmd);
 	}
 	return (pid);
-}
-
-void	rearrange_pipes(t_cmd *cmd, int prev_pipe_in, int pipe_fd[2])
-{
-	if (prev_pipe_in != 0)
-	{
-		if (dup2(prev_pipe_in, STDIN_FILENO) == -1)
-		{
-			exit(1);
-		}
-		close(prev_pipe_in);
-	}
-	if (cmd->next)
-	{
-		close(pipe_fd[READ_END]);
-		if (dup2(pipe_fd[WRITE_END], STDOUT_FILENO) == -1)
-		{
-			close(pipe_fd[WRITE_END]);
-			exit(1);
-		}
-		close(pipe_fd[WRITE_END]);
-	}
 }
 
 void	setup_parent_after_fork(t_cmd *cmd, int *prev_pipe_in, int pipe_fd[2])
@@ -129,33 +103,4 @@ void	setup_parent_after_fork(t_cmd *cmd, int *prev_pipe_in, int pipe_fd[2])
 		close(pipe_fd[WRITE_END]);
 		*prev_pipe_in = pipe_fd[READ_END];
 	}
-}
-
-void	wait_for_pipeline(pid_t *pids, int count, pid_t last_pid,
-	t_shell *shell)
-{
-	int	i;
-	int	status;
-
-	i = 0;
-	status = 0;
-	while (i < count)
-	{
-		if (pids[i] == last_pid)
-		{
-			waitpid(pids[i], &status, 0);
-			if (WIFEXITED(status))
-				shell->exit_status = WEXITSTATUS(status);
-			else if (WIFSIGNALED(status))
-			{
-				shell->exit_status = 128 + WTERMSIG(status);
-				if (WTERMSIG(status) == SIGINT)
-					write(STDERR_FILENO, "\n", 1);
-			}
-		}
-		else
-			waitpid(pids[i], NULL, 0);
-		i++;
-	}
-	free(pids);
 }

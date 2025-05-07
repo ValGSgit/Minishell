@@ -12,31 +12,25 @@
 
 #include "../includes/minishell.h"
 
-static void	swap_strings(char **a, char **b)
-{
-	char	*temp;
-
-	temp = *a;
-	*a = *b;
-	*b = temp;
-}
-
 void	ft_sort_strings(char **arr, int count)
 {
-	int	i;
-	int	j;
-	int	swapped;
+	int		i;
+	int		j;
+	int		swapped;
+	char	*temp;
 
 	i = 0;
-	while (i < count - 1)
+	while (arr[i] && i < count - 1)
 	{
 		swapped = 0;
 		j = 0;
-		while (j < count - i - 1)
+		while (arr[j] && j < count - i - 1)
 		{
 			if (ft_strcmp(arr[j], arr[j + 1]) > 0)
 			{
-				swap_strings(&arr[j], &arr[j + 1]);
+				temp = arr[j];
+				arr[j] = arr[j + 1];
+				arr[j + 1] = temp;
 				swapped = 1;
 			}
 			j++;
@@ -47,7 +41,7 @@ void	ft_sort_strings(char **arr, int count)
 	}
 }
 
-static char	**copy_env_array(char **env, int env_count)
+char	**copy_env_array(char **env, int env_count)
 {
 	char	**env_copy;
 	int		i;
@@ -65,7 +59,7 @@ static char	**copy_env_array(char **env, int env_count)
 	return (env_copy);
 }
 
-static void	free_env_copy(char **env_copy)
+void	free_env_copy(char **env_copy)
 {
 	int	i;
 
@@ -78,7 +72,21 @@ static void	free_env_copy(char **env_copy)
 	free(env_copy);
 }
 
-static void	print_env_var(char *env_var, int fd)
+static void	print_env_var_logic(const char *env_var, int start_index, int fd)
+{
+	ft_putstr_fd("=\"", fd);
+	while (env_var[start_index])
+	{
+		if (env_var[start_index] == '\"' || env_var[start_index] == '$'
+			|| env_var[start_index] == '\\' || env_var[start_index] == '`')
+			ft_putchar_fd('\\', fd);
+		ft_putchar_fd(env_var[start_index], fd);
+		start_index++;
+	}
+	ft_putstr_fd("\"", fd);
+}
+
+void	print_env_var(char *env_var, int fd)
 {
 	char	*equals_pos;
 	int		j;
@@ -93,45 +101,9 @@ static void	print_env_var(char *env_var, int fd)
 			ft_putchar_fd(env_var[j], fd);
 			j++;
 		}
-		ft_putstr_fd("=\"", fd);
-		j++;
-		while (env_var[j])
-		{
-			if (env_var[j] == '\"' || env_var[j] == '$' || env_var[j] == '\\' 
-						|| env_var[j] == '`')
-				ft_putchar_fd('\\', fd);
-			ft_putchar_fd(env_var[j], fd);
-			j++;
-		}
-		ft_putstr_fd("\"", fd);
+		print_env_var_logic(env_var, j + 1, fd);
 	}
 	else
 		ft_putstr_fd(env_var, fd);
 	ft_putchar_fd('\n', fd);
-}
-
-void	print_sorted_env(char **env)
-{
-	int		i;
-	int		env_count;
-	char	**env_copy;
-	int		fd;
-
-	fd = STDOUT_FILENO;
-	if (!env)
-		return ;
-	env_count = 0;
-	while (env[env_count])
-		env_count++;
-	env_copy = copy_env_array(env, env_count);
-	if (!env_copy)
-		return ;
-	ft_sort_strings(env_copy, env_count);
-	i = 0;
-	while (env_copy[i])
-	{
-		print_env_var(env_copy[i], fd);
-		i++;
-	}
-	free_env_copy(env_copy);
 }

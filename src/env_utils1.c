@@ -80,3 +80,12 @@ char	*resolve_path(char *cmd, char **env)
 		return (result);
 	return (ft_strdup(cmd));
 }
+
+/* Checks if the token contains a metacharacter */
+bool	contains_metacharacter(char *token)
+{
+	if (!token)
+		return (false);
+	return (ft_strchr(token, '|') || ft_strchr(token, '<') || ft_strchr(token,
+			'>'));
+}

@@ -2,36 +2,53 @@
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   utils.c                                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+
-	+:+     */
-/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+
-	+#+        */
-/*                                                +#+#+#+#+#+
-	+#+           */
-/*   Created: 2025/01/31 15:03:09 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/27 11:30:00 by vagarcia         ###   ########.fr       */
+/*                                                    +:+ +:+         +:+     */
+/*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/03 18:58:09 by vagarcia          #+#    #+#             */
+/*   Updated: 2025/05/03 18:58:09 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-void	create_redir_node(t_cmd *cmd, int type, char *file)
+static t_redir	*create_redir_node_struct(int type, char *file, t_cmd *cmd)
 {
 	t_redir	*node;
-	t_redir	*tmp;
 
-	node = xmalloc(sizeof(t_redir));
+	if (!file)
+		return (NULL);
+	node = malloc(sizeof(t_redir));
 	if (!node)
-		return ;
+		return (NULL);
 	node->type = type;
 	node->prefile = ft_strdup(file);
 	if (!node->prefile)
 	{
 		safe_free(node);
-		return ;
+		return (NULL);
 	}
 	node->file = process_argument(file, cmd->shell);
+	if (!node->file)
+	{
+		safe_free(node->prefile);
+		safe_free(node);
+		return (NULL);
+	}
 	node->next = NULL;
+	return (node);
+}
+
+void	create_redir_node(t_cmd *cmd, int type, char *file)
+{
+	t_redir		*node;
+	t_redir		*tmp;
+
+	if (!cmd)
+		return ;
+	node = create_redir_node_struct(type, file, cmd);
+	if (!node)
+		return ;
 	if (!cmd->redirs)
 		cmd->redirs = node;
 	else
@@ -47,7 +64,7 @@ t_cmd	*create_cmd_node(void)
 {
 	t_cmd	*node;
 
-	node = xmalloc(sizeof(t_cmd));
+	node = malloc(sizeof(t_cmd));
 	if (!node)
 		return (NULL);
 	node->in_fd = -1;
@@ -58,6 +75,7 @@ t_cmd	*create_cmd_node(void)
 	node->in_file = NULL;
 	node->out_file = NULL;
 	node->syntax_error = false;
+	node->pid_array = NULL;
 	return (node);
 }
 
@@ -73,6 +91,11 @@ void	handle_syntax_error(char *token, t_shell *shell)
 
 void	cleanup_shell(t_shell *shell)
 {
+	if (shell && shell->cmd && shell->cmd->pid_array != NULL)
+	{
+		free(shell->cmd->pid_array);
+		shell->cmd->pid_array = NULL;
+	}
 	if (shell->cmd)
 	{
 		free_cmd(shell->cmd);

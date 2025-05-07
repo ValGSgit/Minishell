@@ -34,14 +34,19 @@ void	update_pwd(t_shell *shell)
 	char	*old_pwd;
 
 	cwd = getcwd(NULL, 0);
+	if (shell->env)
+		old_pwd = get_env_value("PWD", shell->env);
+	else
+		old_pwd = NULL;
+	update_oldpwd(shell, old_pwd);
 	if (!cwd)
 	{
-		old_pwd = get_env_value("PWD", shell->env);
-		update_oldpwd(shell, old_pwd);
+		ft_putstr_fd("pwd: error retrieving current directory: getcwd: ", 2);
+		ft_putstr_fd("cannot access parent directories: ", 2);
+		ft_putstr_fd(strerror(errno), 2);
+		ft_putstr_fd("\n", 2);
 		return ;
 	}
-	old_pwd = get_env_value("PWD", shell->env);
-	update_oldpwd(shell, old_pwd);
 	new_pwd = ft_strjoin("PWD=", cwd);
 	if (new_pwd)
 	{
@@ -70,8 +75,6 @@ void	update_shlvl(t_shell *shell)
 	char	*new_shlvl;
 	char	*val;
 
-	if (!shell->env)
-		return ;
 	val = get_env_value("SHLVL", shell->env);
 	if (!val)
 	{
@@ -81,8 +84,7 @@ void	update_shlvl(t_shell *shell)
 	level = ft_atoi(val);
 	if (level < 0)
 		level = 0;
-	level++;
-	level_str = ft_itoa(level);
+	level_str = ft_itoa(++level);
 	if (!level_str)
 		return ;
 	new_shlvl = ft_strjoin("SHLVL=", level_str);
@@ -97,6 +99,7 @@ void	update_shlvl(t_shell *shell)
 void	ft_pwd(t_cmd *cmd)
 {
 	char	cwd[1024];
+	char	*pwd_env;
 
 	if (getcwd(cwd, 1024) != NULL)
 	{
@@ -105,9 +108,134 @@ void	ft_pwd(t_cmd *cmd)
 	}
 	else
 	{
-		ft_putstr_fd("minishell: pwd: ", 2);
-		ft_putstr_fd(strerror(errno), 2);
-		ft_putstr_fd("\n", 2);
-		cmd->shell->exit_status = 1;
+		pwd_env = get_env_value("PWD", cmd->shell->env);
+		if (pwd_env)
+		{
+			ft_putendl_fd(pwd_env, STDOUT_FILENO);
+			cmd->shell->exit_status = 0;
+		}
+		else
+		{
+			ft_putstr_fd("minishell: pwd: ", 2);
+			ft_putstr_fd(strerror(errno), 2);
+			ft_putstr_fd("\n", 2);
+			cmd->shell->exit_status = 1;
+		}
 	}
+}
+
+static char	*join_path_parts(char **parts, int count)
+{
+	char	*result;
+	char	*temp;
+	int		i;
+
+	result = ft_strdup("/");
+	if (!result)
+		return (NULL);
+	
+	i = 0;
+	while (i < count)
+	{
+		if (parts[i])
+		{
+			temp = result;
+			if (i > 0 && result[ft_strlen(result) - 1] != '/')
+				result = ft_strjoin(result, "/");
+			else
+				result = ft_strdup(result);
+			free(temp);
+			
+			temp = result;
+			result = ft_strjoin(result, parts[i]);
+			free(temp);
+		}
+		i++;
+	}
+	return (result);
+}
+
+static char	*resolve_path_parts(char **parts, int count)
+{
+	int		i;
+	int		j;
+	char	*result;
+
+	i = 0;
+	while (i < count)
+	{
+		if (ft_strcmp(parts[i], "..") == 0 && i > 0)
+		{
+			j = i - 1;
+			while (j > 0 && (!parts[j] || ft_strcmp(parts[j], "..") == 0))
+				j--;
+			if (j >= 0 && parts[j])
+			{
+				free(parts[j]);
+				parts[j] = NULL;
+			}
+		}
+		else if (ft_strcmp(parts[i], ".") == 0)
+		{
+			free(parts[i]);
+			parts[i] = NULL;
+		}
+		i++;
+	}
+	result = join_path_parts(parts, count);
+	return (result);
+}
+
+char	*calculate_logical_path(const char *current_pwd, const char *path)
+{
+	char	**path_parts;
+	char	*full_path;
+	char	*result;
+	char	*clean_path;
+	int		count;
+
+	if (!current_pwd || !path)
+		return (NULL);
+	if (path[0] == '/')
+		full_path = ft_strdup(path);
+	else
+	{
+		full_path = ft_strjoin(current_pwd, "/");
+		if (!full_path)
+			return (NULL);
+		clean_path = safe_strjoin(full_path, (char *)path, 1);
+		full_path = clean_path;
+	}
+	path_parts = ft_split(full_path, '/');
+	free(full_path);
+	if (!path_parts)
+		return (NULL);
+	count = 0;
+	while (path_parts[count])
+		count++;
+	result = resolve_path_parts(path_parts, count);
+	// Ensure we free all parts of path_parts array, even the ones that
+	// might have been set to NULL in resolve_path_parts
+	free_tokens(path_parts);
+	return (result);
+}
+
+void	update_logical_pwd(t_shell *shell, const char *path)
+{
+	char	*current_pwd;
+	char	*new_pwd;
+	char	*logical_path;
+
+	current_pwd = get_env_value("PWD", shell->env);
+	logical_path = calculate_logical_path(current_pwd, path);
+	if (!logical_path)
+		return ;
+
+	new_pwd = ft_strjoin("PWD=", logical_path);
+	free(logical_path);
+	if (!new_pwd)
+		return ;
+
+	update_or_add_env(new_pwd, &shell->env);
+	free(new_pwd);
 }

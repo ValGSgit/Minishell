@@ -30,7 +30,7 @@ int	same_length(char *tok1, char *tok2)
 	return (0);
 }
 
-void	handle_heredoc_redirect(t_cmd *cmd, char **tokens, int *i,
+void	handle_heredoc_direct(t_cmd *cmd, char **tokens, int *i,
 		t_shell *shell)
 {
 	if (!tokens[*i + 1])

@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 14:20:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/30 21:23:51 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/05 10:48:03 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ static void	remove_env_var(t_cmd *cmd, char *arg)
 		return ;
 	while (cmd->shell->env[i])
 	{
-		if ((strncmp(cmd->shell->env[i], arg, arg_len) == 0)
+		if ((ft_strncmp(cmd->shell->env[i], arg, arg_len) == 0)
 			&& (cmd->shell->env[i][arg_len] == '='
 			|| cmd->shell->env[i][arg_len] == '\0'))
 		{

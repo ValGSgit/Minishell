@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/29 21:26:40 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/05/01 14:48:51 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/05 13:23:52 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,12 @@ static bool	check_ambiguous_redirect(t_redir *node, t_cmd *cmd, bool fork)
 	if (node->file && node->file[0] == '\0')
 	{
 		cmd->shell->exit_status = 1;
-		print_error_message("minishell: ", node->prefile, ": ambiguous redirect\n");
+		print_error_message("minishell: ", node->prefile, \
+			": ambiguous redirect\n");
 		if (fork)
 		{
 			close_cmd_fds(cmd);
-			exit(1);
+			forked_exit(1, cmd);
 		}
 		return (true);
 	}
@@ -48,12 +49,12 @@ void	apply_redirection(t_cmd *cmd, bool fork)
 		node = node->next;
 	}
 	if (error && fork)
-		exit(1);
+		forked_exit(1, cmd);
 }
 
 bool	handle_redirection_in(t_redir *redir, t_cmd *cmd, bool fork)
 {
-	int fd;
+	int	fd;
 
 	fd = open(redir->file, O_RDONLY);
 	if (fd == -1)
@@ -64,7 +65,7 @@ bool	handle_redirection_in(t_redir *redir, t_cmd *cmd, bool fork)
 		if (fork)
 		{
 			close_cmd_fds(cmd);
-			exit(1);
+			forked_exit(1, cmd);
 		}
 		return (true);
 	}
@@ -73,9 +74,10 @@ bool	handle_redirection_in(t_redir *redir, t_cmd *cmd, bool fork)
 	return (false);
 }
 
-bool	handle_redirection_out(int append, t_redir *redir, t_cmd *cmd, bool fork)
+bool	handle_redirection_out(int append, t_redir *redir, \
+		t_cmd *cmd, bool fork)
 {
-	int fd;
+	int	fd;
 
 	if (append)
 		fd = open(redir->file, O_WRONLY | O_APPEND | O_CREAT, 0644);
@@ -89,7 +91,7 @@ bool	handle_redirection_out(int append, t_redir *redir, t_cmd *cmd, bool fork)
 		if (fork)
 		{
 			close_cmd_fds(cmd);
-			exit(1);
+			forked_exit(1, cmd);
 		}
 		return (true);
 	}
@@ -97,4 +99,3 @@ bool	handle_redirection_out(int append, t_redir *redir, t_cmd *cmd, bool fork)
 	close(fd);
 	return (false);
 }
-

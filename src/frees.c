@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:57:04 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/27 11:15:00 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/01 19:30:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,37 +31,32 @@ void	free_redir(t_redir *redir)
 	}
 }
 
-void close_cmd_fds(t_cmd *cmd)
+void	close_cmd_fds(t_cmd *cmd)
 {
-    if (!cmd)
-        return;
-    
-    // Close standard input redirection
-    if (cmd->in_fd >= 0 && cmd->in_fd != STDIN_FILENO)
-    {
-        close(cmd->in_fd);
-        cmd->in_fd = -1;
-    }
-    
-    // Close standard output redirection
-    if (cmd->out_fd >= 0 && cmd->out_fd != STDOUT_FILENO)
-    {
-        close(cmd->out_fd);
-        cmd->out_fd = -1;
-    }
-    
-    // Check if there are any heredoc files that need to be cleaned up
-    t_redir *redir = cmd->redirs;
-    while (redir)
-    {
-        if (redir->type == REDIR_HEREDOC && redir->file)
-        {
-            // Try to access the file and unlink it if it exists
-            if (access(redir->file, F_OK) == 0)
-                unlink(redir->file);
-        }
-        redir = redir->next;
-    }
+	t_redir	*redir;
+
+	if (!cmd)
+		return ;
+	if (cmd->in_fd >= 0 && cmd->in_fd != STDIN_FILENO)
+	{
+		close(cmd->in_fd);
+		cmd->in_fd = -1;
+	}
+	if (cmd->out_fd >= 0 && cmd->out_fd != STDOUT_FILENO)
+	{
+		close(cmd->out_fd);
+		cmd->out_fd = -1;
+	}
+	redir = cmd->redirs;
+	while (redir)
+	{
+		if (redir->type == REDIR_HEREDOC && redir->file)
+		{
+			if (access(redir->file, F_OK) == 0)
+				unlink(redir->file);
+		}
+		redir = redir->next;
+	}
 }
 
 /**
@@ -77,7 +72,6 @@ void	free_cmd(t_cmd *cmd)
 	while (cmd)
 	{
 		temp = cmd->next;
-
 		close_cmd_fds(cmd);
 		if (cmd->args)
 		{
@@ -95,54 +89,4 @@ void	free_cmd(t_cmd *cmd)
 		safe_free(cmd);
 		cmd = temp;
 	}
-}
-
-/**
- * Free an array of tokens
- */
-void	free_tokens(char **tokens)
-{
-	int	i;
-
-	if (!tokens)
-		return ;
-	i = 0;
-	while (tokens[i])
-	{
-		safe_free(tokens[i]);
-		i++;
-	}
-	safe_free(tokens);
-}
-
-/**
- * Free the environment variables array
- */
-void	free_env(char **env)
-{
-	int	i;
-
-	if (!env)
-		return ;
-	i = 0;
-	while (env[i])
-	{
-		safe_free(env[i]);
-		i++;
-	}
-	safe_free(env);
-}
-
-/**
- * Free the entire shell structure
- */
-void	free_shell(t_shell *shell)
-{
-	if (!shell)
-		return ;
-	if (shell->env)
-		free_env(shell->env);
-	if (shell->cmd)
-		free_cmd(shell->cmd);
-	// The shell itself should be on the stack, so we don't free it
 }

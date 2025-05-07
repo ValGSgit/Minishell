@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 20:33:47 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/30 23:32:45 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/05 13:08:41 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,10 +68,6 @@ void	execute_builtin(t_cmd *cmd)
  * Creates and prints a single error message to stderr
  * Takes variable parts and joins them before printing
  */
-/**
- * Builds an error message from prefix, msg, and extra components
- * Returns a newly allocated string that must be freed by the caller
- */
 static char	*build_error_message(const char *prefix, char *msg, char *extra)
 {
 	char	*error_msg;
@@ -88,15 +84,14 @@ static char	*build_error_message(const char *prefix, char *msg, char *extra)
 	if (msg)
 	{
 		temp = error_msg;
-		error_msg = ft_strjoin(error_msg, msg);
-		free(temp);
+		error_msg = safe_strjoin(error_msg, msg, 1);
 		if (!error_msg)
 			return (NULL);
 	}
 	if (extra)
 	{
 		temp = error_msg;
-		error_msg = ft_strjoin(error_msg, extra);
+		error_msg = safe_strjoin(error_msg, extra, 1);
 	}
 	return (error_msg);
 }
@@ -112,7 +107,7 @@ void	print_error_message(const char *prefix, char *msg, char *extra)
 	error_msg = build_error_message(prefix, msg, extra);
 	if (error_msg)
 	{
-		ft_putstr_fd(error_msg, 2);
+		ft_putstr_fd(error_msg, STDERR_FILENO);
 		free(error_msg);
 	}
 }

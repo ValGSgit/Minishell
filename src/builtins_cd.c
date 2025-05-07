@@ -6,40 +6,11 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 14:00:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/30 21:23:17 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/07 13:29:39 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
-
-static void	cd_error(char *path_dup)
-{
-	char	*error_msg;
-	char	*temp;
-	char	*with_colon;
-
-	error_msg = ft_strjoin("minishell: cd: ", path_dup);
-	if (!error_msg)
-		return ;
-	temp = error_msg;
-	with_colon = ft_strjoin(error_msg, ": ");
-	free(temp);
-	if (!with_colon)
-		return ;
-	temp = with_colon;
-	error_msg = ft_strjoin(with_colon, strerror(errno));
-	free(temp);
-	if (!error_msg)
-		return ;
-	temp = error_msg;
-	error_msg = ft_strjoin(error_msg, "\n");
-	free(temp);
-	if (error_msg)
-	{
-		ft_putstr_fd(error_msg, 2);
-		free(error_msg);
-	}
-}
 
 static void	handle_cd_error(t_cmd *cmd, char *old_pwd, char *path_dup)
 {
@@ -49,33 +20,28 @@ static void	handle_cd_error(t_cmd *cmd, char *old_pwd, char *path_dup)
 	cmd->shell->exit_status = 1;
 }
 
-static void	handle_cd_path(t_cmd *cmd, char **path, char **path_dup,
-		char *old_pwd)
-{
-	if (!cmd->args[1] || ft_strcmp(cmd->args[1], "~") == 0
-		|| ft_strcmp(cmd->args[1], "-") == 0)
-	{
-		*path_dup = ft_strdup(*path);
-		if (!*path_dup)
-		{
-			free(old_pwd);
-			cmd->shell->exit_status = 1;
-			return ;
-		}
-		*path = *path_dup;
-	}
-	if (cmd->args[1] && ft_strcmp(cmd->args[1], "-") == 0 && *path)
-		ft_putendl_fd(*path, STDOUT_FILENO);
-}
-
 static char	*get_cd_path(t_cmd *cmd)
 {
+	char	*path;
+	int		i;
+
 	if (!cmd->args[1] || ft_strcmp(cmd->args[1], "~") == 0)
 		return (get_env_value("HOME", cmd->shell->env));
 	else if (ft_strcmp(cmd->args[1], "-") == 0)
 		return (get_env_value("OLDPWD", cmd->shell->env));
 	else
-		return (cmd->args[1]);
+	{
+		path = cmd->args[1];
+		i = 0;
+		if (path && path[0] == '/')
+		{
+			while (path[i] && path[i] == '/')
+				i++;
+			if (!path[i])
+				return ("/");
+		}
+		return (path);
+	}
 }
 
 static void	handle_cd_path_not_found(t_cmd *cmd, char *old_pwd)
@@ -96,6 +62,13 @@ static int	check_cd_args(t_cmd *cmd, char *old_pwd)
 		free(old_pwd);
 		cmd->shell->exit_status = 1;
 		return (0);
+	}
+	if (!old_pwd)
+	{
+		ft_putstr_fd("cd: error retrieving current directory: getcwd: ", 2);
+		ft_putstr_fd("cannot access parent directories: ", 2);
+		ft_putstr_fd(strerror(errno), 2);
+		ft_putstr_fd("\n", 2);
 	}
 	return (1);
 }
@@ -126,4 +99,5 @@ void	ft_cd(t_cmd *cmd)
 		return ;
 	}
 	finish_cd_success(cmd, old_pwd, path_dup);
+	setup_signals();
 }

@@ -19,7 +19,7 @@ char	*get_random_temp_name(void)
 	unsigned char	random_bytes[6];
 	int				i;
 
-	temp_name = xmalloc(32);
+	temp_name = malloc(32);
 	if (!temp_name)
 		return (NULL);
 	ft_strlcpy(temp_name, HERE_TEMP, 32);
@@ -48,7 +48,7 @@ char	*clean_empty_expansions(char *arg)
 
 	if (!arg)
 		return (NULL);
-	result = xmalloc(ft_strlen(arg) + 1);
+	result = malloc(ft_strlen(arg) + 1);
 	if (!result)
 		return (arg);
 	i = 0;
@@ -68,77 +68,54 @@ char	*clean_empty_expansions(char *arg)
 	return (arg);
 }
 
-char	*remove_quotes(char *lim)
+char	*init_quotes_removal(char *lim, int *len)
 {
 	char	*new_lim;
-	int		i;
-	int		j;
-	char	quote_type;
-	int		len;
 
 	if (!lim)
 		return (NULL);
-	len = ft_strlen(lim);
-	if (len == 1 && (lim[0] == '\'' || lim[0] == '\"'))
+	*len = ft_strlen(lim);
+	if (*len == 1 && (lim[0] == '\'' || lim[0] == '\"'))
 		return (lim);
-	new_lim = xmalloc(sizeof(char) * (len + 1));
+	new_lim = malloc(sizeof(char) * (*len + 1));
 	if (!new_lim)
 		return (NULL);
+	return (new_lim);
+}
+
+static void	copy_without_quotes(char *dst, const char *src)
+{
+	int		i;
+	int		j;
+	char	quote_type;
+
 	i = 0;
 	j = 0;
 	quote_type = 0;
-	while (lim[i])
+	while (src[i])
 	{
-		if ((lim[i] == '\'' || lim[i] == '\"') && !quote_type)
-			quote_type = lim[i++];
-		else if (lim[i] == quote_type)
+		if ((src[i] == '\'' || src[i] == '\"') && !quote_type)
+			quote_type = src[i++];
+		else if (src[i] == quote_type)
 		{
 			quote_type = 0;
 			i++;
 		}
 		else
-			new_lim[j++] = lim[i++];
+			dst[j++] = src[i++];
 	}
-	new_lim[j] = '\0';
-	free(lim);
-	return (new_lim);
+	dst[j] = '\0';
 }
 
-void	cleanup_heredocs(t_shell *shell) //use when sigint for no issues ior improve
+char	*remove_quotes(char *lim)
 {
-	t_cmd	*cmd;
-	t_redir	*redir;
-	t_redir	*next;
-	t_redir	*prev;
+	char	*new_lim;
+	int		len;
 
-	if (!shell || !shell->cmd)
-		return ;
-	cmd = shell->cmd;
-	while (cmd)
-	{
-		redir = cmd->redirs;
-		prev = NULL;
-		
-		while (redir && redir->type == REDIR_HEREDOC)
-		{
-			next = redir->next;
-			if (redir->type == REDIR_HEREDOC && redir->file)
-			{
-				if (access(redir->file, F_OK) == 0 && unlink(redir->file) == -1)
-					perror("unlink");
-			}
-			if (redir->file)
-				safe_free(redir->file);
-			if (redir->prefile)
-				safe_free(redir->prefile);
-			free(redir);
-			redir = next;
-		}
-		
-		if (prev)
-			prev->next = redir;
-		else
-			cmd->redirs = redir;
-		cmd = cmd->next;
-	}
+	new_lim = init_quotes_removal(lim, &len);
+	if (!new_lim || new_lim == lim)
+		return (new_lim);
+	copy_without_quotes(new_lim, lim);
+	free(lim);
+	return (new_lim);
 }

@@ -6,14 +6,13 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:19:53 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/30 10:15:00 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/07 10:15:00 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-/* Definition of the global variable declared in minishell.h */
-volatile sig_atomic_t	g_signal_received;
+volatile sig_atomic_t	g_signal_received = 0;
 
 void	setup_signals(void)
 {
@@ -23,8 +22,7 @@ void	setup_signals(void)
 
 void	handle_sigint(int sig)
 {
-	(void)sig;
-	g_signal_received = 130;
+	g_signal_received = sig;
 	write(1, "\n", 1);
 	rl_replace_line("", 0);
 	rl_on_new_line();
@@ -33,14 +31,28 @@ void	handle_sigint(int sig)
 
 void	handle_sigquit(int sig)
 {
-	(void)sig;
-	write(1, "\b\b  \b\b", 6);
+	g_signal_received = sig;
 	rl_on_new_line();
 	rl_redisplay();
 }
 
+void	handle_sigint_child(int sig)
+{
+	g_signal_received = sig;
+	write(1, "\n", 1);
+	exit(130);
+}
+
+void	handle_sigquit_child(int sig)
+{
+	g_signal_received = sig;
+	ft_putstr_fd("Quit (core dumped)\n", 2);
+	exit(131);
+}
+
 void	reset_signals(void)
 {
+	g_signal_received = 0;
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
 }
@@ -49,5 +61,16 @@ void	ignore_signals(void)
 {
 	signal(SIGINT, SIG_IGN);
 	signal(SIGQUIT, SIG_IGN);
-	signal(SIGTERM, SIG_IGN);
+}
+
+void	setup_heredoc_signals(void)
+{
+	signal(SIGINT, handle_sigint);
+	signal(SIGQUIT, SIG_IGN);
+}
+
+void	setup_dir_navigation_signals(void)
+{
+	signal(SIGINT, handle_sigint);
+	signal(SIGQUIT, SIG_IGN);
 }

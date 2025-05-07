@@ -32,7 +32,7 @@ void	handle_redirection(t_cmd *cmd, char **tokens, int *i, t_shell *shell)
 
 	if (ft_strcmp(tokens[*i], "<<") == 0 && same_length(tokens[*i], "<<"))
 	{
-		handle_heredoc_redirect(cmd, tokens, i, shell);
+		handle_heredoc_direct(cmd, tokens, i, shell);
 		return ;
 	}
 	redir_type = get_redirection_type(tokens[*i], shell, cmd);

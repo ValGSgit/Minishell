@@ -6,12 +6,11 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/29 21:26:50 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/29 21:26:50 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/01 18:55:05 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
-
 
 /**
  * Split an expanded variable value into separate tokens by whitespace
@@ -20,9 +19,11 @@
  */
 static int	count_words(char *value)
 {
-	int i = 0;
-	int word_count = 0;
+	int		i;
+	int		word_count;
 
+	i = 0;
+	word_count = 0;
 	while (value[i])
 	{
 		while (value[i] && ft_isspace(value[i]))
@@ -37,7 +38,7 @@ static int	count_words(char *value)
 
 static char	**allocate_tokens(int word_count)
 {
-	char **tokens;
+	char	**tokens;
 
 	if (word_count <= 1)
 		return (NULL);
@@ -55,9 +56,10 @@ static char	*extract_word(char *value, int start, int len)
 static int	add_word_to_tokens(char **tokens, char *value, int *i,
 		int *word_count)
 {
-	int start = *i;
-	int len;
+	int		start;
+	int		len;
 
+	start = *i;
 	while (value[*i] && !ft_isspace(value[*i]))
 		(*i)++;
 	len = *i - start;
@@ -78,10 +80,12 @@ static int	add_word_to_tokens(char **tokens, char *value, int *i,
 
 char	**split_expanded_variable(char *value)
 {
-	char **tokens;
-	int i = 0;
-	int word_count = 0;
+	char	**tokens;
+	int		i;
+	int		word_count;
 
+	word_count = 0;
+	i = 0;
 	if (!value || !*value)
 		return (NULL);
 	word_count = count_words(value);
