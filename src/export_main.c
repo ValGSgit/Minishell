@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:20:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/05/07 15:15:12 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/07 15:34:32 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,14 +82,13 @@ static void	handle_export_error(char *arg)
 	ft_putstr_fd("': not a valid identifier\n", 2);
 }
 
-// Process a single export argument, checking if it contains an = or += operator
 static int	process_export_arg(char *arg, t_cmd *cmd)
 {
 	char	*var_name;
 	
-	var_name = extract_var_name(arg);
-	if (!var_name)
+	if (!arg)
 		return (0);
+	var_name = extract_var_name(arg);
 	if (!is_valid_key(var_name))
 	{
 		free(var_name);
@@ -119,5 +118,13 @@ void	ft_export(t_cmd *cmd)
 	}
 	i = 1;
 	if (cmd->args[i])
-		process_export_arg(cmd->args[i], cmd);
+	{
+		if (!is_valid_key(cmd->args[i]))
+		{
+			handle_export_error(cmd->args[i]);
+			cmd->shell->exit_status = 1;
+		}
+		else
+			process_export_arg(cmd->args[i], cmd);
+	}
 }

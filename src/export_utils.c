@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:00:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/05/07 15:13:58 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/07 15:20:03 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,6 +86,8 @@ char	*extract_var_name(char *arg)
 	char	*var_name;
 	int		name_len;
 
+	if (!arg)
+		return (NULL);
 	equals_pos = ft_strchr(arg, '=');
 	plus_pos = ft_strchr(arg, '+');
 	if (plus_pos && plus_pos[1] == '=')
