@@ -20,6 +20,8 @@ void	handle_signal_exit(t_shell *shell)
 		ft_putstr_fd("exit\n", STDOUT_FILENO);
 	if (g_signal_received == SIGINT)
 		shell->exit_status = 128 + SIGINT;
+	close(0);
+	close(1);
 }
 
 void	process_received_signal(t_shell *shell)

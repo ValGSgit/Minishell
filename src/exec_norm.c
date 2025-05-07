@@ -54,8 +54,8 @@ static int	handle_arg(t_cmd *cmd)
 		{
 			cmd->in_fd = dup(0);
 			cmd->out_fd = dup(1);
-			apply_redirection(cmd, false);
-			execute_builtin(cmd);
+			if (!apply_redirection(cmd, false))
+				execute_builtin(cmd);
 			dup2(cmd->in_fd, 0);
 			dup2(cmd->out_fd, 1);
 			close(cmd->in_fd);

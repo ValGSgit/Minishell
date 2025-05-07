@@ -33,7 +33,7 @@ void	free_redir(t_redir *redir)
 
 void	close_cmd_fds(t_cmd *cmd)
 {
-	t_redir	*redir;
+	//t_redir	*redir;
 
 	if (!cmd)
 		return ;
@@ -47,8 +47,8 @@ void	close_cmd_fds(t_cmd *cmd)
 		close(cmd->out_fd);
 		cmd->out_fd = -1;
 	}
-	redir = cmd->redirs;
-	while (redir)
+	//redir = cmd->redirs;
+/* 	while (redir)
 	{
 		if (redir->type == REDIR_HEREDOC && redir->file)
 		{
@@ -56,7 +56,7 @@ void	close_cmd_fds(t_cmd *cmd)
 				unlink(redir->file);
 		}
 		redir = redir->next;
-	}
+	} */
 }
 
 /**

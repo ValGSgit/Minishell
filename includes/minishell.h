@@ -172,7 +172,7 @@ void	setup_parent_after_fork(t_cmd *cmd, int *prev_pipe_in, int pipe_fd[2]);
 
 /* Redirections */
 void	close_cmd_fds(t_cmd *cmd);
-void	apply_redirection(t_cmd *cmd, bool fork);
+bool	apply_redirection(t_cmd *cmd, bool fork);
 void	handle_redirection_out_append(t_cmd *cmd, t_redir *redir);
 bool	handle_redirection_out(int append, t_redir *redir, t_cmd *cmd,
 			bool fork);

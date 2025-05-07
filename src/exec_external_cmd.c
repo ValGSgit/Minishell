@@ -12,21 +12,43 @@
 
 #include "../includes/minishell.h"
 
+static void	executable_cmd_checks(t_cmd *cmd, char *cmd_name)
+{
+	if (access(cmd->args[0], X_OK) != 0)
+	{
+		if (ft_strchr(cmd->args[0], '/') == NULL)
+		{
+			print_error_message(cmd_name, ": command not found\n", NULL);
+			close_cmd_fds(cmd);
+			forked_exit(127, cmd);
+		}
+		else
+		{
+			print_error_message(cmd_name, ": Permission denied\n", NULL);
+			close_cmd_fds(cmd);
+			forked_exit(126, cmd);			
+		}
+	}
+}
+
 static void	directory_cmd_checks(t_cmd *cmd, char *cmd_name)
 {
 	struct stat	sb;
 
 	if (cmd->args[0] && stat(cmd->args[0], &sb) == 0 && S_ISDIR(sb.st_mode))
 	{
-		print_error_message(cmd_name, ": Is a directory\n", NULL);
-		close_cmd_fds(cmd);
-		forked_exit(126, cmd);
-	}
-	if (access(cmd->args[0], X_OK) != 0)
-	{
-		print_error_message(cmd_name, ": Permission denied\n", NULL);
-		close_cmd_fds(cmd);
-		forked_exit(126, cmd);
+		if (ft_strchr(cmd->args[0], '/') == NULL)
+		{
+			print_error_message(cmd_name, ": command not found\n", NULL);
+			close_cmd_fds(cmd);
+			forked_exit(127, cmd);
+		}
+		else
+		{
+			print_error_message(cmd_name, ": Is a directory\n", NULL);
+			close_cmd_fds(cmd);
+			forked_exit(126, cmd);
+		}
 	}
 }
 
@@ -63,6 +85,7 @@ static void	cmd_checks(t_cmd *cmd, t_shell *shell, char *cmd_name)
 	}
 	extra_cmd_checks(cmd, cmd_name);
 	directory_cmd_checks(cmd, cmd_name);
+	executable_cmd_checks(cmd, cmd_name);
 }
 
 static void	handle_execve_failure(char *exec_path, t_cmd *cmd, char *cmd_name)

@@ -29,7 +29,7 @@ static bool	check_ambiguous_redirect(t_redir *node, t_cmd *cmd, bool fork)
 	return (false);
 }
 
-void	apply_redirection(t_cmd *cmd, bool fork)
+bool	apply_redirection(t_cmd *cmd, bool fork)
 {
 	t_redir	*node;
 	bool	error;
@@ -39,7 +39,7 @@ void	apply_redirection(t_cmd *cmd, bool fork)
 	while (node && !error)
 	{
 		if (check_ambiguous_redirect(node, cmd, fork))
-			return ;
+			return (true);
 		if (node->type == REDIR_IN || node->type == REDIR_HEREDOC)
 			error = handle_redirection_in(node, cmd, fork);
 		else if (node->type == REDIR_OUT)
@@ -50,6 +50,7 @@ void	apply_redirection(t_cmd *cmd, bool fork)
 	}
 	if (error && fork)
 		forked_exit(1, cmd);
+	return (error);
 }
 
 bool	handle_redirection_in(t_redir *redir, t_cmd *cmd, bool fork)
