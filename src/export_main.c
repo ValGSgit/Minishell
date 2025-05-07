@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:20:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/05/05 11:33:32 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/07 15:15:12 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,10 @@ void	update_or_add_env(char *arg, char ***env)
 			free(new_var);
 			return ;
 		}
+		else
+		{
+			return;
+		}
 	}
 	var_name = extract_var_name(arg);
 	if (!var_name)
@@ -78,6 +82,31 @@ static void	handle_export_error(char *arg)
 	ft_putstr_fd("': not a valid identifier\n", 2);
 }
 
+// Process a single export argument, checking if it contains an = or += operator
+static int	process_export_arg(char *arg, t_cmd *cmd)
+{
+	char	*var_name;
+	
+	var_name = extract_var_name(arg);
+	if (!var_name)
+		return (0);
+	if (!is_valid_key(var_name))
+	{
+		free(var_name);
+		handle_export_error(arg);
+		cmd->shell->exit_status = 1;
+		return (0);
+	}
+	free(var_name);
+	if (ft_strchr(arg, '='))
+	{
+		update_or_add_env(arg, &cmd->shell->env);
+		cmd->shell->exit_status = 0;
+		return (1);
+	}
+	return (0);
+}
+
 void	ft_export(t_cmd *cmd)
 {
 	int	i;
@@ -89,18 +118,6 @@ void	ft_export(t_cmd *cmd)
 		return ;
 	}
 	i = 1;
-	while (cmd->args[i])
-	{
-		if (!is_valid_key(cmd->args[i]))
-		{
-			handle_export_error(cmd->args[i]);
-			cmd->shell->exit_status = 1;
-		}
-		else if (ft_strchr(cmd->args[i], '='))
-		{
-			update_or_add_env(cmd->args[i], &cmd->shell->env);
-			cmd->shell->exit_status = 0;
-		}
-		i++;
-	}
+	if (cmd->args[i])
+		process_export_arg(cmd->args[i], cmd);
 }

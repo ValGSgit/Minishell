@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/01 19:45:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/05/07 14:22:25 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/07 14:56:27 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,12 +90,12 @@ void	handle_heredoc(t_cmd *cmd, char *eof)
 		free(clean_eof);
 		return ;
 	}
-	write(1, temp_name, ft_strlen(temp_name));
 	exit_code = handle_heredoc_redirect(cmd, clean_eof, temp_name, expand_vars);
 	setup_signals();
 	if (exit_code == 0)
 		create_redir_node(cmd, REDIR_HEREDOC, temp_name);
 	else if (exit_code == 130)
 		cmd->shell->signal_status = 1;
-	safe_free(temp_name);
+	else
+		safe_free(temp_name);
 }

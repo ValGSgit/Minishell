@@ -6,13 +6,25 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/14 11:35:22 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/04/14 12:44:16 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/07 15:55:27 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-static int	count_tokens_for_arg(char *arg, t_shell *shell)
+// Check if this is an export command with variable assignment 
+static bool	is_export_var_assignment(char **args, int arg_index)
+{
+	if (arg_index <= 0 || !args || !args[0])
+		return (false);
+	
+	if (ft_strcmp(args[0], "export") == 0 && ft_strchr(args[arg_index], '='))
+		return (true);
+	
+	return (false);
+}
+
+static int	count_tokens_for_arg(char *arg, t_shell *shell, char **args, int arg_index)
 {
 	int		j;
 	int		token_count;
@@ -21,7 +33,9 @@ static int	count_tokens_for_arg(char *arg, t_shell *shell)
 
 	token_count = 0;
 	expanded = process_argument(arg, shell);
-	if (!expanded || !needs_word_splitting(arg))
+	
+	// Skip word splitting for export variable assignment arguments
+	if (!expanded || !needs_word_splitting(arg) || is_export_var_assignment(args, arg_index))
 		token_count = 1;
 	else
 	{
@@ -50,31 +64,39 @@ static int	count_args_after_splitting(char **args, t_shell *shell)
 	i = 0;
 	while (args && args[i])
 	{
-		count += count_tokens_for_arg(args[i], shell);
+		count += count_tokens_for_arg(args[i], shell, args, i);
 		i++;
 	}
 	return (count);
 }
 
 static void	process_arg_for_splitting(char *arg, char *expanded, int *count,
-		char **new_args)
+		char **new_args, char **orig_args, int arg_index)
 {
 	char	**word_tokens;
 	int		j;
+	bool	has_spaces;
 
 	if (!expanded)
 		return ;
-	if (!needs_word_splitting(arg))
+	
+	has_spaces = ft_strchr(expanded, ' ') != NULL;
+	
+	// Skip word splitting for export variable assignment arguments
+	if (!needs_word_splitting(arg) || !has_spaces || 
+		is_export_var_assignment(orig_args, arg_index))
 	{
 		new_args[(*count)++] = expanded;
 		return ;
 	}
+	
 	word_tokens = split_expanded_variable(expanded);
 	if (!word_tokens)
 	{
 		new_args[(*count)++] = expanded;
 		return ;
 	}
+	
 	j = 0;
 	while (word_tokens[j])
 	{
@@ -101,7 +123,7 @@ static char	**build_args_after_splitting(char **args, int max_count,
 	while (args && args[i])
 	{
 		expanded = process_argument(args[i], shell);
-		process_arg_for_splitting(args[i], expanded, &count, new_args);
+		process_arg_for_splitting(args[i], expanded, &count, new_args, args, i);
 		i++;
 	}
 	new_args[count] = NULL;

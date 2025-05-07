@@ -35,8 +35,9 @@ static void	process_character(char *arg, int *i, t_expander_state *state,
 		handle_quoted(arg, i, state);
 	else if (arg[*i] == '"' && !state->in_quote)
 		handle_quoted(arg, i, state);
-	else if (arg[*i] == '$' && !state->in_quote)
+	else if (arg[*i] == '$' && (!state->in_quote || state->in_dquote))
 	{
+		state->is_heredoc = false;
 		*i = handle_dollar_sign(arg, *i, state, shell);
 		(*i)++;
 	}
