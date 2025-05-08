@@ -82,13 +82,11 @@ char	**lexer(char *input)
 	char	**tokens;
 	t_lexer	lx;
 
-	tokens = ft_calloc(MAX_TOKENS, sizeof(char *));
 	if (!input)
-	{
-		if (tokens)
-			free_tokens(tokens);
 		return (NULL);
-	}
+	tokens = ft_calloc(MAX_TOKENS, sizeof(char *));
+	if (!tokens)
+		return (NULL);
 	ft_memset(&lx, 0, sizeof(t_lexer));
 	lx.start = input;
 	if (process_input(&input, &lx, tokens) < 0)

@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/01 18:31:51 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/05/03 15:48:50 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/08 12:48:43 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,9 @@ static int	process_input(t_shell *shell, char **tokens)
 	if (!shell->cmd)
 		return (1);
 	expand_nodes(shell->cmd, shell);
-	if ((shell->cmd->args && shell->cmd->args[0]) || shell->cmd->redirs)
+	if (shell->cmd && ((shell->cmd->args && shell->cmd->args[0]) || shell->cmd->redirs))
 		executor(shell->cmd, shell);
+	cleanup_heredocs(shell);
 	free_cmd(shell->cmd);
 	shell->cmd = NULL;
 	return (0);
@@ -61,7 +62,10 @@ int	handle_input(t_shell *shell, char *input)
 		return (0);
 	}
 	if (*input)
+	{
 		add_history(input);
+		return (1);
+	}
 	tokens = lexer(input);
 	if (!tokens)
 	{
