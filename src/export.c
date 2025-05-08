@@ -12,43 +12,6 @@
 
 #include "../includes/minishell.h"
 
-void	ft_sort_strings(char **arr, int count)
-{
-	int		i;
-	int		j;
-	int		swapped;
-	char	*temp;
-
-	if (!arr || count <= 0)
-		return;
-	i = 0;
-	while (i < count - 1)
-	{
-		swapped = 0;
-		j = 0;
-		while (j < count - i - 1)
-		{
-			if (arr[j] && arr[j + 1] && ft_strcmp(arr[j], arr[j + 1]) > 0)
-			{
-				temp = arr[j];
-				arr[j] = arr[j + 1];
-				arr[j + 1] = temp;
-				swapped = 1;
-			}
-			else if (!arr[j] && arr[j + 1]) /* Move NULL values to the end */
-			{
-				arr[j] = arr[j + 1];
-				arr[j + 1] = NULL;
-				swapped = 1;
-			}
-			j++;
-		}
-		if (swapped == 0)
-			break;
-		i++;
-	}
-}
-
 char	**copy_env_array(char **env, int env_count)
 {
 	char	**env_copy;

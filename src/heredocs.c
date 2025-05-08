@@ -96,7 +96,6 @@ static int	handle_parent_process(t_cmd *cmd, int status)
 	else if (WIFSIGNALED(status))
 	{
 		cmd->shell->exit_status = 130;
-		// g_signal_received = 1;
 		cleanup_heredocs(cmd->shell);
 		cmd->syntax_error = 1;
 		return (cmd->shell->exit_status);

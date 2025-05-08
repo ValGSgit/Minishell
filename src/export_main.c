@@ -6,13 +6,13 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:20:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/05/08 14:44:39 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/08 16:35:44 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-static void	handle_var_size_error(char *var_name)
+void	handle_var_size_error(char *var_name)
 {
 	ft_putstr_fd("minishell: export: `", 2);
 	if (var_name)
@@ -20,7 +20,7 @@ static void	handle_var_size_error(char *var_name)
 	ft_putstr_fd("': value too large (exceeds size limit)\n", 2);
 }
 
-static int	var_is_too_large(char *arg)
+int	var_is_too_large(char *arg)
 {
 	return (arg && ft_strlen(arg) > MAX_ENV_VAR_SIZE);
 }
@@ -37,7 +37,7 @@ static void	update_env_entry(char ***env, char *arg, int i)
 	}
 }
 
-static void	find_and_update_env(char *arg, char *var_name, char ***env)
+void	find_and_update_env(char *arg, char *var_name, char ***env)
 {
 	int		i;
 	int		found;
@@ -62,96 +62,22 @@ static void	find_and_update_env(char *arg, char *var_name, char ***env)
 		add_to_env(env, ft_strdup(arg));
 }
 
-void	update_or_add_env(char *arg, char ***env)
+int	handle_plus_syntax(char *arg, char ***env)
 {
-	char	*var_name;
 	char	*new_var;
+	char	*var_name;
 
-	if (var_is_too_large(arg))
+	new_var = handle_append_syntax(arg, *env);
+	if (!new_var)
+		return (1);
+	if (!var_is_too_large(new_var))
+		update_or_add_env(new_var, env);
+	else
 	{
-		var_name = extract_var_name(arg);
+		var_name = extract_var_name(new_var);
 		handle_var_size_error(var_name);
 		free(var_name);
-		return;
 	}
-	
-	if (ft_strchr(arg, '+'))
-	{
-		new_var = handle_append_syntax(arg, *env);
-		if (new_var)
-		{
-			if (!var_is_too_large(new_var))
-				update_or_add_env(new_var, env);
-			else
-			{
-				var_name = extract_var_name(new_var);
-				handle_var_size_error(var_name);
-				free(var_name);
-			}
-			free(new_var);
-			return ;
-		}
-		else
-			return ;
-	}
-	var_name = extract_var_name(arg);
-	if (!var_name)
-		return ;
-	find_and_update_env(arg, var_name, env);
-	free(var_name);
-}
-
-static void	handle_export_error(char *arg)
-{
-	ft_putstr_fd("minishell: export: `", 2);
-	ft_putstr_fd(arg, 2);
-	ft_putstr_fd("': not a valid identifier\n", 2);
-}
-
-static int	process_export_arg(char *arg, t_cmd *cmd)
-{
-	char	*var_name;
-
-	if (!arg)
-		return (0);
-	var_name = extract_var_name(arg);
-	if (!is_valid_key(var_name))
-	{
-		free(var_name);
-		handle_export_error(arg);
-		cmd->shell->exit_status = 1;
-		return (0);
-	}
-	free(var_name);
-	if (ft_strchr(arg, '='))
-	{
-		update_or_add_env(arg, &cmd->shell->env);
-		cmd->shell->exit_status = 0;
-		return (1);
-	}
-	return (0);
-}
-
-void	ft_export(t_cmd *cmd)
-{
-	int	i;
-
-	if (!cmd->args[1])
-	{
-		print_sorted_env(cmd->shell->env);
-		cmd->shell->exit_status = 0;
-		return ;
-	}
-	i = 1;
-	while (cmd->args[i])
-	{
-		if (!is_valid_key(cmd->args[i]))
-		{
-			handle_export_error(cmd->args[i]);
-			cmd->shell->exit_status = 1;
-		}
-		else
-			process_export_arg(cmd->args[i], cmd);
-		i++;
-	}
+	free(new_var);
+	return (1);
 }

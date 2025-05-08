@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/01 18:31:51 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/05/08 14:16:11 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/08 15:14:50 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,6 @@ static int	process_input(t_shell *shell, char **tokens)
 	if (!shell->cmd)
 		return (1);
 	expand_nodes(shell->cmd, shell);
-	//if (shell->cmd && ((shell->cmd->args && shell->cmd->args[0]) || shell->cmd->redirs))
 	executor(shell->cmd, shell);
 	cleanup_heredocs(shell);
 	free_cmd(shell->cmd);

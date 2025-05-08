@@ -36,20 +36,6 @@ void	handle_sigquit(int sig)
 	rl_redisplay();
 }
 
-void	handle_sigint_child(int sig)
-{
-	g_signal_received = sig;
-	write(1, "\n", 1);
-	exit(130);
-}
-
-void	handle_sigquit_child(int sig)
-{
-	g_signal_received = sig;
-	ft_putstr_fd("Quit (core dumped)\n", 2);
-	exit(131);
-}
-
 void	reset_signals(void)
 {
 	g_signal_received = 0;
@@ -60,17 +46,5 @@ void	reset_signals(void)
 void	ignore_signals(void)
 {
 	signal(SIGINT, SIG_IGN);
-	signal(SIGQUIT, SIG_IGN);
-}
-
-void	setup_heredoc_signals(void)
-{
-	signal(SIGINT, handle_sigint);
-	signal(SIGQUIT, SIG_IGN);
-}
-
-void	setup_dir_navigation_signals(void)
-{
-	signal(SIGINT, handle_sigint);
 	signal(SIGQUIT, SIG_IGN);
 }

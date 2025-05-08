@@ -12,81 +12,15 @@
 
 #include "../includes/minishell.h"
 
-static bool	is_export_var_assignment(char **args, int arg_index)
+static void	add_word_tokens_to_args(char **word_tokens, char **new_args,
+	int *count, char *expanded)
 {
-	if (arg_index <= 0 || !args || !args[0])
-		return (false);
-	if (ft_strcmp(args[0], "export") == 0 && ft_strchr(args[arg_index], '='))
-		return (true);
-	return (false);
-}
+	int	j;
 
-static int	count_tokens_for_arg(char *arg, t_shell *shell,
-	char **args, int arg_index)
-{
-	int		j;
-	int		token_count;
-	char	**word_tokens;
-	char	*expanded;
-
-	token_count = 0;
-	expanded = process_argument(arg, shell);
-	if (!expanded || !needs_word_splitting(arg)
-		|| is_export_var_assignment(args, arg_index))
-		token_count = 1;
-	else
+	if (!word_tokens || !new_args || !count)
 	{
-		word_tokens = split_expanded_variable(expanded);
-		if (word_tokens)
-		{
-			j = 0;
-			while (word_tokens[j++])
-				token_count++;
-			free_tokens(word_tokens);
-		}
-		else
-			token_count = 1;
-	}
-	if (expanded)
-		free(expanded);
-	return (token_count);
-}
-
-static int	count_args_after_splitting(char **args, t_shell *shell)
-{
-	int	i;
-	int	count;
-
-	count = 0;
-	i = 0;
-	while (args && args[i])
-	{
-		count += count_tokens_for_arg(args[i], shell, args, i);
-		i++;
-	}
-	return (count);
-}
-
-static void	process_arg_for_splitting(char *arg, char *expanded, int *count,
-		char **new_args, char **orig_args, int arg_index)
-{
-	char	**word_tokens;
-	int		j;
-	bool	has_spaces;
-
-	if (!expanded)
-		return ;
-	has_spaces = ft_strchr(expanded, ' ') != NULL;
-	if (!needs_word_splitting(arg) || !has_spaces
-		|| is_export_var_assignment(orig_args, arg_index))
-	{
-		new_args[(*count)++] = expanded;
-		return ;
-	}
-	word_tokens = split_expanded_variable(expanded);
-	if (!word_tokens)
-	{
-		new_args[(*count)++] = expanded;
+		if (expanded)
+			free(expanded);
 		return ;
 	}
 	j = 0;
@@ -99,13 +33,39 @@ static void	process_arg_for_splitting(char *arg, char *expanded, int *count,
 	free(expanded);
 }
 
+static void	process_arg_for_splitting(char *arg, char **orig_args,
+	t_split_context *ctx)
+{
+	char	**word_tokens;
+	char	*expanded;
+	bool	has_spaces;
+
+	expanded = ctx->expanded;
+	if (!expanded || !ctx->new_args)
+		return ;
+	has_spaces = ft_strchr(expanded, ' ') != NULL;
+	if (!needs_word_splitting(arg) || !has_spaces
+		|| is_export_var_assignment(orig_args, ctx->arg_index))
+	{
+		ctx->new_args[(*(ctx->count))++] = expanded;
+		return ;
+	}
+	word_tokens = split_expanded_variable(expanded);
+	if (!word_tokens)
+	{
+		ctx->new_args[(*(ctx->count))++] = expanded;
+		return ;
+	}
+	add_word_tokens_to_args(word_tokens, ctx->new_args, ctx->count, expanded);
+}
+
 static char	**build_args_after_splitting(char **args, int max_count,
 		t_shell *shell)
 {
-	int		i;
-	int		count;
-	char	**new_args;
-	char	*expanded;
+	int				i;
+	int				count;
+	char			**new_args;
+	t_split_context	ctx;
 
 	new_args = malloc((max_count + 1) * sizeof(char *));
 	if (!new_args)
@@ -114,8 +74,11 @@ static char	**build_args_after_splitting(char **args, int max_count,
 	i = 0;
 	while (args && args[i])
 	{
-		expanded = process_argument(args[i], shell);
-		process_arg_for_splitting(args[i], expanded, &count, new_args, args, i);
+		ctx.expanded = process_argument(args[i], shell);
+		ctx.new_args = new_args;
+		ctx.count = &count;
+		ctx.arg_index = i;
+		process_arg_for_splitting(args[i], args, &ctx);
 		i++;
 	}
 	new_args[count] = NULL;

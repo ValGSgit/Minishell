@@ -6,22 +6,11 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 13:42:34 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/05/05 10:51:39 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/08 16:32:02 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
-
-// static void	process_env_args(t_cmd *cmd, int k)
-// {
-// 	char	*tmp;
-
-// 	tmp = ft_strdup(cmd->args[k]);
-// 	free(cmd->args[k - 1]);
-// 	free(cmd->args[k]);
-// 	cmd->args[k - 1] = tmp;
-// 	cmd->args[k] = NULL;
-// }
 
 static void	display_env_vars(t_cmd *cmd)
 {

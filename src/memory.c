@@ -12,17 +12,6 @@
 
 #include "../includes/minishell.h"
 
-// void	*malloc(size_t size)
-// {
-// 	void	*ptr;
-
-// 	ptr = malloc(size);
-// 	if (!ptr)
-// 		perror("malloc failed");
-// 	ft_bzero(ptr, size);
-// 	return (ptr);
-// }
-
 void	safe_free(void *ptr)
 {
 	if (ptr)

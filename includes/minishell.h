@@ -49,8 +49,7 @@
 # define RESET_COLOR "\033[0m"
 # define PROMPT_COLOR "\033[1;32m"
 # define ERROR_COLOR "\033[1;31m"
-# define MAX_ENV_VAR_SIZE 1048576 /* 1MB limit for env variables */
-
+# define MAX_ENV_VAR_SIZE 1048576
 
 typedef enum e_redir_type
 {
@@ -86,6 +85,14 @@ typedef struct s_expander_state
 	bool	is_heredoc;
 }	t_expander_state;
 
+typedef struct s_split_context
+{
+	char	*expanded;
+	char	**new_args;
+	int		*count;
+	int		arg_index;
+}	t_split_context;
+
 typedef struct s_cmd
 {
 	int				in_fd;
@@ -113,7 +120,6 @@ typedef struct s_shell
 }	t_shell;
 
 extern volatile sig_atomic_t	g_signal_received;
-
 
 void	safe_free(void *ptr);
 void	print_error_message(const char *prefix, char *msg, char *extra);
@@ -144,6 +150,9 @@ void	handle_syntax_error(char *token, t_shell *shell);
 int		same_length(char *tok1, char *tok2);
 
 /* Command Handling */
+void	find_and_update_env(char *arg, char *var_name, char ***env);
+void	handle_var_size_error(char *var_name);
+int		var_is_too_large(char *arg);
 void	initialize_shell(t_shell *shell, char **argv);
 void	handle_heredoc_direct(t_cmd *cmd, char **tokens, int *i, \
 		t_shell *shell);
@@ -151,8 +160,11 @@ void	handle_pipeline(t_cmd **current, t_shell *shell);
 void	handle_pipe_token(t_cmd **current, char **tokens, int *i, \
 			t_shell *shell);
 void	handle_heredoc(t_cmd *cmd, char *eof);
+int		handle_plus_syntax(char *arg, char ***env);
 
 /* Execution */
+char	*resolve_path_parts(char **parts, int count);
+char	*build_full_path(const char *current_pwd, const char *path);
 void	executor(t_cmd *cmd, t_shell *shell);
 void	execute_single_command(t_cmd *cmd, t_shell *shell);
 void	execute_external_command(t_cmd *cmd, t_shell *shell);
@@ -277,6 +289,8 @@ char	*clean_empty_expansions(char *arg);
 bool	check_delimiter_quotes(char *eof);
 
 /* Variable Expansion */
+bool	is_export_var_assignment(char **args, int arg_index);
+int		count_args_after_splitting(char **args, t_shell *shell);
 char	*handle_quoted_content(char *str, int start, int *i);
 char	*safe_strjoin(char *s1, char *s2, int free_flag);
 char	**split_expanded_variable(char *value);

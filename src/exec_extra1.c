@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/03 18:57:06 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/05/08 14:43:38 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/08 16:25:48 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,4 +74,28 @@ void	initialize_shell(t_shell *shell, char **argv)
 	else
 		prog_name = argv[0];
 	initialize_shell_env(shell, prog_name);
+}
+
+char	*calculate_logical_path(const char *current_pwd, const char *path)
+{
+	char	**path_parts;
+	char	*full_path;
+	char	*result;
+	int		count;
+
+	if (!current_pwd || !path)
+		return (NULL);
+	full_path = build_full_path(current_pwd, path);
+	if (!full_path)
+		return (NULL);
+	path_parts = ft_split(full_path, '/');
+	free(full_path);
+	if (!path_parts)
+		return (NULL);
+	count = 0;
+	while (path_parts[count])
+		count++;
+	result = resolve_path_parts(path_parts, count);
+	free_tokens(path_parts);
+	return (result);
 }

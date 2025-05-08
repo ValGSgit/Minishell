@@ -47,7 +47,6 @@ SRCS = $(SRC_DIR)/builtins.c \
 	$(SRC_DIR)/how_many_utils_do_i_need.c \
 	$(SRC_DIR)/lex_utils.c \
 	$(SRC_DIR)/lexer.c \
-	$(SRC_DIR)/lexer_counter.c \
 	$(SRC_DIR)/main.c \
 	$(SRC_DIR)/main_utils.c \
 	$(SRC_DIR)/memory.c \
@@ -56,7 +55,10 @@ SRCS = $(SRC_DIR)/builtins.c \
 	$(SRC_DIR)/parsing_handles.c \
 	$(SRC_DIR)/parsing_utils.c \
 	$(SRC_DIR)/sighandle.c \
-	$(SRC_DIR)/utils.c
+	$(SRC_DIR)/utils.c \
+	$(SRC_DIR)/builtins_utils2.c \
+	$(SRC_DIR)/export_norm_utils.c \
+
 
 OBJS = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
