@@ -64,15 +64,11 @@ void	execute_builtin(t_cmd *cmd)
 		ft_exit(cmd);
 }
 
-/**
- * Creates and prints a single error message to stderr
- * Takes variable parts and joins them before printing
- */
 static char	*build_error_message(const char *prefix, char *msg, char *extra)
 {
 	char	*error_msg;
-	char	*temp;
 
+	error_msg = NULL;
 	if (!prefix && !msg && !extra)
 		return (NULL);
 	if (prefix)
@@ -83,23 +79,17 @@ static char	*build_error_message(const char *prefix, char *msg, char *extra)
 		return (NULL);
 	if (msg)
 	{
-		temp = error_msg;
 		error_msg = safe_strjoin(error_msg, msg, 1);
 		if (!error_msg)
 			return (NULL);
 	}
 	if (extra)
 	{
-		temp = error_msg;
 		error_msg = safe_strjoin(error_msg, extra, 1);
 	}
 	return (error_msg);
 }
 
-/**
- * Creates and prints a single error message to stderr
- * Takes variable parts and joins them before printing
- */
 void	print_error_message(const char *prefix, char *msg, char *extra)
 {
 	char	*error_msg;

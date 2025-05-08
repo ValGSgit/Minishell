@@ -65,7 +65,7 @@ void	update_or_add_env(char *arg, char ***env)
 		}
 		else
 		{
-			return;
+			return ;
 		}
 	}
 	var_name = extract_var_name(arg);
@@ -85,7 +85,7 @@ static void	handle_export_error(char *arg)
 static int	process_export_arg(char *arg, t_cmd *cmd)
 {
 	char	*var_name;
-	
+
 	if (!arg)
 		return (0);
 	var_name = extract_var_name(arg);
@@ -117,7 +117,7 @@ void	ft_export(t_cmd *cmd)
 		return ;
 	}
 	i = 1;
-	if (cmd->args[i])
+	while (cmd->args[i])
 	{
 		if (!is_valid_key(cmd->args[i]))
 		{
@@ -126,5 +126,6 @@ void	ft_export(t_cmd *cmd)
 		}
 		else
 			process_export_arg(cmd->args[i], cmd);
+		i++;
 	}
 }

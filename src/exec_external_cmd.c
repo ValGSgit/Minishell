@@ -26,7 +26,7 @@ static void	executable_cmd_checks(t_cmd *cmd, char *cmd_name)
 		{
 			print_error_message(cmd_name, ": Permission denied\n", NULL);
 			close_cmd_fds(cmd);
-			forked_exit(126, cmd);			
+			forked_exit(126, cmd);
 		}
 	}
 }
@@ -88,19 +88,6 @@ static void	cmd_checks(t_cmd *cmd, t_shell *shell, char *cmd_name)
 	executable_cmd_checks(cmd, cmd_name);
 }
 
-static void	handle_execve_failure(char *exec_path, t_cmd *cmd, char *cmd_name)
-{
-	if (exec_path)
-		safe_free(exec_path);
-	if (cmd_name)
-	{
-		safe_free(cmd_name);
-		print_error_message(cmd_name, ": ", strerror(errno));
-	}
-	close_cmd_fds(cmd);
-	forked_exit(126, cmd);
-}
-
 void	execute_external_command(t_cmd *cmd, t_shell *shell)
 {
 	char		*exec_path;
@@ -119,7 +106,10 @@ void	execute_external_command(t_cmd *cmd, t_shell *shell)
 			forked_exit(1, cmd);
 		}
 		execve(exec_path, cmd->args, shell->env);
-		handle_execve_failure(exec_path, cmd, cmd_name);
+		if (exec_path)
+			safe_free(exec_path);
+		close_cmd_fds(cmd);
+		forked_exit(126, cmd);
 	}
 	close_cmd_fds(cmd);
 	forked_exit(0, cmd);

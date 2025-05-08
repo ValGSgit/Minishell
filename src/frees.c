@@ -12,9 +12,6 @@
 
 #include "../includes/minishell.h"
 
-/**
- * Free a single redirection node and its linked list
- */
 void	free_redir(t_redir *redir)
 {
 	t_redir	*temp;
@@ -22,6 +19,11 @@ void	free_redir(t_redir *redir)
 	while (redir)
 	{
 		temp = redir->next;
+		if (redir->type == REDIR_HEREDOC && redir->file)
+		{
+			if (access(redir->file, F_OK) == 0)
+				unlink(redir->file);
+		}
 		if (redir->file)
 			safe_free(redir->file);
 		if (redir->prefile)
@@ -33,8 +35,6 @@ void	free_redir(t_redir *redir)
 
 void	close_cmd_fds(t_cmd *cmd)
 {
-	//t_redir	*redir;
-
 	if (!cmd)
 		return ;
 	if (cmd->in_fd >= 0 && cmd->in_fd != STDIN_FILENO)
@@ -47,21 +47,8 @@ void	close_cmd_fds(t_cmd *cmd)
 		close(cmd->out_fd);
 		cmd->out_fd = -1;
 	}
-	//redir = cmd->redirs;
-/* 	while (redir)
-	{
-		if (redir->type == REDIR_HEREDOC && redir->file)
-		{
-			if (access(redir->file, F_OK) == 0)
-				unlink(redir->file);
-		}
-		redir = redir->next;
-	} */
 }
 
-/**
- * Free a single command node and its linked list
- */
 void	free_cmd(t_cmd *cmd)
 {
 	t_cmd	*temp;

@@ -44,7 +44,9 @@ int	handle_dollar_sign(char *arg, int i, t_expander_state *state,
 
 static int	handle_dot_cases(t_cmd *cmd, t_shell *shell)
 {
-	if (cmd->args[0] && ft_strcmp(cmd->args[0], ".") == 0 && !cmd->args[1])
+	if (cmd->args[0] && !cmd->args[1] && (ft_strcmp(cmd->args[0], ".") == 0
+			|| ft_strcmp(cmd->args[0], "'.'") == 0
+			|| ft_strcmp(cmd->args[0], "\".\"") == 0))
 	{
 		handle_special_dir(cmd, shell,
 			"Minishell: .: filename argument required\n.: \
@@ -52,8 +54,10 @@ static int	handle_dot_cases(t_cmd *cmd, t_shell *shell)
 			2);
 		return (0);
 	}
-	else if (cmd->args[0]
-		&& ft_strcmp(cmd->args[0], "..") == 0 && !cmd->args[1])
+	else if (cmd->args[0] && !cmd->args[1]
+		&& (ft_strcmp(cmd->args[0], "..") == 0
+			|| ft_strcmp(cmd->args[0], "'..'") == 0
+			|| ft_strcmp(cmd->args[0], "\"..\"") == 0))
 	{
 		handle_special_dir(cmd, shell, "..: command not found\n", 127);
 		return (0);

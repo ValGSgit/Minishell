@@ -12,19 +12,17 @@
 
 #include "../includes/minishell.h"
 
-// Check if this is an export command with variable assignment 
 static bool	is_export_var_assignment(char **args, int arg_index)
 {
 	if (arg_index <= 0 || !args || !args[0])
 		return (false);
-	
 	if (ft_strcmp(args[0], "export") == 0 && ft_strchr(args[arg_index], '='))
 		return (true);
-	
 	return (false);
 }
 
-static int	count_tokens_for_arg(char *arg, t_shell *shell, char **args, int arg_index)
+static int	count_tokens_for_arg(char *arg, t_shell *shell,
+	char **args, int arg_index)
 {
 	int		j;
 	int		token_count;
@@ -33,9 +31,8 @@ static int	count_tokens_for_arg(char *arg, t_shell *shell, char **args, int arg_
 
 	token_count = 0;
 	expanded = process_argument(arg, shell);
-	
-	// Skip word splitting for export variable assignment arguments
-	if (!expanded || !needs_word_splitting(arg) || is_export_var_assignment(args, arg_index))
+	if (!expanded || !needs_word_splitting(arg)
+		|| is_export_var_assignment(args, arg_index))
 		token_count = 1;
 	else
 	{
@@ -79,24 +76,19 @@ static void	process_arg_for_splitting(char *arg, char *expanded, int *count,
 
 	if (!expanded)
 		return ;
-	
 	has_spaces = ft_strchr(expanded, ' ') != NULL;
-	
-	// Skip word splitting for export variable assignment arguments
-	if (!needs_word_splitting(arg) || !has_spaces || 
-		is_export_var_assignment(orig_args, arg_index))
+	if (!needs_word_splitting(arg) || !has_spaces
+		|| is_export_var_assignment(orig_args, arg_index))
 	{
 		new_args[(*count)++] = expanded;
 		return ;
 	}
-	
 	word_tokens = split_expanded_variable(expanded);
 	if (!word_tokens)
 	{
 		new_args[(*count)++] = expanded;
 		return ;
 	}
-	
 	j = 0;
 	while (word_tokens[j])
 	{

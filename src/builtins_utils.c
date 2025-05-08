@@ -133,7 +133,6 @@ static char	*join_path_parts(char **parts, int count)
 	result = ft_strdup("/");
 	if (!result)
 		return (NULL);
-	
 	i = 0;
 	while (i < count)
 	{
@@ -144,8 +143,7 @@ static char	*join_path_parts(char **parts, int count)
 				result = ft_strjoin(result, "/");
 			else
 				result = ft_strdup(result);
-			free(temp);
-			
+			free(temp);		
 			temp = result;
 			result = ft_strjoin(result, parts[i]);
 			free(temp);
@@ -230,12 +228,10 @@ void	update_logical_pwd(t_shell *shell, const char *path)
 	logical_path = calculate_logical_path(current_pwd, path);
 	if (!logical_path)
 		return ;
-
 	new_pwd = ft_strjoin("PWD=", logical_path);
 	free(logical_path);
 	if (!new_pwd)
 		return ;
-
 	update_or_add_env(new_pwd, &shell->env);
 	free(new_pwd);
 }
