@@ -1,6 +1,7 @@
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -Iinclude -g -fsanitize=address,leaks,undefined
-DEBUG_FLAGS = valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --trace-children=yes --track-fds=all
+CFLAGS = -Wall -Wextra -Werror -Iinclude
+#DEBUG_FLAGS = valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --trace-children=yes --track-fds=all
+#DEBUG_FLAGS = valgrind --suppressions=./mini.supp --leak-check=full --show-leak-kinds=all --track-origins=yes --trace-children=yes --track-fds=all
 
 SRC_DIR = src
 OBJ_DIR = obj
@@ -93,9 +94,9 @@ fclean: clean
 
 re: fclean all
 
-run: CFLAGS += $(DEBUG_FLAGS)
-run: all
-	@echo "Running $(NAME) with Valgrind..."
-	@$(DEBUG_FLAGS) ./$(NAME)
+#run: CFLAGS += $(DEBUG_FLAGS)
+#run: all
+#	@echo "Running $(NAME) with Valgrind..."
+#	@$(DEBUG_FLAGS) ./$(NAME)
 
-.PHONY: all clean fclean re run
+.PHONY: all clean fclean re

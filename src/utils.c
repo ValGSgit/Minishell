@@ -25,14 +25,14 @@ static t_redir	*create_redir_node_struct(int type, char *file, t_cmd *cmd)
 	node->prefile = ft_strdup(file);
 	if (!node->prefile)
 	{
-		safe_free(node);
+		free(node);
 		return (NULL);
 	}
 	node->file = process_argument(file, cmd->shell);
 	if (!node->file)
 	{
-		safe_free(node->prefile);
-		safe_free(node);
+		free(node->prefile);
+		free(node);
 		return (NULL);
 	}
 	node->next = NULL;

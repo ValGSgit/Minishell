@@ -19,11 +19,16 @@ void	free_redir(t_redir *redir)
 	while (redir)
 	{
 		temp = redir->next;
+		if (redir->file && redir->type == REDIR_HEREDOC)
+		{
+			if (access(redir->file, F_OK) == 0)
+				unlink(redir->file);
+		}
 		if (redir->file)
 			free(redir->file);
 		if (redir->prefile)
 			free(redir->prefile);
-		free(redir);
+		safe_free(redir);
 		redir = temp;
 	}
 }

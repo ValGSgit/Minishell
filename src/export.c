@@ -19,24 +19,32 @@ void	ft_sort_strings(char **arr, int count)
 	int		swapped;
 	char	*temp;
 
+	if (!arr || count <= 0)
+		return;
 	i = 0;
-	while (arr[i] && i < count - 1)
+	while (i < count - 1)
 	{
 		swapped = 0;
 		j = 0;
-		while (arr[j] && j < count - i - 1)
+		while (j < count - i - 1)
 		{
-			if (ft_strcmp(arr[j], arr[j + 1]) > 0)
+			if (arr[j] && arr[j + 1] && ft_strcmp(arr[j], arr[j + 1]) > 0)
 			{
 				temp = arr[j];
 				arr[j] = arr[j + 1];
 				arr[j + 1] = temp;
 				swapped = 1;
 			}
+			else if (!arr[j] && arr[j + 1]) /* Move NULL values to the end */
+			{
+				arr[j] = arr[j + 1];
+				arr[j + 1] = NULL;
+				swapped = 1;
+			}
 			j++;
 		}
 		if (swapped == 0)
-			break ;
+			break;
 		i++;
 	}
 }
@@ -46,13 +54,18 @@ char	**copy_env_array(char **env, int env_count)
 	char	**env_copy;
 	int		i;
 
+	if (!env || env_count <= 0)
+		return (NULL);
 	env_copy = malloc((env_count + 1) * sizeof(char *));
 	if (!env_copy)
 		return (NULL);
 	i = 0;
 	while (i < env_count)
 	{
-		env_copy[i] = ft_strdup(env[i]);
+		if (env[i])
+			env_copy[i] = ft_strdup(env[i]);
+		else
+			env_copy[i] = NULL;
 		i++;
 	}
 	env_copy[i] = NULL;

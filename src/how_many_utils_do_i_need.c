@@ -6,7 +6,7 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/01 19:52:52 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/05/03 17:28:30 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/08 14:53:16 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,11 @@ void	cleanup_cmd_heredocs(t_cmd *cmd)
 		{
 			if (access(redir->file, F_OK) == 0 && unlink(redir->file) == -1)
 				perror("unlink");
-			safe_free(redir->file);
 		}
 		if (redir->prefile)
-			safe_free(redir->prefile);
+			free(redir->prefile);
+		if (redir->file)
+			free(redir->file);
 		free(redir);
 		redir = next;
 	}

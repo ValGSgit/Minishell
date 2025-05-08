@@ -47,12 +47,6 @@ void	handle_heredoc_direct(t_cmd *cmd, char **tokens, int *i,
 		return ;
 	}
 	handle_heredoc(cmd, tokens[*i + 1]);
-	if (shell->signal_status)
-	{
-		cmd->syntax_error = 1;
-		shell->signal_status = 0;
-		return ;
-	}
 	(*i) += 2;
 }
 

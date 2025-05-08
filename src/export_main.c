@@ -6,11 +6,24 @@
 /*   By: vagarcia <vagarcia@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 15:20:00 by vagarcia          #+#    #+#             */
-/*   Updated: 2025/05/07 15:34:32 by vagarcia         ###   ########.fr       */
+/*   Updated: 2025/05/08 14:44:39 by vagarcia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
+
+static void	handle_var_size_error(char *var_name)
+{
+	ft_putstr_fd("minishell: export: `", 2);
+	if (var_name)
+		ft_putstr_fd(var_name, 2);
+	ft_putstr_fd("': value too large (exceeds size limit)\n", 2);
+}
+
+static int	var_is_too_large(char *arg)
+{
+	return (arg && ft_strlen(arg) > MAX_ENV_VAR_SIZE);
+}
 
 static void	update_env_entry(char ***env, char *arg, int i)
 {
@@ -54,19 +67,32 @@ void	update_or_add_env(char *arg, char ***env)
 	char	*var_name;
 	char	*new_var;
 
+	if (var_is_too_large(arg))
+	{
+		var_name = extract_var_name(arg);
+		handle_var_size_error(var_name);
+		free(var_name);
+		return;
+	}
+	
 	if (ft_strchr(arg, '+'))
 	{
 		new_var = handle_append_syntax(arg, *env);
 		if (new_var)
 		{
-			update_or_add_env(new_var, env);
+			if (!var_is_too_large(new_var))
+				update_or_add_env(new_var, env);
+			else
+			{
+				var_name = extract_var_name(new_var);
+				handle_var_size_error(var_name);
+				free(var_name);
+			}
 			free(new_var);
 			return ;
 		}
 		else
-		{
 			return ;
-		}
 	}
 	var_name = extract_var_name(arg);
 	if (!var_name)

@@ -49,6 +49,8 @@
 # define RESET_COLOR "\033[0m"
 # define PROMPT_COLOR "\033[1;32m"
 # define ERROR_COLOR "\033[1;31m"
+# define MAX_ENV_VAR_SIZE 1048576 /* 1MB limit for env variables */
+
 
 typedef enum e_redir_type
 {
@@ -112,7 +114,7 @@ typedef struct s_shell
 
 extern volatile sig_atomic_t	g_signal_received;
 
-void	*xmalloc(size_t size);
+
 void	safe_free(void *ptr);
 void	print_error_message(const char *prefix, char *msg, char *extra);
 void	free_tokens(char **tokens);
@@ -142,6 +144,7 @@ void	handle_syntax_error(char *token, t_shell *shell);
 int		same_length(char *tok1, char *tok2);
 
 /* Command Handling */
+void	initialize_shell(t_shell *shell, char **argv);
 void	handle_heredoc_direct(t_cmd *cmd, char **tokens, int *i, \
 		t_shell *shell);
 void	handle_pipeline(t_cmd **current, t_shell *shell);

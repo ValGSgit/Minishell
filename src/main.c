@@ -59,6 +59,7 @@ void	minishell_loop(t_shell *shell)
 	while (1)
 	{
 		setup_signals();
+		cleanup_heredocs(shell);
 		input = readline(PROMPT);
 		if (!input)
 		{
@@ -76,40 +77,6 @@ void	minishell_loop(t_shell *shell)
 		if (process_shell_input(shell, input))
 			break ;
 	}
-}
-
-void	initialize_shell_env(t_shell *shell, char *prog_name)
-{
-	char	*cwd;
-	char	*pwd_var;
-
-	if (ft_strcmp(prog_name, "minishell") == 0 || ft_strcmp(prog_name,
-			"./minishell") == 0 || ft_strcmp(prog_name, "bash") == 0)
-		update_shlvl(shell);
-	if (!get_env_value("PWD", shell->env))
-	{
-		cwd = getcwd(NULL, 0);
-		if (cwd)
-		{
-			pwd_var = safe_strjoin("PWD=", cwd, 0);
-			if (pwd_var)
-				update_or_add_env(pwd_var, &shell->env);
-			safe_free(pwd_var);
-			safe_free(cwd);
-		}
-	}
-}
-
-void	initialize_shell(t_shell *shell, char **argv)
-{
-	char	*prog_name;
-
-	prog_name = ft_strrchr(argv[0], '/');
-	if (prog_name)
-		prog_name++;
-	else
-		prog_name = argv[0];
-	initialize_shell_env(shell, prog_name);
 }
 
 int	main(int argc, char **argv, char **envp)

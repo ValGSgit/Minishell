@@ -53,8 +53,6 @@ char	*ft_strjoin(char const *s1, char const *s2)
 		return (ft_strdup(s1));
 	len1 = ft_strlen(s1);
 	len2 = ft_strlen(s2);
-	if (len1 > 2091606 - len2 - 1)
-		return (NULL);
 	newstr = malloc(len1 + len2 + 1);
 	if (!newstr)
 		return (NULL);
